@@ -1,0 +1,105 @@
+# APKBUILD based on linux-vanilla aport. Changes:
+# - disabled module installation
+# - add !check !tracedeps
+# - package: just install zimage and kernel.release, because the kernel config
+#	does not generate modules or dtb files
+# - do not create -dev subpackage (makes no sense without module support)
+#
+# Kernel config based on: arch/arm/configs/lineageos_mako_defconfig
+# Changes:
+# - enable devtmpfs (needed for udev -> touch support in weston)
+
+_vendor=archos
+_flavor=archos-a80
+_hash="v4.11"
+_config="config-${_flavor}.armhf"
+
+pkgname=linux-${_flavor}
+pkgver=4.11
+case $pkgver in
+	*.*.*)  _kernver=${pkgver%.*};;
+	*.*) _kernver=$pkgver;;
+esac
+pkgrel=3
+arch="armhf"
+pkgdesc="Mainline Linux for Archos 80 G9"
+url="https://github.com/torvalds/linux"
+depends="postmarketos-mkinitfs"
+makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev"
+options="!strip !check !tracedeps"
+install=
+source="
+	linux-$_hash.zip::https://github.com/torvalds/linux/archive/${_hash}.zip
+	$_config
+"
+subpackages=""
+license="GPL2"
+
+_abi_release=${pkgver}
+_carch="arm"
+HOSTCC="${CC:-gcc}"
+HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
+
+ksrcdir="$srcdir/linux-${_hash:1}"
+
+prepare() {
+	local _patch_failed=
+	cd "$ksrcdir"
+
+	# first apply patches in specified order
+	for i in $source; do
+		case $i in
+		*.patch)
+			msg "Applying $i..."
+			if ! patch -s -p1 -N -i "$srcdir"/$i; then
+				echo $i >>failed
+				_patch_failed=1
+			fi
+			;;
+		esac
+	done
+
+	if ! [ -z "$_patch_failed" ]; then
+		error "The following patches failed:"
+		cat failed
+		return 1
+	fi
+
+	# gcc6 support
+	# cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/"
+
+	mkdir -p "$srcdir"/build
+	cp "$srcdir"/$_config "$srcdir"/build/.config || return 1
+	rm -rf "$ksrcdir/arch/arm/boot/dts/include"
+	ln -s "$ksrcdir/include/dt-bindings" "$ksrcdir/arch/arm/boot/dts/include"
+	make -C "$ksrcdir" O="$srcdir"/build ARCH="$_carch" HOSTCC="$HOSTCC" \
+		oldconfig
+}
+
+
+
+# this is so we can do: 'abuild menuconfig' to reconfigure kernel
+menuconfig() {
+	cd "$srcdir"/build || return 1
+	#make ARCH="$_carch" menuconfig
+	cp .config "$startdir"/$_config
+}
+
+build() {
+	cd "$srcdir"/build
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-Alpine" \
+		|| return 1
+}
+
+package() {
+	install -Dm644 "$srcdir/build/arch/arm/boot/zImage" \
+		"$pkgdir/boot/vmlinuz-$_flavor"
+
+	install -D "$srcdir/build/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+}
+
+sha512sums="bfce6c290a7d372a018599fb835800a2cb5c3488883f4bd55c78b2197c6fb9420a8ac2f7740c054330948c62f0ffeafccdd386b6b57e8e4e794a74abb0ff12f6  linux-v4.11.zip
+befce83c9a240712b9a67da3dc5fdf80f26b6af63d91072b19bc0432aa9c75c1dbfcb88265c83688c1d75319ce87e9083a87c75b69ce0aa91cc4dbfa4caf23a8  config-archos-a80.armhf"
