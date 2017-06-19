@@ -1,0 +1,33 @@
+diff --git a/arch/arm/include/asm/ftrace.h b/arch/arm/include/asm/ftrace.h
+index 5ac70a0d..09476e2e 100644
+--- a/arch/arm/include/asm/ftrace.h
++++ b/arch/arm/include/asm/ftrace.h
+@@ -38,7 +38,7 @@ void *return_address(unsigned int);
+ 
+ #else
+ 
+-extern inline void *return_address(unsigned int level)
++static inline void *return_address(unsigned int level)
+ {
+ 	return NULL;
+ }
+
+diff --git a/arch/arm/kernel/return_address.c b/arch/arm/kernel/return_address.c
+index 79f21e0d..bf0c1c70 100644
+--- a/arch/arm/kernel/return_address.c
++++ b/arch/arm/kernel/return_address.c
+@@ -57,12 +57,12 @@ void *return_address(unsigned int level)
+ }
+ 
+ #else 
+-
++/*
+ void *return_address(unsigned int level)
+ {
+ 	return NULL;
+ }
+-
++*/
+ #endif 
+ 
+ EXPORT_SYMBOL_GPL(return_address);

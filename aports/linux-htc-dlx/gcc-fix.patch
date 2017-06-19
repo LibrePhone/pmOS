@@ -1,0 +1,12 @@
+diff --git a/Makefile b/Makefile
+index c51a0863..8c44036a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -195,7 +195,6 @@ export KBUILD_BUILDHOST := $(SUBARCH)
+ ARCH		?= $(SUBARCH)
+ CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
+ ARCH		:= arm
+-CROSS_COMPILE	:= arm-eabi-
+ 
+ # Architecture as present in compile.h
+ UTS_MACHINE 	:= $(ARCH)
