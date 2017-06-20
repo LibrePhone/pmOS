@@ -5,22 +5,23 @@
 # does not generate modules or dtb files
 # - do not create -dev subpackage (makes no sense without module support)
 #
-# Kernel config based on: arch/arm/configs/lineageos_mako_defconfig
-# Changes:
+# Kernel config changes, based on: arch/arm/configs/cyanogenmod_dlx_defconfig
 # - enable devtmpfs (needed for udev -> touch support in weston)
+# - change compression from CONFIG_KERNEL_LZMA=y to
+#   CONFIG_KERNEL_GZIP=y (so it works with busybox)
 
 _vendor=htc
-_flavor=dlx
+_flavor=htc-dlx
 _hash="f6eb6496406f5a06cdd4716e494082d78df70e83"
 _config="config-${_flavor}.armhf"
 
-pkgname=linux-htc-dlx
+pkgname=linux-${_flavor}
 pkgver=3.4.0
 case $pkgver in
 *.*.*)  _kernver=${pkgver%.*};;
 *.*) _kernver=$pkgver;;
 esac
-pkgrel=8
+pkgrel=9
 arch="armhf"
 pkgdesc="HTC Droid DNA kernel from LineageOS"
 url="https://github.com/LineageOS/android_device_htc_dlx"
@@ -34,6 +35,8 @@ $_config
 compiler-gcc6.h
 gcc-fix.patch
 make-fix.patch
+bcmdhd-remove-Werror.patch
+gpu-msm2-fix-gcc5-compile.patch
 "
 subpackages=""
 license="GPL2"
@@ -103,7 +106,9 @@ package() {
 }
 
 sha512sums="3b6ea5971f4644509df3f9962963d42ed9aea04a4d1856a87515198e92a99eef12d7882e27f6eba3e9f7929e2fa491f1b6cc98045e2a93673e58cd0ad70681ca  linux-htc-dlx-f6eb6496406f5a06cdd4716e494082d78df70e83.zip
-f9efdb6581f570402fd7bb4ef7139665b7c6a8a18248025b07a6fe682e0be335db8769e12603284969882a01f0417e43f908a060cf10c0ad2f7eaa3edefd855b  config-dlx.armhf
+a58bc69359800e32f54fc1a488e3ee846c50bd77ec639ec7713a8eef741176c937b2489d5fe5337367039ba13cb7fc042faa58f551a7e5338bc5b7496418c5cf  config-htc-dlx.armhf
 d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h
 17af4b972e8bbf3fe9d0597efabe1a3611875daaaeaab3b82837c91ea3197493eefec77e5d59962295bf3dad4dbe28fa9cef98eb51afc93faef8f488a9c4bfe7  gcc-fix.patch
-5a19ccc419263f192fa74f15f11c2e920e6fa39ccab4e8881ed0e674cf2c368220f14667329eb5384ac4cea3e045d10a9b8f1de4bce8f21dc76484f920510b6f  make-fix.patch"
+5a19ccc419263f192fa74f15f11c2e920e6fa39ccab4e8881ed0e674cf2c368220f14667329eb5384ac4cea3e045d10a9b8f1de4bce8f21dc76484f920510b6f  make-fix.patch
+cb80c3dd3d68d59939ad2b6c66c8bde3148df2dda96ba4fcdd87937101f312ff313abc12048e71deda23376a524b46daf6af5e32cd203d099825c08dba9a24c7  bcmdhd-remove-Werror.patch
+01c48eb7ae59338bcdad79c5005d4e543d1245a5f9050cf6f80ff00d522ec1f47763cc66a6feb6db0359c4cf693c8ce4c6fcb8c83e7011f59564b0dc741de9f2  gpu-msm2-fix-gcc5-compile.patch"
