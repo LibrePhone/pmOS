@@ -19,7 +19,7 @@ case $pkgver in
 *.*.*)  _kernver=${pkgver%.*};;
 *.*) _kernver=$pkgver;;
 esac
-pkgrel=9
+pkgrel=10
 arch="armhf"
 pkgdesc="HTC Droid DNA kernel from LineageOS"
 url="https://github.com/LineageOS/android_device_htc_dlx"
