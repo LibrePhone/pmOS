@@ -1,33 +1,12 @@
-diff --git a/arch/arm/include/asm/ftrace.h b/arch/arm/include/asm/ftrace.h
-index 5ac70a0d..09476e2e 100644
---- a/arch/arm/include/asm/ftrace.h
-+++ b/arch/arm/include/asm/ftrace.h
-@@ -38,7 +38,7 @@ void *return_address(unsigned int);
+diff --git a/Makefile b/Makefile
+index c51a0863..8c44036a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -195,7 +195,6 @@ export KBUILD_BUILDHOST := $(SUBARCH)
+ ARCH		?= $(SUBARCH)
+ CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
+ ARCH		:= arm
+-CROSS_COMPILE	:= arm-eabi-
  
- #else
- 
--extern inline void *return_address(unsigned int level)
-+static inline void *return_address(unsigned int level)
- {
- 	return NULL;
- }
-
-diff --git a/arch/arm/kernel/return_address.c b/arch/arm/kernel/return_address.c
-index 79f21e0d..bf0c1c70 100644
---- a/arch/arm/kernel/return_address.c
-+++ b/arch/arm/kernel/return_address.c
-@@ -57,12 +57,12 @@ void *return_address(unsigned int level)
- }
- 
- #else 
--
-+/*
- void *return_address(unsigned int level)
- {
- 	return NULL;
- }
--
-+*/
- #endif 
- 
- EXPORT_SYMBOL_GPL(return_address);
+ # Architecture as present in compile.h
+ UTS_MACHINE 	:= $(ARCH)
