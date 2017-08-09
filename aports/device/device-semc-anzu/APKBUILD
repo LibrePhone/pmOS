@@ -1,0 +1,27 @@
+pkgname=device-semc-anzu
+pkgver=1
+pkgrel=8
+pkgdesc="Sony Ericcson"
+url="https://github.com/postmarketOS"
+arch="noarch"
+license="MIT"
+depends="linux-semc-anzu linux-firmware mkbootimg"
+makedepends=""
+install=""
+subpackages=""
+source="deviceinfo 90-android.rules"
+options="!check"
+
+build() {
+	return 0
+}
+
+package() {
+	install -D -m644 "$srcdir/deviceinfo" \
+		"$pkgdir/etc/deviceinfo"
+	install -D -m644 "$srcdir"/90-android.rules \
+		"$pkgdir"/etc/udev/rules.d/90-android.rules
+}
+
+sha512sums="10743e0ee33a6a43a2b64065e72fb9951826de4c30d0af9b0e62490b4abc3d6ac00eec424b6869e706c1629f983a952f76eb084fb1c7c1e84e808eec277d44b2  deviceinfo
+8aead706ddb118a44de7d049f07d10a27e727d17724058d132e4ec4fa73fed29c9ccfe03f02aca459c922ec0fbba24e171fe3c76e33f7c5462631e3dd5506e36  90-android.rules"

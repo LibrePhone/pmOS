@@ -1,0 +1,99 @@
+# APKBUILD based on linux-lg-mako.
+# Kernel config based on: arch/arm/configs/semc_anzu_defconfig
+
+# Unsure if pkgrel is correct...
+
+_vendor=semc
+_flavor=semc-anzu
+_hash="1495bfcf93f9e0e896331f29e1850387c31d6714"
+_config="config-${_flavor}.armhf"
+
+pkgname=linux-${_flavor}
+pkgver=4.4.67
+case $pkgver in
+	*.*.*)  _kernver=${pkgver%.*};;
+	*.*) _kernver=$pkgver;;
+esac
+pkgrel=2
+arch="armhf"
+pkgdesc="AOSP based kernel for msm7x30 devices"
+url="https://github.com/msm7x30/android_kernel_qcom_msm7x30"
+depends="postmarketos-mkinitfs"
+makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev"
+options="!strip !check !tracedeps"
+install=
+source="
+	$pkgname-$_hash.zip::https://github.com/msm7x30/android_kernel_qcom_msm7x30/archive/android-4.4.zip
+	$_config
+	compiler-gcc6.h
+"
+subpackages=""
+license="GPL2"
+
+_abi_release=${pkgver}
+_carch="arm"
+HOSTCC="${CC:-gcc}"
+HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
+
+ksrcdir="$srcdir/android_kernel_qcom_msm7x30-android-4.4"
+
+prepare() {
+	local _patch_failed=
+	cd "$ksrcdir"
+
+	# first apply patches in specified order
+	for i in $source; do
+		case $i in
+		*.patch)
+			msg "Applying $i..."
+			if ! patch -s -p1 -N -i "$srcdir"/$i; then
+				echo $i >>failed
+				_patch_failed=1
+			fi
+			;;
+		esac
+	done
+
+	if ! [ -z "$_patch_failed" ]; then
+		error "The following patches failed:"
+		cat failed
+		return 1
+	fi
+
+	# gcc6 support
+	cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/"
+
+	mkdir -p "$srcdir"/build
+	cp "$srcdir"/$_config "$srcdir"/build/.config || return 1
+	make -C "$ksrcdir" O="$srcdir"/build ARCH="$_carch" HOSTCC="$HOSTCC" \
+		silentoldconfig
+}
+
+
+
+# this is so we can do: 'abuild menuconfig' to reconfigure kernel
+menuconfig() {
+	cd "$srcdir"/build || return 1
+	make ARCH="$_carch" menuconfig
+	cp .config "$startdir"/$_config
+}
+
+build() {
+	cd "$srcdir"/build
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-Alpine" \
+		|| return 1
+}
+
+package() {
+	install -Dm644 "$srcdir/build/arch/arm/boot/zImage" \
+		"$pkgdir/boot/vmlinuz-$_flavor"
+
+	install -D "$srcdir/build/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+}
+
+sha512sums="f3bca9f9f184e85ec353876d90bcafa3782ee55499132c9f434a9b3e682eaff6e55298bd428445ec5a25d986434db406d541e165ce66a867106035cf3a28075f  linux-semc-anzu-1495bfcf93f9e0e896331f29e1850387c31d6714.zip
+abc46c4a764e08cbf24c517b4087910138e349eb2c5b3496c0bd62f3057ed11368510846938cd675c85051c8955774f9120f42829bc81152c98374bb2261671f  config-semc-anzu.armhf
+d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h"
