@@ -1,6 +1,6 @@
 pkgname=postmarketos-base
 pkgver=2
-pkgrel=3
+pkgrel=4
 pkgdesc="Meta package for minimal postmarketos base"
 url="https://github.com/postmarketOS"
 arch="noarch"
@@ -10,12 +10,19 @@ tmux htop nano postmarketos-mkinitfs eudev sudo"
 makedepends=""
 install="$pkgname.post-install"
 subpackages=""
-source="sudoers $install"
+source="sudoers firmware.sh 50-firmware.rules $install"
 options="!check"
 
 package() {
 	install -D -m644 "$srcdir"/sudoers \
 		"$pkgdir"/etc/sudoers.d/postmarketos
+	install -D -m644 "$srcdir"/50-firmware.rules \
+		"$pkgdir"/etc/udev/rules.d/50-firmware.rules
+	install -D -m755 "$srcdir"/firmware.sh \
+		"$pkgdir"/usr/bin/firmware.sh
+
 }
 sha512sums="c6de3b44bc45b9f9c641a7e34c69a481ee39b99ac0251cd28f2b3aae49c1a8d1ca448f4936b7942b1a8b8f7c18a5415c938098765ed8cf08456543800160e64b  sudoers
+7070be4bce702c953d4c952812b9e20d6203641357c082e2a4a51cdb2848cbd8769ec7af44a2433bf8139a160e2c2e65dfd2d909c5d24c078f0e4814a84a5def  firmware.sh
+b29d192399f3446fcc8ab11b6be4b3f8b4424d953e653a2af7ec46d2eff5fced8d04b6750ce49492c8ba59b7a9e132cd5619f581439bdbe6bc831c7a3fffc07e  50-firmware.rules
 2b243f7ac38b54cdbb834db45d0bb216c9343ec52aa2a0e4786cc925ef1503089fb1e8a2ca1e3dd833b8797c20c970b0e7989eea1da79d545bec36b233384315  postmarketos-base.post-install"
