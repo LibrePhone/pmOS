@@ -18,6 +18,6 @@ for DIR in $FIRMWARE_DIRS; do
     exit 0
 done
 
-echo -1 > "/sys/$DEVPATH/loading"
+printf -1 > "/sys/$DEVPATH/loading"
 echo "cannot find firmware file '$FIRMWARE'"
 exit 1
