@@ -23,11 +23,11 @@ case $pkgver in
 	*.*.*)  _kernver=${pkgver%.*};;
 	*.*) _kernver=$pkgver;;
 esac
-pkgrel=2
+pkgrel=3
 arch="armhf"
 pkgdesc="Motorola Moto G 2014 kernel from LineageOS"
 url="https://github.com/LineageOS/android_kernel_motorola_msm8226"
-depends="postmarketos-mkinitfs"
+depends="postmarketos-mkinitfs wcnss-service"
 makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev xz"
 options="!strip !check !tracedeps"
 install=
@@ -48,6 +48,7 @@ HOSTCC="${CC:-gcc}"
 HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
 
 ksrcdir="$srcdir/android_kernel_motorola_msm8226-${_hash}"
+srcfirmdir="$ksrcdir"/drivers/staging/prima/firmware_bin
 
 prepare() {
 	local _patch_failed=
@@ -105,6 +106,15 @@ package() {
 
 	install -D "$srcdir/build/include/config/kernel.release" \
 		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+
+    echo "--[ Installing vendor files ]--"
+    # install wifi firmware
+    install -Dm644 "$srcfirmdir"/WCNSS_qcom_wlan_nv.bin \
+        "$pkgdir"/lib/firmware/postmarketos/wlan/prima/WCNSS_qcom_wlan_nv.bin
+    install -Dm644 "$srcfirmdir"/WCNSS_qcom_cfg.ini \
+        "$pkgdir"/lib/firmware/postmarketos/wlan/prima/WCNSS_qcom_cfg.ini
+    install -Dm644 "$srcfirmdir"/WCNSS_cfg.dat \
+        "$pkgdir"/lib/firmware/postmarketos/wlan/prima/WCNSS_cfg.dat
 }
 
 sha512sums="565d1e2f7fe5fa62f9b8273ebdfec56457d36f05ad09fc4fed3ad4e4d00ff6079af59acad65e3e43d3fcde1b1f5105e2fc98518131f1262cd846f3288294f8b8  linux-motorola-titan-09cff47d6b79b73ecc3461e227abf09faaa9e754.tar.gz
