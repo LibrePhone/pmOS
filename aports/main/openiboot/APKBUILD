@@ -15,7 +15,7 @@ options="!check"
 builddir="$srcdir"/openiBoot-${_hash}
 build() {
     cd "$builddir"
-    scons iPodTouch1G
+    CROSS=$CROSS_COMPILE scons iPodTouch1G
 }
 
 package() {
