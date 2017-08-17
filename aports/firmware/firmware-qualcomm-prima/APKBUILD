@@ -1,0 +1,36 @@
+pkgname=firmware-qualcomm-prima
+pkgver=1
+pkgrel=0
+pkgdesc="Firmware for wireless wlan-prima module"
+url="https://github.com/postmarketOS"
+arch="all"
+license="Propietary"
+depends=""
+makedepends=""
+subpackages=""
+source="wcnss.b00
+    wcnss.b01
+    wcnss.b02
+    wcnss.b04
+    wcnss.b06
+    wcnss.b07
+    wcnss.b08
+    wcnss.b09
+    wcnss.mdt"
+options="!build !check !strip"
+
+package() {
+    for blob in $source; do
+        install -D -m644 "$blob" \
+            "$pkgdir/lib/firmware/postmarketos/$blob" || return 1
+    done
+}
+sha512sums="75bd2619431b1ca5b75896c592bdf797d83c579f2421852c5db40f9492a08ab6a196648318c5d0886eb6b77bf4b9f45bb5a5f72ae28ed0e05e3ba51ffae99958  wcnss.b00
+431b752a4ec1e71647da9fe4ff7324707d48009f040e876d5fbcb9e02f51bbc968f377c87658bc670f54c13e27e6f4c91c82e53abfecbb4674f9946cab702a4e  wcnss.b01
+cdab7febd9e19d39daab29307e3ed8fa9595032b69bd2ac954eafa5a1c9622b6a2de64264c75d6086f68dbfe9fb434214a6a25c48c0e9f85cb26015d3da66435  wcnss.b02
+78b276b1e007cc68355a9b7548831e0a164257ec06cfd687217c60b6869ea414ed1c99111155a028c0c3024b979964ee4979b95c6f5ee83b11384c39fe1e4014  wcnss.b04
+66c6fc6df2d4c7ef201bf687a7d8eaa27a49aaa6030708a4c2caea2abc1a5be8c652ca6200691446025849765fe04c054a86c025ddef8ef86d61c77e344762c2  wcnss.b06
+0b6cbac838dfe7f47ea1bd0df00ec282fdf45510c92161072ccfb84035390c4da743d9c3b954eaa1b0f86fc9861b23cc6c8667ab232c11c686432ebb5c8c3f27  wcnss.b07
+6033893c75b32cc906bcabdff02fdbbbb75f0b4d568962b38ea023c00b2273f90bce4482358d4ecc64c22bceaa628d55d17877c8301a1406f67c55c86fc08723  wcnss.b08
+a9988608be53e3759f1920bc79ad655f537e35767ad1e8341c3eac340533bab3734fd95d4729e8dc4f2dc9dc787e5bd6c538cc370a4eb4a19c74ac7f812d76cd  wcnss.b09
+31b57dcdd15a374f44da81bc214d10fa28e04f77e25c1dfcaf33a9e187543f0d97643062446e6f614b0c89d309d0757d155110c5c4e59a8235b0033bb7c13d5d  wcnss.mdt"

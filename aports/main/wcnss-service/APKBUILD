@@ -1,17 +1,16 @@
 pkgname=wcnss-service
 pkgver=1
-pkgrel=2
+pkgrel=3
 pkgdesc="Initialize wifi on devices with wcnss driver"
 url="https://android.googlesource.com/platform/hardware/qcom/wlan/+/master/qcwcn/wcnss-service/"
 arch="all"
 license="MIT"
-depends=""
+depends="firmware-qualcomm-prima"
 makedepends=""
 subpackages=""
 source="
     $pkgname.tar.gz::https://android.googlesource.com/platform/hardware/qcom/wlan/+archive/master/qcwcn/wcnss-service.tar.gz
     Makefile
-    wcnss_files.tar.gz
     0001-Removed-Android-stuff.patch
     0002-Read-serial.patch
     "
@@ -21,7 +20,6 @@ options="!strip !check !tracedeps"
 unpack() {
     cd "$srcdir"
     tar zxvf $pkgname.tar.gz
-    tar zxvf wcnss_files.tar.gz
 }
 
 prepare() {
@@ -57,15 +55,8 @@ build() {
 package() {
    install -D -m755 "$srcdir"/wcnss_service \
        "$pkgdir"/bin/wcnss_service || return 1
-
-    cd "$srcdir"
-    for ext in b00 b01 b02 b04 b06 b07 b08 b09 mdt; do
-        install -D -m644 wcnss."$ext" \
-            "$pkgdir"/lib/firmware/wcnss."$ext" || return 1
-    done
 }
 sha512sums="d1b1bc4dfc9d69f8228fc9e7d51520c065a7b0bc1648b03c7b0b367eff7e3603207248d1404d5b446b878bf31798c03488ba14898d943472def88420f6b67486  wcnss-service.tar.gz
 e7d9cc80ce981f876b6c761b7744f272fe26681c230fdc0938e0617c739a3c4126aa3527ffbf6fa67ab0eb75c0714c6bd74e14b596e5135cf316c87d0ce0f37e  Makefile
-d69ab3b138ba8a3ac8f41216d573fe5613bf7446ccb03863f0979938b90cc812bc907c1c638750d83cc5c47a4c0c456ba0d8be5c529e19d974c5af9ef796a195  wcnss_files.tar.gz
 e7e1913c7788beed539ccf41756a10537eceafebbbc33ba7241a8a2794b1850e6372d5a4fd3034680e74996683edaac6dee82a0c7221f69741f1c7da480af35d  0001-Removed-Android-stuff.patch
 f281186e06585adeed75cd0689cf7061f0ec6c5aac3c85dcfe6d2265e2cce2ebd94bb88d1d1468e79d2d8b638714d6036932f3ce0d18a25eb4859a6d0293740d  0002-Read-serial.patch"
