@@ -1,0 +1,13 @@
+diff --git a/scons/ARMEnvironment.SConscript b/scons/ARMEnvironment.SConscript
+index f79b733..b3279ff 100644
+--- a/scons/ARMEnvironment.SConscript
++++ b/scons/ARMEnvironment.SConscript
+@@ -8,7 +8,7 @@ def ARMEnvironment(*a, **kw):
+ 	env = Environment(tools=['gas', 'gcc', 'gnulink', 'ar'], ENV=os.environ, *a, **kw)
+ 	plat_flags = ['-mlittle-endian', '-mfpu=vfp', '-marm', '-fPIC']
+ 	env.Append(CPPPATH = ['#includes'])
+-	env.Append(CPPFLAGS = plat_flags+['-nostdlib'])
++	env.Append(CPPFLAGS = plat_flags+['-nostdlib', '-Wno-error'])
+ 	env.Append(ASPPFLAGS = ['-xassembler-with-cpp'])
+ 	env.Append(LINKFLAGS = plat_flags+['-nostdlib', '--nostdlib', '-Ttext=0x0'])
+ 	env.Append(LIBS = ['gcc'])

@@ -12,6 +12,8 @@ subpackages=""
 source="
     $pkgname.tar.gz::https://github.com/iDroid-Project/openiBoot/archive/${_hash}.tar.gz
     gnu-inline.patch
+    disable-thumb.patch
+    disable-werror.patch
 "
 options="!check"
 
@@ -19,7 +21,8 @@ builddir="$srcdir"/openiBoot-${_hash}
 build() {
     cd "$builddir"
 
-    CROSS=$CROSS_COMPILE scons iPodTouch1G
+    CROSS=$CROSS_COMPILE \
+    scons iPodTouch1G
 }
 
 package() {
@@ -27,4 +30,6 @@ package() {
 }
 
 sha512sums="dbd35f0dc158757c174f68f15fe779397aadc6b238e0385ebd85ea16bec361fdb7b89dc124555da56a158c8b8fb7468c2536d7ccd89f8cb619b86ab3b957211e  openiboot.tar.gz
-799f930aa33d54c061a5c84ed60205a4d2f6a65caa0e80288694c626154faf6e09b1688c4e93996af5b1ac52bb1ef2b1e4269b738a4aac52bcf17f9643b9be81  gnu-inline.patch"
+799f930aa33d54c061a5c84ed60205a4d2f6a65caa0e80288694c626154faf6e09b1688c4e93996af5b1ac52bb1ef2b1e4269b738a4aac52bcf17f9643b9be81  gnu-inline.patch
+061cf38d6ef841e5657ff9536aab0bc714617bfee4a4ce08d108b838ad6304160d1581c311332d281a506308eccfb9a75dc1886ea819d4345db017d14b365453  disable-thumb.patch
+08985e71b739b655614f343d73d8f16c4f48ce43305a4f29ba06817bf6f61b03523e6b5355a3e216c1206dfae01945ff94cc89a830c75e6ed3be97eac1c431f2  disable-werror.patch"
