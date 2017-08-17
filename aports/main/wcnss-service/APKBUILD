@@ -1,0 +1,69 @@
+pkgname=wcnss-service
+pkgver=1
+pkgrel=1
+pkgdesc="Initialize wifi on devices with wcnss driver"
+url="https://android.googlesource.com/platform/hardware/qcom/wlan/+/master/qcwcn/wcnss-service/"
+arch="all"
+license="MIT"
+depends=""
+makedepends=""
+subpackages=""
+source="
+    $pkgname.tar.gz::https://android.googlesource.com/platform/hardware/qcom/wlan/+archive/master/qcwcn/wcnss-service.tar.gz
+    Makefile
+    wcnss_files.tar.gz
+    0001-Removed-Android-stuff.patch
+    "
+options="!strip !check !tracedeps"
+
+
+unpack() {
+    cd "$srcdir"
+    tar zxvf $pkgname.tar.gz
+    tar zxvf wcnss_files.tar.gz
+}
+
+prepare() {
+    local _patch_failed=
+    cd "$ksrcdir"
+
+    # first apply patches in specified order
+    for i in $source; do
+        case $i in
+        *.patch)
+            msg "Applying $i..."
+            if ! patch -s -p1 -N -i "$srcdir"/$i; then
+                echo $i >>failed
+                _patch_failed=1
+            fi
+            ;;
+        esac
+    done
+
+    if ! [ -z "$_patch_failed" ]; then
+        error "The following patches failed:"
+        cat failed
+        return 1
+    fi
+}
+
+
+build() {
+   cd "$srcdir"
+   make
+}
+
+package() {
+   install -D -m755 "$srcdir"/wcnss_service \
+       "$pkgdir"/bin/wcnss_service || return 1
+
+    cd "$srcdir"
+    for ext in b00 b01 b02 b04 b06 b07 b08 b09 mdt; do
+        install -D -m644 wcnss."$ext" \
+            "$pkgdir"/lib/firmware/wcnss."$ext" || return 1
+    done
+}
+sha512sums="d1b1bc4dfc9d69f8228fc9e7d51520c065a7b0bc1648b03c7b0b367eff7e3603207248d1404d5b446b878bf31798c03488ba14898d943472def88420f6b67486  wcnss-service.tar.gz
+33a703113da80d76c4adea62ced1fe8f275a377f76da92e0968c6545773e0e29fd347a6b1d8a04a034c085f541842f7c3c49c7f59e74c5ee2b6a11ea38bedd74  Makefile
+d69ab3b138ba8a3ac8f41216d573fe5613bf7446ccb03863f0979938b90cc812bc907c1c638750d83cc5c47a4c0c456ba0d8be5c529e19d974c5af9ef796a195  wcnss_files.tar.gz
+5757cff764a1761d4869443a5568bc99e8cb08ce4b8ede37796118ada96ea02bd86ec14624f9f2e520df540b7507285e04efc83d50aa46c717ee13b5b5f9a5d5  0001-Removed-Android-stuff.patch"

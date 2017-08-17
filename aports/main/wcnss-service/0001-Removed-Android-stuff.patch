@@ -1,0 +1,525 @@
+From 7ed23c465485a948663b538191e981fcbcbdb59a Mon Sep 17 00:00:00 2001
+From: Pablo Castellano <pablo@anche.no>
+Date: Mon, 10 Jul 2017 01:33:53 +0200
+Subject: [PATCH] Removed Android stuff
+
+- Debug easier
+- Swap defines
+- Read serial from /sys/devices/virtual/android_usb/android0/iSerial
+  In case of error, default to a known working serial number
+---
+ Android.mk      |  27 ---------
+ wcnss_service.c | 174 ++++++++++++++++++++++++++++++++++++++------------------
+ 2 files changed, 120 insertions(+), 81 deletions(-)
+ delete mode 100644 Android.mk
+
+diff --git a/Android.mk b/Android.mk
+deleted file mode 100644
+index 39cdc57..0000000
+--- a/Android.mk
++++ /dev/null
+@@ -1,27 +0,0 @@
+-ifneq ($(filter msm8916 msm8909,$(TARGET_BOARD_PLATFORM)),)
+-ifneq (,$(filter arm aarch64 arm64, $(TARGET_ARCH)))
+-LOCAL_PATH := $(call my-dir)
+-include $(CLEAR_VARS)
+-LOCAL_MODULE := wcnss_service
+-LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/common/inc/
+-LOCAL_SRC_FILES := wcnss_service.c
+-ifeq ($(strip $(TARGET_USES_QCOM_WCNSS_QMI)),true)
+-LOCAL_CFLAGS += -DWCNSS_QMI
+-LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/qmi/inc
+-LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/qmi/services
+-LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/qmi/platform
+-LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/qmi/src
+-LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/qmi/core/lib/inc
+-LOCAL_SRC_FILES += wcnss_qmi_client.c
+-endif #TARGET_USES_QCOM_WCNSS_QMI
+-LOCAL_SHARED_LIBRARIES := libc libcutils libutils liblog
+-ifeq ($(strip $(TARGET_USES_QCOM_WCNSS_QMI)),true)
+-LOCAL_SHARED_LIBRARIES += libqmiservices libqmi libqcci_legacy libqmi_client_qmux
+-LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/libmdmdetect/inc
+-LOCAL_SHARED_LIBRARIES += libmdmdetect
+-endif #TARGET_USES_QCOM_WCNSS_QMI
+-LOCAL_MODULE_TAGS := optional
+-LOCAL_CFLAGS += -Wall
+-include $(BUILD_EXECUTABLE)
+-endif
+-endif # ifneq ($(filter msm8916 msm8909,$(TARGET_BOARD_PLATFORM)),)
+diff --git a/wcnss_service.c b/wcnss_service.c
+index 9244ea0..1e7b4c5 100644
+--- a/wcnss_service.c
++++ b/wcnss_service.c
+@@ -26,6 +26,9 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ --------------------------------------------------------------------------*/
+ 
++#include <unistd.h>
++#include <string.h>
++
+ #include <stdio.h>
+ #include <fcntl.h>
+ #include <errno.h>
+@@ -36,13 +39,14 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include <sys/stat.h>
+ #include <sys/sendfile.h>
+ #define LOG_TAG "wcnss_service"
+-#include <cutils/log.h>
+-#include <cutils/properties.h>
+ #ifdef WCNSS_QMI
+ #include "wcnss_qmi_client.h"
+ #include "mdm_detect.h"
+ #endif
+ 
++// https://github.com/joneschrisg/android-system-core/blob/master/include/cutils/properties.h#L32
++#define PROPERTY_VALUE_MAX 92
++
+ #define SUCCESS 0
+ #define FAILED -1
+ #define BYTE_0  0
+@@ -61,12 +65,12 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ 
+ #define WCNSS_CAL_CHUNK (3*1024)
+-#define WCNSS_CAL_FILE  "/data/misc/wifi/WCNSS_qcom_wlan_cal.bin"
+-#define WCNSS_FACT_FILE "/data/misc/wifi/WCN_FACTORY"
++#define WCNSS_CAL_FILE  "/lib/firmware/postmarketos/wifi/WCNSS_qcom_wlan_cal.bin"
++#define WCNSS_FACT_FILE "/lib/firmware/postmarketos/wifi/WCN_FACTORY"
+ #define WCNSS_DEVICE    "/dev/wcnss_wlan"
+ #define WCNSS_CTRL      "/dev/wcnss_ctrl"
+-#define WLAN_INI_FILE_DEST   "/data/misc/wifi/WCNSS_qcom_cfg.ini"
+-#define WLAN_INI_FILE_SOURCE "/system/etc/wifi/WCNSS_qcom_cfg.ini"
++#define WLAN_INI_FILE_DEST   "/lib/firmware/postmarketos/wifi/WCNSS_qcom_cfg.ini"
++#define WLAN_INI_FILE_SOURCE "/data/misc/wifi/WCNSS_qcom_cfg.ini"
+ #define WCNSS_HAS_CAL_DATA\
+ 		"/sys/module/wcnsscore/parameters/has_calibrated_data"
+ #define WLAN_DRIVER_ATH_DEFAULT_VAL "0"
+@@ -83,12 +87,74 @@ unsigned char wlan_nv_mac_addr[WLAN_ADDR_SIZE];
+ #define MAC_ADDR_ARRAY(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
+ #define MAC_ADDRESS_STR "%02x:%02x:%02x:%02x:%02x:%02x"
+ 
++#define SERIAL_PATH "/sys/devices/virtual/android_usb/android0/iSerial"
++#define DEFAULT_SERIAL "ZX1D229ZG4"
++
+ /* As we Want to write in 00:0a:f5:11:22:33 format in sysfs file
+    so taking mac length as 12 char + 5 for ":" + NULL
+  */
+ #define WLAN_MAC_ADDR_STRING 18
+ #endif
+ 
++int property_set(const char *key, const char *value)
++{
++    printf("Settings prop \"%s\" = \"%s\"\n", key, value);
++}
++
++int property_get(const char *key, char *value, const char *default_value)
++{
++    printf("Getting prop \"%s\" : \"%s\" (\"%s\")\n", key, value, default_value);
++
++    if (!strcmp(key, "wlan.driver.config")) {
++        strcpy(value, WLAN_INI_FILE_DEST);
++    } else if (!strcmp(key, "wlan.driver.ath")) { 
++        strcpy(value, WLAN_DRIVER_ATH_DEFAULT_VAL);
++    } else if (!strcmp(key, "ro.serialno")) { 
++        fd_serial = open(SERIAL_PATH, O_RDONLY)
++        if (fd_serial < 0) {
++            printf("Failed to open iSerial: %s (%s)\n", SERIAL_PATH, strerror(errno));
++            printf("Setting default value: %s\n", DEFAULT_SERIAL);
++            strcpy(value, DEFAULT_SERIAL);
++        } else {
++            rcount = read(fd_file, (void *)value, sizeof(value));
++            if (rcount < 0) {
++                printf("Failed to read from iSerial file ; %s\n", strerror(errno));
++                printf("Setting default value: %s\n", DEFAULT_SERIAL);
++                strcpy(value, DEFAULT_SERIAL);
++            }
++        }
++
++    } else {
++        strcpy(value, "Unknown ");
++        strcat(value, key);
++    }
++
++    printf("value: %s\n", value);
++    return strlen(value);
++}
++
++// https://android.googlesource.com/platform/system/core/+/69f4cd7f5add7a7c7f5915e5292aab7eb2a42e9f/libcutils/properties.c
++/*******************
++int property_set(const char *key, const char *value)
++{
++    return __system_property_set(key, value);
++}
++int property_get(const char *key, char *value, const char *default_value)
++{
++    int len;
++    len = __system_property_get(key, value);
++    if(len > 0) {
++        return len;
++    }
++    
++    if(default_value) {
++        len = strlen(default_value);
++        memcpy(value, default_value, len + 1);
++    }
++    return len;
++}
++*****************/
++
+ int wcnss_write_cal_data(int fd_dev)
+ {
+ 	int rcount = 0;
+@@ -100,11 +166,11 @@ int wcnss_write_cal_data(int fd_dev)
+ 
+ 	char buf[WCNSS_CAL_CHUNK];
+ 
+-	ALOGI("wcnss_write_cal_data trying to write cal");
++	printf("wcnss_write_cal_data trying to write cal\n");
+ 
+ 	rc = stat(WCNSS_CAL_FILE, &st);
+ 	if (rc < 0) {
+-		ALOGE("Failed to stat cal file : %s",
++		printf("Failed to stat cal file : %s\n",
+ 				strerror(errno));
+ 		goto exit;
+ 	}
+@@ -113,7 +179,7 @@ int wcnss_write_cal_data(int fd_dev)
+ 
+ 	fd_file = open(WCNSS_CAL_FILE, O_RDONLY);
+ 	if (fd_file < 0) {
+-		ALOGE("cal file doesn't exist: %s",
++		printf("cal file doesn't exist: %s\n",
+ 				strerror(errno));
+ 		rc = fd_file;
+ 		goto exit;
+@@ -123,7 +189,7 @@ int wcnss_write_cal_data(int fd_dev)
+ 	 * when it recieves the full data */
+ 	wcount = write(fd_dev, (void *)&size, 4);
+ 	if (wcount != 4) {
+-		ALOGE("Failed to write to wcnss device : %s",
++		printf("Failed to write to wcnss device : %s\n",
+ 				strerror(errno));
+ 		rc = wcount;
+ 		goto exit_close;
+@@ -132,7 +198,7 @@ int wcnss_write_cal_data(int fd_dev)
+ 	do {
+ 		rcount = read(fd_file, (void *)buf, sizeof(buf));
+ 		if (rcount < 0) {
+-			ALOGE("Failed to read from cal file ; %s",
++			printf("Failed to read from cal file ; %s\n",
+ 					strerror(errno));
+ 			rc = rcount;
+ 			goto exit_remove;
+@@ -143,7 +209,7 @@ int wcnss_write_cal_data(int fd_dev)
+ 
+ 		wcount = write(fd_dev, buf, rcount);
+ 		if (wcount < 0) {
+-			ALOGE("Failed to write to wcnss device : %s",
++			printf("Failed to write to wcnss device : %s\n",
+ 				strerror(errno));
+ 			rc = wcount;
+ 			goto exit_close;
+@@ -156,7 +222,7 @@ int wcnss_write_cal_data(int fd_dev)
+ 
+ exit_remove:
+ 	close(fd_file);
+-	remove("WCNSS_CAL_FILE");
++	remove("WCNSS_CAL_FILE"); // bug? should be without quotes?
+ 	return rc;
+ 
+ exit_close:
+@@ -176,13 +242,13 @@ int wcnss_read_and_store_cal_data(int fd_dev)
+ 
+ 	char buf[WCNSS_CAL_CHUNK];
+ 
+-	ALOGI("wcnss_read_and_store_cal_data trying to read cal");
++	printf("wcnss_read_and_store_cal_data trying to read cal\n");
+ 
+ 	do {
+ 		/* wait on this read until data comes from fw */
+ 		rcount = read(fd_dev, (void *)buf, sizeof(buf));
+ 		if (rcount < 0) {
+-			ALOGE("Failed to read from wcnss device : %s",
++			printf("Failed to read from wcnss device : %s\n",
+ 					strerror(errno));
+ 			rc = rcount;
+ 			goto exit;
+@@ -196,8 +262,8 @@ int wcnss_read_and_store_cal_data(int fd_dev)
+ 			fd_file = open(WCNSS_CAL_FILE, O_WRONLY
+ 					| O_CREAT | O_TRUNC, 0664);
+ 			if (fd_file < 0) {
+-				ALOGE("Failed to open cal file : %s",
+-						strerror(errno));
++				printf("Failed to open cal file : %s (%s)\n",
++						WCNSS_CAL_FILE, strerror(errno));
+ 				rc = fd_file;
+ 				goto exit;
+ 			}
+@@ -208,7 +274,7 @@ int wcnss_read_and_store_cal_data(int fd_dev)
+ 
+ 		wcount = write(fd_file, buf, rcount);
+ 		if (wcount < 0) {
+-			ALOGE("Failed to write to cal file : %s",
++			printf("Failed to write to cal file : %s\n",
+ 				strerror(errno));
+ 			rc = wcount;
+ 			goto exit_remove;
+@@ -246,7 +312,7 @@ void find_full_path(char *cur_dir, char *file_to_find, char *full_path)
+ 
+ 			rc = lstat(dr->d_name, &st);
+ 			if (rc < 0) {
+-				ALOGE("lstat failed %s", strerror(errno));
++				printf("lstat failed %s\n", strerror(errno));
+ 				return;
+ 			}
+ 			if (S_ISDIR(st.st_mode)) {
+@@ -279,34 +345,34 @@ void setup_wlan_config_file()
+ 
+ 	rc = stat(WLAN_INI_FILE_SOURCE, &st_src);
+ 	if (rc != 0) {
+-		ALOGE("source file do not exist %s", WLAN_INI_FILE_SOURCE);
++		printf("source file do not exist %s\n", WLAN_INI_FILE_SOURCE);
+ 		return;
+ 	}
+ 
+ 	rc_dest = stat(WLAN_INI_FILE_DEST, &st_dest);
+ 	if (rc_dest == 0 && st_dest.st_size &&
+ 			(st_dest.st_mtime > st_src.st_mtime)) {
+-		ALOGE("wlan ini file exists %s and is newer than %s",
++		printf("wlan ini file exists %s and is newer than %s\n",
+ 				WLAN_INI_FILE_DEST, WLAN_INI_FILE_SOURCE);
+ 		goto out_nocopy;
+ 	}
+ 
+ 	rfd = open(WLAN_INI_FILE_SOURCE, O_RDONLY);
+ 	if (rfd < 0) {
+-		ALOGE("Failed to open ini source file: %s", strerror(errno));
++		printf("Failed to open ini source file: %s (%s)\n", WLAN_INI_FILE_SOURCE, strerror(errno));
+ 		return;
+ 	}
+ 
+ 	wfd = open(WLAN_INI_FILE_DEST, O_WRONLY | O_CREAT | O_TRUNC, 0660);
+ 	if (wfd < 0) {
+-		ALOGE("Failed to open ini dest file: %s", strerror(errno));
++		printf("Failed to open ini dest file: %s (%s)\n", WLAN_INI_FILE_DEST, strerror(errno));
+ 		close(rfd);
+ 		return;
+ 	}
+ 
+ 	rc = sendfile(wfd, rfd, 0, st_src.st_size);
+ 	if (rc != st_src.st_size) {
+-		ALOGE("Failed to copy ini file: %s", strerror(errno));
++		printf("Failed to copy ini file: %s\n", strerror(errno));
+ 		goto out;
+ 	}
+ 
+@@ -315,15 +381,15 @@ void setup_wlan_config_file()
+ 
+ 	rc = utime(WLAN_INI_FILE_DEST, &new_time);
+ 	if (rc != 0)
+-		ALOGE("could not preserve the timestamp %s", strerror(errno));
++		printf("could not preserve the timestamp %s\n", strerror(errno));
+ 
+ 	grp = getgrnam("wifi");
+ 	if (grp != NULL) {
+ 		rc = chown(WLAN_INI_FILE_DEST, -1, grp->gr_gid);
+ 		if (rc != 0)
+-			ALOGE("Failed change group of ini file %s", strerror(errno));
++			printf("Failed change group of ini file %s\n", strerror(errno));
+ 	} else {
+-			ALOGE("Failed to get group wifi %s", strerror(errno));
++			printf("Failed to get group wifi %s\n", strerror(errno));
+ 	}
+ 
+ 	property_set("wlan.driver.config", WLAN_INI_FILE_DEST);
+@@ -370,14 +436,14 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+ 
+ 	fd = open(WCNSS_CTRL, O_WRONLY);
+ 	if (fd < 0) {
+-		ALOGE("Failed to open %s : %s", WCNSS_CTRL, strerror(errno));
++		printf("Failed to open: %s (%s)\n", WCNSS_CTRL, strerror(errno));
+ 		return;
+ 	}
+ 
+ 	rc = property_get("ro.serialno", serial, "");
+ 	if (rc) {
+ 		serial_num = convert_string_to_hex(serial);
+-		ALOGE("Serial Number is  %x", serial_num);
++		printf("Serial Number is %x\n", serial_num);
+ 
+ 		msg[pos++] = WCNSS_USR_SERIAL_NUM >> BYTE_1;
+ 		msg[pos++] = WCNSS_USR_SERIAL_NUM >> BYTE_0;
+@@ -387,7 +453,7 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+ 		msg[pos++] = serial_num >> BYTE_0;
+ 
+ 		if (write(fd, msg, pos) < 0) {
+-			ALOGE("Failed to write to %s : %s", WCNSS_CTRL,
++			printf("Failed to write to %s : (%s)\n", WCNSS_CTRL,
+ 					strerror(errno));
+ 			goto fail;
+ 		}
+@@ -406,11 +472,11 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+ 		msg[pos++] = wlan_nv_mac_addr[4];
+ 		msg[pos++] = wlan_nv_mac_addr[5];
+ 
+-		ALOGI("WLAN MAC Addr:" MAC_ADDRESS_STR,
++		printf("WLAN MAC Addr:" MAC_ADDRESS_STR,
+ 			MAC_ADDR_ARRAY(wlan_nv_mac_addr));
+ 
+ 		if (write(fd, msg, pos) < 0) {
+-			ALOGE("Failed to write to %s : %s", WCNSS_CTRL,
++			printf("Failed to write to %s : (%s)\n", WCNSS_CTRL,
+ 						strerror(errno));
+ 			goto fail;
+ 		}
+@@ -423,14 +489,14 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+ 
+ 	rc = stat(WCNSS_FACT_FILE, &st);
+ 	if (rc == 0) {
+-		ALOGE("Factory file found, deleting cal file");
++		printf("Factory file found, deleting cal file\n");
+ 		unlink(WCNSS_CAL_FILE);
+ 		goto fail_resp;
+ 	}
+ 
+ 	rc = stat(WCNSS_CAL_FILE, &st);
+ 	if (rc != 0) {
+-		ALOGE("CAL file not found");
++		printf("CAL file not found\n");
+ 		goto fail_resp;
+ 	}
+ 
+@@ -438,12 +504,12 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+ 	msg[pos++] = 1;
+ 
+ 	if (write(fd, msg, pos) < 0) {
+-		ALOGE("Failed to write to %s : %s", WCNSS_CTRL,
++		printf("Failed to write to %s : %s\n", WCNSS_CTRL,
+ 				strerror(errno));
+ 		goto fail;
+ 	}
+ 
+-	ALOGI("Correctly triggered cal file");
++	printf("Correctly triggered cal file\n");
+ 	*cal = SUCCESS;
+ 	close(fd);
+ 	return;
+@@ -451,7 +517,7 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+ fail_resp:
+ 	msg[pos++] = 0;
+ 	if (write(fd, msg, pos) < 0)
+-		ALOGE("Failed to write to %s : %s", WCNSS_CTRL,
++		printf("Failed to write to %s : (%s)\n", WCNSS_CTRL,
+ 				strerror(errno));
+ 
+ fail:
+@@ -473,7 +539,7 @@ int check_modem_compatability(struct dev_info *mdm_detect_info)
+ 	/* Get the hardware property */
+ 	ret = property_get(MODEM_BASEBAND_PROPERTY, args, "");
+ 	if (ret > MODEM_BASEBAND_PROPERTY_SIZE) {
+-		ALOGE("property [%s] has size [%d] that exceeds max [%d]",
++		printf("property [%s] has size [%d] that exceeds max [%d]",
+ 				MODEM_BASEBAND_PROPERTY, ret, MODEM_BASEBAND_PROPERTY_SIZE);
+ 		return 0;
+ 	}
+@@ -484,11 +550,11 @@ int check_modem_compatability(struct dev_info *mdm_detect_info)
+ 
+ 		for (ret = 0; ret < mdm_detect_info->num_modems; ret++) {
+ 			if (mdm_detect_info->mdm_list[ret].type == MDM_TYPE_EXTERNAL) {
+-				ALOGE("Hardware supports external modem");
++				printf("Hardware supports external modem");
+ 				return 1;
+ 			}
+ 		}
+-		ALOGE("Hardware does not support external modem");
++		printf("Hardware does not support external modem");
+ 		return 0;
+ 	}
+ 	return 1;
+@@ -505,7 +571,7 @@ int main(int argc, char *argv[])
+ 	int nom = 0;
+ #endif
+ 
+-	setup_wlan_config_file();
++	//setup_wlan_config_file();
+ 
+ #ifdef WCNSS_QMI
+ 	/* Call ESOC API to get the number of modems.
+@@ -515,18 +581,18 @@ int main(int argc, char *argv[])
+ 	nom = get_system_info(&mdm_detect_info);
+ 
+ 	if (nom > 0)
+-		ALOGE("Failed to get system info, ret %d", nom);
++		printf("Failed to get system info, ret %d", nom);
+ 
+ 	if (mdm_detect_info.num_modems == 0) {
+-		ALOGE("wcnss_service: No Modem support for this target"
++		printf("wcnss_service: No Modem support for this target"
+ 				" number of modems is %d", mdm_detect_info.num_modems);
+ 		goto nomodem;
+ 	}
+ 
+-	ALOGE("wcnss_service: num_modems = %d", mdm_detect_info.num_modems);
++	printf("wcnss_service: num_modems = %d", mdm_detect_info.num_modems);
+ 
+ 	if(!check_modem_compatability(&mdm_detect_info)) {
+-		ALOGE("wcnss_service: Target does not have external modem");
++		printf("wcnss_service: Target does not have external modem");
+ 		goto nomodem;
+ 	}
+ 
+@@ -538,15 +604,15 @@ int main(int argc, char *argv[])
+ 
+ 		if (rc == SUCCESS) {
+ 			nv_mac_addr = SUCCESS;
+-			ALOGE("WLAN MAC Addr:" MAC_ADDRESS_STR,
++			printf("WLAN MAC Addr:" MAC_ADDRESS_STR,
+ 					MAC_ADDR_ARRAY(wlan_nv_mac_addr));
+ 		} else
+-			ALOGE("Failed to Get MAC addr from modem");
++			printf("Failed to Get MAC addr from modem\n");
+ 
+ 		wcnss_qmi_deinit();
+ 	}
+ 	else
+-		ALOGE("Failed to Initialize wcnss QMI Interface");
++		printf("Failed to Initialize wcnss QMI Interface\n");
+ 
+ nomodem:
+ #endif
+@@ -554,26 +620,26 @@ nomodem:
+ 
+ 	fd_dev = open(WCNSS_DEVICE, O_RDWR);
+ 	if (fd_dev < 0) {
+-		ALOGE("Failed to open wcnss device : %s",
+-				strerror(errno));
++		printf("Failed to open wcnss device: %s (%s)\n",
++				WCNSS_DEVICE, strerror(errno));
+ 		return fd_dev;
+ 	}
+ 
+ 	if (ret_cal != FAILED) {
+ 		rc = wcnss_write_cal_data(fd_dev);
+ 		if (rc != SUCCESS)
+-			ALOGE("No cal data is written to WCNSS %d", rc);
++			printf("No cal data is written to WCNSS %d\n", rc);
+ 		else
+-			ALOGE("Cal data is successfully written to WCNSS");
++			printf("Cal data is successfully written to WCNSS\n");
+ 	}
+ 
+ 	setup_wlan_driver_ath_prop();
+ 
+ 	rc = wcnss_read_and_store_cal_data(fd_dev);
+ 	if (rc != SUCCESS)
+-		ALOGE("Failed to read and save cal data %d", rc);
++		printf("Failed to read and save cal data %d\n", rc);
+ 	else
+-		ALOGI("Calibration data was successfull written to %s",
++		printf("Calibration data was successfull written to %s\n",
+ 			WCNSS_CAL_FILE);
+ 
+ 	close(fd_dev);
+-- 
+2.7.4
+
