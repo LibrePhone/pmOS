@@ -1,0 +1,25 @@
+_hash="c5cee8cc9e9b13784272550ab0938175cec1cdb5"
+pkgname=openiboot
+pkgver=0.3
+pkgrel=0
+pkgdesc="Open bootloader for Apple devices"
+url="https://github.com/iDroid-Project/openiBoot"
+arch="armhf"
+license="GPL3"
+depends=""
+makedepends="texinfo scons openssl-dev libpng-dev curl-dev libusb-dev readline-dev musl-dev"
+subpackages=""
+source="$pkgname.tar.gz::https://github.com/iDroid-Project/openiBoot/archive/${_hash}.tar.gz"
+options="!check"
+
+builddir="$srcdir"/openiBoot-${_hash}
+build() {
+    cd "$builddir"
+    scons iPodTouch1G
+}
+
+package() {
+    return 0
+}
+
+sha512sums="dbd35f0dc158757c174f68f15fe779397aadc6b238e0385ebd85ea16bec361fdb7b89dc124555da56a158c8b8fb7468c2536d7ccd89f8cb619b86ab3b957211e  openiboot.tar.gz"
