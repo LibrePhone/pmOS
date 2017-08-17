@@ -1,16 +1,12 @@
-From 7ed23c465485a948663b538191e981fcbcbdb59a Mon Sep 17 00:00:00 2001
+From 15a49f1e078c34357833c07e657b04c7be0d5d98 Mon Sep 17 00:00:00 2001
 From: Pablo Castellano <pablo@anche.no>
 Date: Mon, 10 Jul 2017 01:33:53 +0200
-Subject: [PATCH] Removed Android stuff
+Subject: [PATCH 1/2] Removed Android stuff
 
-- Debug easier
-- Swap defines
-- Read serial from /sys/devices/virtual/android_usb/android0/iSerial
-  In case of error, default to a known working serial number
 ---
- Android.mk      |  27 ---------
- wcnss_service.c | 174 ++++++++++++++++++++++++++++++++++++++------------------
- 2 files changed, 120 insertions(+), 81 deletions(-)
+ Android.mk      |  27 ----------
+ wcnss_service.c | 160 +++++++++++++++++++++++++++++++++++++-------------------
+ 2 files changed, 106 insertions(+), 81 deletions(-)
  delete mode 100644 Android.mk
 
 diff --git a/Android.mk b/Android.mk
@@ -47,7 +43,7 @@ index 39cdc57..0000000
 -endif
 -endif # ifneq ($(filter msm8916 msm8909,$(TARGET_BOARD_PLATFORM)),)
 diff --git a/wcnss_service.c b/wcnss_service.c
-index 9244ea0..1e7b4c5 100644
+index 9244ea0..3562e71 100644
 --- a/wcnss_service.c
 +++ b/wcnss_service.c
 @@ -26,6 +26,9 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
@@ -94,12 +90,11 @@ index 9244ea0..1e7b4c5 100644
  #define WCNSS_HAS_CAL_DATA\
  		"/sys/module/wcnsscore/parameters/has_calibrated_data"
  #define WLAN_DRIVER_ATH_DEFAULT_VAL "0"
-@@ -83,12 +87,74 @@ unsigned char wlan_nv_mac_addr[WLAN_ADDR_SIZE];
+@@ -83,12 +87,60 @@ unsigned char wlan_nv_mac_addr[WLAN_ADDR_SIZE];
  #define MAC_ADDR_ARRAY(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
  #define MAC_ADDRESS_STR "%02x:%02x:%02x:%02x:%02x:%02x"
  
 +#define SERIAL_PATH "/sys/devices/virtual/android_usb/android0/iSerial"
-+#define DEFAULT_SERIAL "ZX1D229ZG4"
 +
  /* As we Want to write in 00:0a:f5:11:22:33 format in sysfs file
     so taking mac length as 12 char + 5 for ":" + NULL
@@ -121,20 +116,7 @@ index 9244ea0..1e7b4c5 100644
 +    } else if (!strcmp(key, "wlan.driver.ath")) { 
 +        strcpy(value, WLAN_DRIVER_ATH_DEFAULT_VAL);
 +    } else if (!strcmp(key, "ro.serialno")) { 
-+        fd_serial = open(SERIAL_PATH, O_RDONLY)
-+        if (fd_serial < 0) {
-+            printf("Failed to open iSerial: %s (%s)\n", SERIAL_PATH, strerror(errno));
-+            printf("Setting default value: %s\n", DEFAULT_SERIAL);
-+            strcpy(value, DEFAULT_SERIAL);
-+        } else {
-+            rcount = read(fd_file, (void *)value, sizeof(value));
-+            if (rcount < 0) {
-+                printf("Failed to read from iSerial file ; %s\n", strerror(errno));
-+                printf("Setting default value: %s\n", DEFAULT_SERIAL);
-+                strcpy(value, DEFAULT_SERIAL);
-+            }
-+        }
-+
++        strcpy(value, "ZX1D229ZG4");  // is always the same for titan?
 +    } else {
 +        strcpy(value, "Unknown ");
 +        strcat(value, key);
@@ -169,7 +151,7 @@ index 9244ea0..1e7b4c5 100644
  int wcnss_write_cal_data(int fd_dev)
  {
  	int rcount = 0;
-@@ -100,11 +166,11 @@ int wcnss_write_cal_data(int fd_dev)
+@@ -100,11 +152,11 @@ int wcnss_write_cal_data(int fd_dev)
  
  	char buf[WCNSS_CAL_CHUNK];
  
@@ -183,7 +165,7 @@ index 9244ea0..1e7b4c5 100644
  				strerror(errno));
  		goto exit;
  	}
-@@ -113,7 +179,7 @@ int wcnss_write_cal_data(int fd_dev)
+@@ -113,7 +165,7 @@ int wcnss_write_cal_data(int fd_dev)
  
  	fd_file = open(WCNSS_CAL_FILE, O_RDONLY);
  	if (fd_file < 0) {
@@ -192,7 +174,7 @@ index 9244ea0..1e7b4c5 100644
  				strerror(errno));
  		rc = fd_file;
  		goto exit;
-@@ -123,7 +189,7 @@ int wcnss_write_cal_data(int fd_dev)
+@@ -123,7 +175,7 @@ int wcnss_write_cal_data(int fd_dev)
  	 * when it recieves the full data */
  	wcount = write(fd_dev, (void *)&size, 4);
  	if (wcount != 4) {
@@ -201,7 +183,7 @@ index 9244ea0..1e7b4c5 100644
  				strerror(errno));
  		rc = wcount;
  		goto exit_close;
-@@ -132,7 +198,7 @@ int wcnss_write_cal_data(int fd_dev)
+@@ -132,7 +184,7 @@ int wcnss_write_cal_data(int fd_dev)
  	do {
  		rcount = read(fd_file, (void *)buf, sizeof(buf));
  		if (rcount < 0) {
@@ -210,7 +192,7 @@ index 9244ea0..1e7b4c5 100644
  					strerror(errno));
  			rc = rcount;
  			goto exit_remove;
-@@ -143,7 +209,7 @@ int wcnss_write_cal_data(int fd_dev)
+@@ -143,7 +195,7 @@ int wcnss_write_cal_data(int fd_dev)
  
  		wcount = write(fd_dev, buf, rcount);
  		if (wcount < 0) {
@@ -219,7 +201,7 @@ index 9244ea0..1e7b4c5 100644
  				strerror(errno));
  			rc = wcount;
  			goto exit_close;
-@@ -156,7 +222,7 @@ int wcnss_write_cal_data(int fd_dev)
+@@ -156,7 +208,7 @@ int wcnss_write_cal_data(int fd_dev)
  
  exit_remove:
  	close(fd_file);
@@ -228,7 +210,7 @@ index 9244ea0..1e7b4c5 100644
  	return rc;
  
  exit_close:
-@@ -176,13 +242,13 @@ int wcnss_read_and_store_cal_data(int fd_dev)
+@@ -176,13 +228,13 @@ int wcnss_read_and_store_cal_data(int fd_dev)
  
  	char buf[WCNSS_CAL_CHUNK];
  
@@ -244,7 +226,7 @@ index 9244ea0..1e7b4c5 100644
  					strerror(errno));
  			rc = rcount;
  			goto exit;
-@@ -196,8 +262,8 @@ int wcnss_read_and_store_cal_data(int fd_dev)
+@@ -196,8 +248,8 @@ int wcnss_read_and_store_cal_data(int fd_dev)
  			fd_file = open(WCNSS_CAL_FILE, O_WRONLY
  					| O_CREAT | O_TRUNC, 0664);
  			if (fd_file < 0) {
@@ -255,7 +237,7 @@ index 9244ea0..1e7b4c5 100644
  				rc = fd_file;
  				goto exit;
  			}
-@@ -208,7 +274,7 @@ int wcnss_read_and_store_cal_data(int fd_dev)
+@@ -208,7 +260,7 @@ int wcnss_read_and_store_cal_data(int fd_dev)
  
  		wcount = write(fd_file, buf, rcount);
  		if (wcount < 0) {
@@ -264,7 +246,7 @@ index 9244ea0..1e7b4c5 100644
  				strerror(errno));
  			rc = wcount;
  			goto exit_remove;
-@@ -246,7 +312,7 @@ void find_full_path(char *cur_dir, char *file_to_find, char *full_path)
+@@ -246,7 +298,7 @@ void find_full_path(char *cur_dir, char *file_to_find, char *full_path)
  
  			rc = lstat(dr->d_name, &st);
  			if (rc < 0) {
@@ -273,7 +255,7 @@ index 9244ea0..1e7b4c5 100644
  				return;
  			}
  			if (S_ISDIR(st.st_mode)) {
-@@ -279,34 +345,34 @@ void setup_wlan_config_file()
+@@ -279,34 +331,34 @@ void setup_wlan_config_file()
  
  	rc = stat(WLAN_INI_FILE_SOURCE, &st_src);
  	if (rc != 0) {
@@ -313,7 +295,7 @@ index 9244ea0..1e7b4c5 100644
  		goto out;
  	}
  
-@@ -315,15 +381,15 @@ void setup_wlan_config_file()
+@@ -315,15 +367,15 @@ void setup_wlan_config_file()
  
  	rc = utime(WLAN_INI_FILE_DEST, &new_time);
  	if (rc != 0)
@@ -332,7 +314,7 @@ index 9244ea0..1e7b4c5 100644
  	}
  
  	property_set("wlan.driver.config", WLAN_INI_FILE_DEST);
-@@ -370,14 +436,14 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+@@ -370,14 +422,14 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
  
  	fd = open(WCNSS_CTRL, O_WRONLY);
  	if (fd < 0) {
@@ -349,7 +331,7 @@ index 9244ea0..1e7b4c5 100644
  
  		msg[pos++] = WCNSS_USR_SERIAL_NUM >> BYTE_1;
  		msg[pos++] = WCNSS_USR_SERIAL_NUM >> BYTE_0;
-@@ -387,7 +453,7 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+@@ -387,7 +439,7 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
  		msg[pos++] = serial_num >> BYTE_0;
  
  		if (write(fd, msg, pos) < 0) {
@@ -358,7 +340,7 @@ index 9244ea0..1e7b4c5 100644
  					strerror(errno));
  			goto fail;
  		}
-@@ -406,11 +472,11 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+@@ -406,11 +458,11 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
  		msg[pos++] = wlan_nv_mac_addr[4];
  		msg[pos++] = wlan_nv_mac_addr[5];
  
@@ -372,7 +354,7 @@ index 9244ea0..1e7b4c5 100644
  						strerror(errno));
  			goto fail;
  		}
-@@ -423,14 +489,14 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+@@ -423,14 +475,14 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
  
  	rc = stat(WCNSS_FACT_FILE, &st);
  	if (rc == 0) {
@@ -389,7 +371,7 @@ index 9244ea0..1e7b4c5 100644
  		goto fail_resp;
  	}
  
-@@ -438,12 +504,12 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+@@ -438,12 +490,12 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
  	msg[pos++] = 1;
  
  	if (write(fd, msg, pos) < 0) {
@@ -404,7 +386,7 @@ index 9244ea0..1e7b4c5 100644
  	*cal = SUCCESS;
  	close(fd);
  	return;
-@@ -451,7 +517,7 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
+@@ -451,7 +503,7 @@ void setup_wcnss_parameters(int *cal, int nv_mac_addr)
  fail_resp:
  	msg[pos++] = 0;
  	if (write(fd, msg, pos) < 0)
@@ -413,7 +395,7 @@ index 9244ea0..1e7b4c5 100644
  				strerror(errno));
  
  fail:
-@@ -473,7 +539,7 @@ int check_modem_compatability(struct dev_info *mdm_detect_info)
+@@ -473,7 +525,7 @@ int check_modem_compatability(struct dev_info *mdm_detect_info)
  	/* Get the hardware property */
  	ret = property_get(MODEM_BASEBAND_PROPERTY, args, "");
  	if (ret > MODEM_BASEBAND_PROPERTY_SIZE) {
@@ -422,7 +404,7 @@ index 9244ea0..1e7b4c5 100644
  				MODEM_BASEBAND_PROPERTY, ret, MODEM_BASEBAND_PROPERTY_SIZE);
  		return 0;
  	}
-@@ -484,11 +550,11 @@ int check_modem_compatability(struct dev_info *mdm_detect_info)
+@@ -484,11 +536,11 @@ int check_modem_compatability(struct dev_info *mdm_detect_info)
  
  		for (ret = 0; ret < mdm_detect_info->num_modems; ret++) {
  			if (mdm_detect_info->mdm_list[ret].type == MDM_TYPE_EXTERNAL) {
@@ -436,7 +418,7 @@ index 9244ea0..1e7b4c5 100644
  		return 0;
  	}
  	return 1;
-@@ -505,7 +571,7 @@ int main(int argc, char *argv[])
+@@ -505,7 +557,7 @@ int main(int argc, char *argv[])
  	int nom = 0;
  #endif
  
@@ -445,7 +427,7 @@ index 9244ea0..1e7b4c5 100644
  
  #ifdef WCNSS_QMI
  	/* Call ESOC API to get the number of modems.
-@@ -515,18 +581,18 @@ int main(int argc, char *argv[])
+@@ -515,18 +567,18 @@ int main(int argc, char *argv[])
  	nom = get_system_info(&mdm_detect_info);
  
  	if (nom > 0)
@@ -468,7 +450,7 @@ index 9244ea0..1e7b4c5 100644
  		goto nomodem;
  	}
  
-@@ -538,15 +604,15 @@ int main(int argc, char *argv[])
+@@ -538,15 +590,15 @@ int main(int argc, char *argv[])
  
  		if (rc == SUCCESS) {
  			nv_mac_addr = SUCCESS;
@@ -487,7 +469,7 @@ index 9244ea0..1e7b4c5 100644
  
  nomodem:
  #endif
-@@ -554,26 +620,26 @@ nomodem:
+@@ -554,26 +606,26 @@ nomodem:
  
  	fd_dev = open(WCNSS_DEVICE, O_RDWR);
  	if (fd_dev < 0) {

@@ -1,0 +1,63 @@
+From acdfdb503a5c838274b3d465ee0f444a60a62db4 Mon Sep 17 00:00:00 2001
+From: Pablo Castellano <pablo@anche.no>
+Date: Thu, 17 Aug 2017 14:47:51 +0200
+Subject: [PATCH 2/2] Read serial
+
+---
+ wcnss_service.c | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
+
+diff --git a/wcnss_service.c b/wcnss_service.c
+index 3562e71..d295e60 100644
+--- a/wcnss_service.c
++++ b/wcnss_service.c
+@@ -74,6 +74,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #define WCNSS_HAS_CAL_DATA\
+ 		"/sys/module/wcnsscore/parameters/has_calibrated_data"
+ #define WLAN_DRIVER_ATH_DEFAULT_VAL "0"
++#define SERIAL_PATH "/sys/devices/virtual/android_usb/android0/iSerial"
+ 
+ #define ASCII_A		65
+ #define ASCII_a		97
+@@ -87,8 +88,6 @@ unsigned char wlan_nv_mac_addr[WLAN_ADDR_SIZE];
+ #define MAC_ADDR_ARRAY(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5]
+ #define MAC_ADDRESS_STR "%02x:%02x:%02x:%02x:%02x:%02x"
+ 
+-#define SERIAL_PATH "/sys/devices/virtual/android_usb/android0/iSerial"
+-
+ /* As we Want to write in 00:0a:f5:11:22:33 format in sysfs file
+    so taking mac length as 12 char + 5 for ":" + NULL
+  */
+@@ -102,6 +101,8 @@ int property_set(const char *key, const char *value)
+ 
+ int property_get(const char *key, char *value, const char *default_value)
+ {
++    int rcount = 0;
++    int fd_serial;
+     printf("Getting prop \"%s\" : \"%s\" (\"%s\")\n", key, value, default_value);
+ 
+     if (!strcmp(key, "wlan.driver.config")) {
+@@ -109,7 +110,19 @@ int property_get(const char *key, char *value, const char *default_value)
+     } else if (!strcmp(key, "wlan.driver.ath")) { 
+         strcpy(value, WLAN_DRIVER_ATH_DEFAULT_VAL);
+     } else if (!strcmp(key, "ro.serialno")) { 
+-        strcpy(value, "ZX1D229ZG4");  // is always the same for titan?
++        fd_serial = open(SERIAL_PATH, O_RDONLY);
++        if (fd_serial < 0) {
++            printf("Cannot read device serial: %s (%s)\n",
++                    SERIAL_PATH, strerror(errno));
++            strcpy(value, "Unknown ");
++            strcat(value, key);
++        } else {
++            rcount = read(fd_serial, value, 10);
++            if (rcount < 0) {
++                printf("Failed to read serial; %s\n",
++                        strerror(errno));
++            }
++        }
+     } else {
+         strcpy(value, "Unknown ");
+         strcat(value, key);
+-- 
+2.7.4
+
