@@ -9,12 +9,16 @@ license="GPL3"
 depends=""
 makedepends="texinfo scons openssl-dev libpng-dev curl-dev libusb-dev readline-dev musl-dev"
 subpackages=""
-source="$pkgname.tar.gz::https://github.com/iDroid-Project/openiBoot/archive/${_hash}.tar.gz"
+source="
+    $pkgname.tar.gz::https://github.com/iDroid-Project/openiBoot/archive/${_hash}.tar.gz
+    gnu-inline.patch
+"
 options="!check"
 
 builddir="$srcdir"/openiBoot-${_hash}
 build() {
     cd "$builddir"
+
     CROSS=$CROSS_COMPILE scons iPodTouch1G
 }
 
@@ -22,4 +26,5 @@ package() {
     return 0
 }
 
-sha512sums="dbd35f0dc158757c174f68f15fe779397aadc6b238e0385ebd85ea16bec361fdb7b89dc124555da56a158c8b8fb7468c2536d7ccd89f8cb619b86ab3b957211e  openiboot.tar.gz"
+sha512sums="dbd35f0dc158757c174f68f15fe779397aadc6b238e0385ebd85ea16bec361fdb7b89dc124555da56a158c8b8fb7468c2536d7ccd89f8cb619b86ab3b957211e  openiboot.tar.gz
+799f930aa33d54c061a5c84ed60205a4d2f6a65caa0e80288694c626154faf6e09b1688c4e93996af5b1ac52bb1ef2b1e4269b738a4aac52bcf17f9643b9be81  gnu-inline.patch"

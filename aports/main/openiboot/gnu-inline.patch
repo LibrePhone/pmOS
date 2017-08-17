@@ -1,0 +1,13 @@
+diff --git a/includes/util.h b/includes/util.h
+index b66d2b5..b8ba3be 100644
+--- a/includes/util.h
++++ b/includes/util.h
+@@ -294,7 +294,7 @@ uint32_t adler32(uint8_t *buf, int32_t len);
+ const char *strerr(error_t _e);
+ 
+ uint32_t next_power_of_two(uint32_t n);
+-inline void auto_store(void *_ptr, size_t _sz, uint32_t _val);
++__attribute__ ((gnu_inline)) inline void auto_store(void *_ptr, size_t _sz, uint32_t _val);
+ 
+ #include "printf.h"
+ #include "malloc-2.8.3.h"
