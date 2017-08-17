@@ -1,0 +1,13 @@
+diff --git a/util.c b/util.c
+index 2f5ea3c..36e28bc 100644
+--- a/util.c
++++ b/util.c
+@@ -856,7 +856,7 @@ uint32_t next_power_of_two(uint32_t n) {
+ 	return val;
+ }
+ 
+-inline void auto_store(void *_ptr, size_t _sz, uint32_t _val)
++__attribute__ ((gnu_inline)) inline void auto_store(void *_ptr, size_t _sz, uint32_t _val)
+ {
+ 	switch(_sz)
+ 	{
