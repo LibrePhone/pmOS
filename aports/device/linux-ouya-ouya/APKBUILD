@@ -1,0 +1,103 @@
+# APKBUILD based on linux-asus-grouper
+# Kernel config based on: arch/arm/configs/cyanogenmod_ouya_defconfig
+
+_vendor=ouya
+_flavor=ouya-ouya
+_hash="aec3c7f7900554ede9cb34559416e3ee74d0bf36"
+_config="config-${_flavor}.armhf"
+
+pkgname=linux-${_flavor}
+pkgver=3.4.0
+case $pkgver in
+	*.*.*)  _kernver=${pkgver%.*};;
+	*.*) _kernver=$pkgver;;
+esac
+pkgrel=5
+arch="armhf"
+pkgdesc="Ouya Kernel"
+url="https://github.com/milaq/android_kernel_boxer8_ouya"
+depends="postmarketos-mkinitfs"
+makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev"
+options="!strip !check !tracedeps"
+install=
+source="
+	$pkgname-$_hash.tar.gz::https://github.com/milaq/android_kernel_boxer8_ouya/archive/$_hash.tar.gz
+	$_config
+	compiler-gcc6.h
+	00_fix_return_address.patch
+	01_timeconst_fix.patch"
+subpackages=""
+license="GPL2"
+
+_abi_release=${pkgver}
+_carch="arm"
+HOSTCC="${CC:-gcc}"
+HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
+ksrcdir="$srcdir/android_kernel_boxer8_ouya-${_hash}"
+
+prepare() {
+	local _patch_failed=
+	cd "$ksrcdir"
+
+	# first apply patches in specified order
+	for i in $source; do
+		case $i in
+		*.patch)
+			msg "Applying $i..."
+			if ! patch -s -p1 -N -i "$srcdir"/$i; then
+				echo $i >>failed
+				_patch_failed=1
+			fi
+			;;
+		esac
+	done
+
+	if ! [ -z "$_patch_failed" ]; then
+		error "The following patches failed:"
+		cat failed
+		return 1
+	fi
+
+	# gcc6 support
+	cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/"
+
+	# Remove all -Werror statements
+	find . -type f -name Makefile -print0 | xargs -0 sed -i 's/-Werror-/-W/g'
+	find . -type f -name Makefile -print0 | xargs -0 sed -i 's/-Werror//g'
+
+	mkdir -p "$srcdir"/build
+	cp "$srcdir"/$_config "$srcdir"/build/.config || return 1
+	make -C "$ksrcdir" O="$srcdir"/build ARCH="$_carch" HOSTCC="$HOSTCC" \
+		silentoldconfig
+}
+
+
+
+# this is so we can do: 'abuild menuconfig' to reconfigure kernel
+menuconfig() {
+	cd "$srcdir"/build || return 1
+	make ARCH="$_carch" menuconfig
+	cp .config "$startdir"/$_config
+}
+
+build() {
+	cd "$srcdir"/build
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-Alpine" \
+		|| return 1
+}
+
+package() {
+	install -Dm644 "$srcdir/build/arch/arm/boot/zImage" \
+		"$pkgdir/boot/vmlinuz-$_flavor"
+
+	install -D "$srcdir/build/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+}
+
+sha512sums="f01a606e8436ad917cca3e4751e62f0a0de0ce20c6d07de8c11ffb2e4117283b9fa1975624be563d3c4c8d84221cef1cbb526ea0d22913806cbde20d4ef69a2e  linux-ouya-ouya-aec3c7f7900554ede9cb34559416e3ee74d0bf36.tar.gz
+be527527dff3bc270a16ca428b2a8140ed139e9811345ca1729344bf486151bb50dc2f5ff48f7620ad7be1b3492e6e45f885d70af9cf3550ddb08bf59178a642  config-ouya-ouya.armhf
+d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h
+6b7ecfd0939b920f263492484e8d60ff30c55614a750f5efd813a699729e65916e31b106e18bd6ea9858b37753403a6428f3a8d993c18b2459685aa29c1f2055  00_fix_return_address.patch
+a2bb98fb8d988bbb659cae00fbaca360828300e9b98b90aed5ee0dd839c3f740696df4094a9021b813cbada06820d115aabed581a47cdd2c947e8d853c20b145  01_timeconst_fix.patch"
