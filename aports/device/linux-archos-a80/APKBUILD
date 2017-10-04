@@ -11,26 +11,27 @@
 
 _vendor=archos
 _flavor=archos-a80
-_hash="v4.11"
+_hash="cee8b37673ca8de18b563ab76bc94e9b111083e1"
 _config="config-${_flavor}.armhf"
 
 pkgname=linux-${_flavor}
-pkgver=4.11
+pkgver=3.0.8
 case $pkgver in
 	*.*.*)  _kernver=${pkgver%.*};;
 	*.*) _kernver=$pkgver;;
 esac
-pkgrel=3
+pkgrel=0
 arch="armhf"
-pkgdesc="Mainline Linux for Archos 80 G9"
-url="https://github.com/torvalds/linux"
+pkgdesc="Linux for Archos 80 G9"
+url="https://gitorious.org/archos/archos-gpl-gen9-kernel-ics.git"
 depends="postmarketos-mkinitfs"
 makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev"
 options="!strip !check !tracedeps"
 install=
 source="
-	linux-$_hash.zip::https://github.com/torvalds/linux/archive/${_hash}.zip
+	${pkgname}-${_hash}.tar.gz::https://gitorious.org/archos/archos-gpl-gen9-kernel-ics/blobs/master/linux.config?p=archos:archos-gpl-gen9-kernel-ics.git;a=snapshot;h=${_hash};sf=tgz
 	$_config
+	compiler-gcc6.h
 "
 subpackages=""
 license="GPL2"
@@ -40,7 +41,7 @@ _carch="arm"
 HOSTCC="${CC:-gcc}"
 HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
 
-ksrcdir="$srcdir/linux-${_hash:1}"
+ksrcdir="$srcdir/archosarchos-gpl-gen9-kernel-ics-${_hash:0:7}"
 
 prepare() {
 	local _patch_failed=
@@ -66,12 +67,10 @@ prepare() {
 	fi
 
 	# gcc6 support
-	# cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/"
+	cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/"
 
 	mkdir -p "$srcdir"/build
 	cp "$srcdir"/$_config "$srcdir"/build/.config || return 1
-	rm -rf "$ksrcdir/arch/arm/boot/dts/include"
-	ln -s "$ksrcdir/include/dt-bindings" "$ksrcdir/arch/arm/boot/dts/include"
 	make -C "$ksrcdir" O="$srcdir"/build ARCH="$_carch" HOSTCC="$HOSTCC" \
 		oldconfig
 }
@@ -81,7 +80,7 @@ prepare() {
 # this is so we can do: 'abuild menuconfig' to reconfigure kernel
 menuconfig() {
 	cd "$srcdir"/build || return 1
-	#make ARCH="$_carch" menuconfig
+	make ARCH="$_carch" menuconfig
 	cp .config "$startdir"/$_config
 }
 
@@ -101,5 +100,6 @@ package() {
 		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
 }
 
-sha512sums="bfce6c290a7d372a018599fb835800a2cb5c3488883f4bd55c78b2197c6fb9420a8ac2f7740c054330948c62f0ffeafccdd386b6b57e8e4e794a74abb0ff12f6  linux-v4.11.zip
-befce83c9a240712b9a67da3dc5fdf80f26b6af63d91072b19bc0432aa9c75c1dbfcb88265c83688c1d75319ce87e9083a87c75b69ce0aa91cc4dbfa4caf23a8  config-archos-a80.armhf"
+sha512sums="79c11e1e22d2d8a32e247634707861485b5750cad79edcc0fe202775dcd7127cff48b83fba9249c3ce2a652125f59494b768bb68c1098b99bdfbab13e3659979  linux-archos-a80-cee8b37673ca8de18b563ab76bc94e9b111083e1.tar.gz
+096da63fe49cf90708ade7742d1e3526f2a50c24ec2f9a0ed7e44ff43f6e9dd6d1af06c5f48a10736d3a18b8d80379bd3cd6db49385608d26f60bfb5ff29efca  config-archos-a80.armhf
+d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h"
