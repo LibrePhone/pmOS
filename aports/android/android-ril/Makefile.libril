@@ -1,0 +1,21 @@
+CXX        := g++
+CXXFLAGS   := -std=c++14 -Wall -g -I../include -I/usr/include/android
+LIBS       :=
+
+SOURCES	:= ${wildcard *.cpp}
+OBJECTS	:= $(SOURCES:%.cpp=%.o)
+
+all: libril.so
+
+%.o: %.cpp
+	@echo CC $<
+	@$(CXX) -c -o $@ $< $(CXXFLAGS)
+
+libril.so: $(OBJECTS)
+	@echo LD $@
+	@$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS)
+
+.PHONY: clean
+
+clean:
+	-rm -fv *.o libril.so

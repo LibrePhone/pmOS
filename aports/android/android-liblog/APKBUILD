@@ -1,0 +1,39 @@
+pkgname=android-liblog
+pkgver=7.0.0_r34
+pkgrel=0
+pkgdesc="Android low-level logging library"
+url="https://github.com/android/platform_system_core"
+arch="all"
+license="APACHE2"
+depends=""
+makedepends="bsd-compat-headers"
+options="!check"
+source="
+	android_platform_system_core-$pkgver.tar.gz::https://github.com/android/platform_system_core/archive/android-${pkgver}.tar.gz
+	Makefile"
+_lib="log"
+subpackages="$pkgname-dev"
+builddir="$srcdir"/platform_system_core-android-$pkgver/lib${_lib}
+
+prepare() {
+	cp "$srcdir"/Makefile "$builddir"
+}
+
+build() {
+	cd "$builddir"
+	make
+}
+
+package() {
+	# Library
+	install -Dm644 "${builddir}/lib${_lib}.so" \
+		"${pkgdir}/usr/lib/android/lib${_lib}.so"
+
+	# Header files
+	mkdir -p "${pkgdir}/usr/include/android/"
+	cp -r "${srcdir}/platform_system_core-android-${pkgver}/include/${_lib}" \
+		"${pkgdir}/usr/include/android/"
+}
+
+sha512sums="f84d31db61f86c73b8aecbaf788d43b0a2cc984121fd7244a2f7ca2a2a751437b8708acdd27cb86a260162e866c40f6015f14d52beb3a85e9ae2efd6f44b73f3  android_platform_system_core-7.0.0_r34.tar.gz
+967055ff34e1aa66cb76de0374be24810fab8a11b56a11c33fac0a7914def39884b1b6428b4deda5aa13a9f323d556479f25fa351220f2909c9fbfd72ca31a4b  Makefile"

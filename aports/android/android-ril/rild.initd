@@ -1,0 +1,18 @@
+#!/sbin/openrc-run
+# Copyright 1999-2009 Gentoo Foundation
+# Distributed under the terms of the GNU General Purpose License v2
+
+depend() {
+}
+
+start() {
+   ebegin "Starting Radio Interface Layer"
+   start-stop-daemon --start --quiet --exec /usr/sbin/rild
+   eend $?
+}
+
+stop() {
+   ebegin "Stopping Radio Interface Layer"
+   start-stop-daemon --stop --quiet --exec /usr/sbin/rild
+   eend $?
+}

@@ -1,0 +1,26 @@
+CC := gcc
+CFLAGS := -Wall -I../include/ -I. -fPIC
+
+PBSRC := ${wildcard proto/*.proto}
+SRC := ${wildcard *.c} $(PBSRC:%.proto=%.pb-c.c)
+OBJ := $(SRC:%.c=%.o)
+
+all: librilutils.so.1
+
+%.pb-c.c: %.proto
+	$(info PROTO $<)
+	@protoc --nanopb_out=. $<
+
+%.o: %.c
+	$(info CC $<)
+	@$(CC) -c -o $@ $< $(CFLAGS)
+
+librilutils.so.1: $(OBJ) $(PBOBJ)
+	$(info LD $@)
+	@$(CC) -shared -Wl,-soname,$@.so.1 -o $@.so.1 $^ $(CFLAGS)
+
+.PHONY: clean
+
+clean:
+	-rm -v *.o *.so proto/*.pb-c.*
+

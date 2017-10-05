@@ -1,0 +1,54 @@
+# NOTE: 8.x has a more complicated build process:
+# https://source.android.com/devices/architecture/hidl-cpp
+
+pkgname=android-ril
+pkgver=7.0.0_r34
+pkgrel=0
+pkgdesc="Radio Interface Layer Daemon"
+url="https://github.com/android/platform_hardware_ril"
+arch="all"
+license="APACHE2"
+depends=""
+makedepends="nanopb nanopb-dev android-libcutils-dev"
+options="!check"
+# subpackages="librilutils libril"
+source="
+	$pkgname-$pkgver.tar.gz::https://github.com/android/platform_hardware_ril/archive/android-${pkgver}.tar.gz
+	rild.initd
+	Makefile.libril
+	Makefile.librilutils
+	Makefile.rild
+	01_wake_lock_stub.patch
+"
+builddir="$srcdir"/platform_hardware_ril-android-$pkgver
+
+prepare() {
+	default_prepare
+	for i in librilutils libril rild; do
+		cp "$srcdir"/Makefile.$i "$builddir"/$i/Makefile
+	done
+}
+
+build() {
+	for i in librilutils libril rild; do
+		msg "Building $i"
+		cd "$builddir/$i"
+		make
+	done
+}
+
+package() {
+	cd "$builddir"
+
+	# OpenRC service
+	install -Dm755 "$srcdir/rild.initd" "$pkgdir/etc/init.d/rild"
+}
+
+
+
+sha512sums="7685958bbe628c761f568e0bd85f50ec6f7524945142c870aa1ad9ee5afc7e9db526b6aaa41fad71b584a7a048e1947c73ee8d61d588b0e5da5c8b56a30cc961  android-ril-7.0.0_r34.tar.gz
+f6b01eaf37412bfb5748a184f84b619a254d4a0bffc51613f74aef058fcea3f55d2e504ddacdf22463e2fca0ce71edc89be4e7de42fcc3761e2de8fc3a7316d5  rild.initd
+e85d424293b2bedc7b144cb29e8a0131b6ee385ec1c688a80b40d6836a93c4886b184c46880d74266f9c0b554be2b3da6c3836f3a6d05703f34c356ef284e970  Makefile.libril
+7a8b8da2aec6d91459c1641cf75f7a710b661814a4d447c58a361d67832d5237bbc6945be9a375a286b3137ef6bcd942689c1e0cc8c270b9fff91c2ca0ad1da7  Makefile.librilutils
+cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e  Makefile.rild
+5d0d7e79fc0454bf627917a8c9acd801760145c320a082933619f3eeb3f30bd832db7cab7d68f86e3b4217373ee6919365449af78675aea5005c53bb80594c6a  01_wake_lock_stub.patch"

@@ -1,0 +1,38 @@
+pkgname=nanopb
+pkgver=0.3.9
+pkgrel=1
+pkgdesc="Protocol Buffers with small code size"
+url="https://jpa.kapsi.fi/nanopb"
+arch="all"
+license="MIT"
+depends="py2-protobuf"
+makedepends="cmake python2 protobuf"
+subpackages="$pkgname-dev"
+source="$pkgname-$pkgver.tar.gz::https://github.com/nanopb/nanopb/archive/${pkgver}.tar.gz"
+options="!check"
+
+builddir="$srcdir"/$pkgname-$pkgver
+build() {
+	cd "$builddir"
+	cmake -DCMAKE_BUILD_TYPE=Release
+	make
+}
+
+package() {
+	cd "$builddir"
+
+	# Statically linked library
+	install -Dm644 libprotobuf-nanopb.a "$pkgdir"/usr/lib/libprotobuf-nanopb.a
+
+	# Header files
+	for i in *.h; do
+		install -Dm644 "$i" "$pkgdir/usr/include/$i"
+	done
+
+	# Protobuf plugin
+	for i in nanopb_generator.py protoc-gen-nanopb; do
+		install -Dm755 "generator/$i" "$pkgdir/usr/bin/$i"
+	done
+}
+
+sha512sums="1fa18d69ebfba2a58214beebd31fbbdd1edd71a19978754288adc09be6d5782feeb7bab2916448add2ab5bf7072d377101c7441b3e74619339dc545df3a73275  nanopb-0.3.9.tar.gz"

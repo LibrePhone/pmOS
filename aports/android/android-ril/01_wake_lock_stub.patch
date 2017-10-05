@@ -1,0 +1,24 @@
+diff --git a/include/hardware_legacy/power.h b/include/hardware_legacy/power.h
+new file mode 100644
+index 0000000..5aeb933
+--- /dev/null
++++ b/include/hardware_legacy/power.h
+@@ -0,0 +1,18 @@
++#pragma once
++// This is a stub for wake locks, so we don't need to compile
++// android_hardware_libhardware_legacy for now.
++
++#include <stdint.h>
++
++enum {
++	PARTIAL_WAKE_LOCK = 1,
++	FULL_WAKE_LOCK = 2
++};
++
++int acquire_wake_lock(int lock, const char* id) {
++	// STUB
++};
++
++int release_wake_lock(const char* id) {
++	// STUB
++};
