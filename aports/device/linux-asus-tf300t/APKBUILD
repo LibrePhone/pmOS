@@ -1,40 +1,25 @@
-# APKBUILD based on linux-vanilla aport. Changes:
-# - disabled module installation
-# - add !check !tracedeps
-# - package: just install zimage and kernel.release, because the kernel config
-#	does not generate modules or dtb files
-# - do not create -dev subpackage (makes no sense without module support)
-#
-# Kernel config based on: arch/arm/configs/lineageos_grouper_defconfig
-# Changes:
-# - enable devtmpfs (needed for udev -> touch support in weston)
-
 _vendor=asus
 _flavor=asus-tf300t
-_hash="e497b0370deea136cb41e9ae7ae3e979bd3cfe46"
+_hash="cf97102d099f78f3535b6da1209184002bfe6434"
 _config="config-${_flavor}.armhf"
 
 pkgname=linux-${_flavor}
-pkgver=3.1.0
+pkgver=4.14
 case $pkgver in
 	*.*.*)  _kernver=${pkgver%.*};;
 	*.*) _kernver=$pkgver;;
 esac
 pkgrel=1
 arch="armhf"
-pkgdesc="Asus Transformer Pad TF300T from LineageOS"
-url="https://github.com/LineageOS/android_kernel_asus_tf300t"
+pkgdesc="Asus Transformer Pad TF300T"
+url="https://rere.qmqm.pl/git/?p=linux"
 depends="postmarketos-mkinitfs"
 makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev xz"
 options="!strip !check !tracedeps"
 install=
 source="
-	$pkgname-$_hash.tar.gz::$url/archive/${_hash}.tar.gz
+	$pkgname-$_hash.tar.gz::$url;a=snapshot;h=${_hash};sf=tgz
 	$_config
-	compiler-gcc6.h
-	duplicate-return-address-definition.patch
-	timeconst_fix.patch
-	tegra-gcc5.patch
 "
 subpackages=""
 license="GPL2"
@@ -44,7 +29,7 @@ _carch="arm"
 HOSTCC="${CC:-gcc}"
 HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
 
-ksrcdir="$srcdir/android_kernel_asus_tf300t-${_hash}"
+ksrcdir="$srcdir/linux-cf97102"
 
 prepare() {
 	local _patch_failed=
@@ -70,7 +55,7 @@ prepare() {
 	fi
 
 	# gcc6 support
-	cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/"
+	# cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/"
 
 	mkdir -p "$srcdir"/build
 	cp "$srcdir"/$_config "$srcdir"/build/.config || return 1
@@ -96,16 +81,15 @@ build() {
 }
 
 package() {
-	install -Dm644 "$srcdir/build/arch/arm/boot/zImage" \
+	cd "$srcdir/build/arch/arm/boot"
+	cat zImage dts/tegra30-asus-tf300t.dtb > zImage-dtb
+	
+	install -Dm644 "$srcdir/build/arch/arm/boot/zImage-dtb" \
 		"$pkgdir/boot/vmlinuz-$_flavor"
 
 	install -D "$srcdir/build/include/config/kernel.release" \
 		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
 }
 
-sha512sums="4705f4cca7b91f0327eac4f3ed2715161e1b2bb6f3b755f522942fae01114ff4869a74508870d3f88a200b38652e3a6e4a5e25de641917700732ebc541af64e3  linux-asus-tf300t-e497b0370deea136cb41e9ae7ae3e979bd3cfe46.tar.gz
-bb85a3401f9ad2bf2832fcd312cda75342d7f8e28cea3e149de959866aa1fa21b0b7b5592c4ca008906f2afa8da3bcb69d031f583e058fa0b259632cc05b6b6c  config-asus-tf300t.armhf
-d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h
-9b15bf1f6cb66f54c785b0af6c9db8a7d63257e6fa3eeb0cbf47284334166aa6a7ff93e1b64ab69206c8047d64641199c0f5fcbc257bbe039263252fff45118e  duplicate-return-address-definition.patch
-a2bb98fb8d988bbb659cae00fbaca360828300e9b98b90aed5ee0dd839c3f740696df4094a9021b813cbada06820d115aabed581a47cdd2c947e8d853c20b145  timeconst_fix.patch
-a2f62a792be93a049f1f14e6bfd924849ebffa3b88ad1f11c3f0dc05faf847c5df8859121c3b2286733c067626dce6e73c9ab161aaf67752cd5bdf1b8875d6f4  tegra-gcc5.patch"
+sha512sums="db77d76b5122be436f1e13cadb87c53e0c6d342bca6985bf157711c9c2217c3472cbb3adb9014d47f0c9109545f148ad86888beb8b9220b5dc2d3cc707ee4800  linux-asus-tf300t-cf97102d099f78f3535b6da1209184002bfe6434.tar.gz
+91ef75ec4602f67d37d3cc6f84249a056771a8f87583ee6f4fe5cd75599e1199391ffa2ce721104ce3978a11327c08146b201a2871c0ffbfeb5e33febe420733  config-asus-tf300t.armhf"
