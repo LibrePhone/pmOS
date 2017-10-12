@@ -1,0 +1,23 @@
+pkgname=device-ouya-ouya
+pkgver=1
+pkgdesc="Ouya"
+pkgrel=5
+url="https://github.com/postmarketOS"
+arch="noarch"
+license="MIT"
+depends="linux-ouya-ouya mkbootimg"
+makedepends=""
+install=""
+subpackages=""
+source="deviceinfo fb.modes"
+options="!check"
+
+package() {
+	install -D -m644 "$srcdir/deviceinfo" \
+		"$pkgdir/etc/deviceinfo"
+	install -D -m644 "$srcdir"/fb.modes \
+		"$pkgdir/etc/fb.modes"
+}
+
+sha512sums="60c9aa95a15b4c8e48737636eb0f2a2e3a942e0c5ebd88beb3946262fc79b1a5e388cf31e12b253015fc59252234c4082fd63c57a92a1e65fef8eb448ce64e3f  deviceinfo
+bf442fac4dc0594e055ed7a7d8232b5c884e2e77543273e8c4f32b5fe3c199561c86d8a5f665e17406057ca7863fabb93e789fe5e168fcd89d2982e0046232ad  fb.modes"
