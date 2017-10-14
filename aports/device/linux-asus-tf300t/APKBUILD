@@ -54,9 +54,6 @@ prepare() {
 		return 1
 	fi
 
-	# gcc6 support
-	# cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/"
-
 	mkdir -p "$srcdir"/build
 	cp "$srcdir"/$_config "$srcdir"/build/.config || return 1
 	make -C "$ksrcdir" O="$srcdir"/build ARCH="$_carch" HOSTCC="$HOSTCC" \
@@ -92,4 +89,4 @@ package() {
 }
 
 sha512sums="db77d76b5122be436f1e13cadb87c53e0c6d342bca6985bf157711c9c2217c3472cbb3adb9014d47f0c9109545f148ad86888beb8b9220b5dc2d3cc707ee4800  linux-asus-tf300t-cf97102d099f78f3535b6da1209184002bfe6434.tar.gz
-91ef75ec4602f67d37d3cc6f84249a056771a8f87583ee6f4fe5cd75599e1199391ffa2ce721104ce3978a11327c08146b201a2871c0ffbfeb5e33febe420733  config-asus-tf300t.armhf"
+08a9c9ef2fa2a65b91ce598bd3ed81a6967668c7c25085a7ed94fb98004877ae4382978c0d79e3ca96de12cce2275be3d75d8cc530ac9c3ab7db3852c74c5f03  config-asus-tf300t.armhf"
