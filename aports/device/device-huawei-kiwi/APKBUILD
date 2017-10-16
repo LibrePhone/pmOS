@@ -1,0 +1,29 @@
+pkgname=device-huawei-kiwi
+pkgver=1
+pkgrel=3
+pkgdesc="Huawei honor 5X"
+url="https://github.com/postmarketOS"
+arch="noarch"
+license="MIT"
+depends="linux-huawei-kiwi mkbootimg"
+makedepends=""
+install=""
+subpackages=""
+source="
+	deviceinfo
+	90-touchscreen-dev.rules
+"
+options="!check"
+
+package() {
+
+	install -D -m644 "$srcdir"/deviceinfo \
+		"$pkgdir"/etc/deviceinfo
+
+
+	install -D -m644 "$srcdir"/90-touchscreen-dev.rules \
+		"$pkgdir"/etc/udev/rules.d/90-touchscreen-dev.rules
+}
+
+sha512sums="5326fdfcf9f1cc88d25886bf2fdc79d60c4ece8b6d81b164fb3df3d8c86adfcd12f70bc8164d3e5d8e4dc5cb6af02a7821f62a6d8e811a99d44278875c22969b  deviceinfo
+23414d84cbad63472372986c6ce7db0d98a56ab4c060434b62aef420ed3d6259a968fbbdbd4400663f712e33e6bb81a8424ec7667f9959a089b29b93e15156ea  90-touchscreen-dev.rules"

@@ -1,0 +1,117 @@
+# APKBUILD based on linux-vanilla aport. Changes:
+# - disabled module installation
+# - add !check !tracedeps
+# - add generation of master DTB with dtbTool
+# - package: just install zimage and kernel.release, because the kernel config
+#	does not generate modules or dtb files
+# - do not create -dev subpackage (makes no sense without module support)
+#
+# Kernel config based on: arch/arm64/configs/kiwi-64_defconfig
+# Changes:
+# - enable devtmpfs (needed for udev -> touch support in weston)
+# - change zImage to zImage-dtb for device trees
+
+_vendor=huawei
+_flavor=huawei-kiwi
+_hash="aee1c5c66304395d34670dd8438115ba06f8be70"
+_config="config-${_flavor}.aarch64"
+
+pkgname=linux-${_flavor}
+pkgver=3.10.73
+case $pkgver in
+	*.*.*)  _kernver=${pkgver%.*};;
+	*.*) _kernver=$pkgver;;
+esac
+pkgrel=3
+arch="aarch64"
+pkgdesc="LineageOS kernel for Huawei Honor 5X"
+url="https://github.com/LineageOS/android_kernel_huawei_kiwi"
+depends="postmarketos-mkinitfs"
+makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev python2 dtbtool"
+options="!strip !check !tracedeps"
+install=
+source="
+	$pkgname-$_hash.tar.gz::https://github.com/LineageOS/android_kernel_huawei_kiwi/archive/${_hash}.tar.gz
+	${_config}
+	compiler-gcc6.h
+	01_prima_gcc6.patch
+"
+subpackages=""
+license="GPL2"
+
+_abi_release=${pkgver}
+_carch="arm64"
+HOSTCC="${CC:-gcc}"
+HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
+
+ksrcdir="$srcdir/android_kernel_huawei_kiwi-${_hash}"
+
+prepare() {
+	local _patch_failed=
+	cd "$ksrcdir"
+
+	# first apply patches in specified order
+	for i in $source; do
+		case $i in
+		*.patch)
+			msg "Applying $i..."
+			if ! patch -s -p1 -N -i "$srcdir"/$i; then
+				echo $i >>failed
+				_patch_failed=1
+			fi
+			;;
+		esac
+	done
+
+	if ! [ -z "$_patch_failed" ]; then
+		error "The following patches failed:"
+		cat failed
+		return 1
+	fi
+
+	# gcc6 support
+	cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/"
+
+        mkdir -p "$srcdir"/build
+        cp "$srcdir"/$_config "$srcdir"/build/.config
+	echo "--[ silentoldconfig ]--"
+        yes "" | make -C "$ksrcdir" O="$srcdir"/build ARCH="$_carch" HOSTCC="$HOSTCC" \
+                oldconfig
+}
+
+
+
+# this is so we can do: 'abuild menuconfig' to reconfigure kernel
+menuconfig() {
+	cd "$srcdir"/build
+	echo "--[ menuconfig ]--"
+	make ARCH="$_carch" menuconfig
+	cp .config "$startdir"/$_config
+}
+
+build() {
+	cd "$srcdir"/build
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-Alpine" \
+		CONFIG_NO_ERROR_ON_MISMATCH=y
+	
+	dtbTool -s 2048 -p "scripts/dtc/" -o "arch/arm64/boot/dt.img" "arch/arm64/boot/"
+}
+
+package() {
+	install -Dm644 "$srcdir/build/arch/arm64/boot/Image.gz-dtb" \
+		"$pkgdir/boot/vmlinuz-$_flavor" 
+
+# Install master DTB
+	install -Dm644 "$srcdir/build/arch/arm64/boot/dt.img" \
+		"$pkgdir/boot/dt.img"
+
+	install -D "$srcdir/build/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+}
+
+sha512sums="0114f815a30660cad787486492338199c7cbdb239f0c7b6dc3c2ab747ddfd3b7e6f436a6cd29d664530e295a217307cd3cb7a3a58214940b771506b008d473be  linux-huawei-kiwi-aee1c5c66304395d34670dd8438115ba06f8be70.tar.gz
+dcf540a7159753ff09fa62ce09b90d570578044252f468967431926bf63a25acd41fdc54d414c94d86b7f0ebf2fe050105e21b5142a9f61f085632e28a43c640  config-huawei-kiwi.aarch64
+d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h
+19b1da3893affd629718e0231840e0417599aea6f166448c04713569ef01489f095181eb69f0047afd84f2037857b9a6e687b9905c975a7b160a3ff458ba0b58  01_prima_gcc6.patch"
