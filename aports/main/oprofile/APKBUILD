@@ -1,0 +1,34 @@
+pkgname=oprofile
+pkgver=1.2.0
+pkgrel=0
+pkgdesc="System-wide profiler for Linux systems"
+url="http://oprofile.sourceforge.net"
+arch="all"
+license="GPL2"
+depends=""
+makedepends="linux-headers popt-dev binutils-dev musl-dev"
+subpackages="$pkgname-doc"
+source="https://downloads.sourceforge.net/project/oprofile/oprofile/oprofile-$pkgver/oprofile-$pkgver.tar.gz musl.patch"
+options=""
+
+build() {
+	cd "$builddir"
+	./configure --prefix=/usr
+	make
+
+	# disable libregex testcase
+	printf "check:\ninstall:\n" > libregex/tests/Makefile
+}
+
+check() {
+	cd "$builddir"
+	make check
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="d642d9a8d71ad271a80d21806ffd8522613830f450a71dc531005e940f31f683936691898d381a31f8913715361db8c1713dfe3744a5f9214419349f6504717d  oprofile-1.2.0.tar.gz
+6366d9c6567e4d1fd28de774d98280beab091be42a16d081d07534d097b39ef0546639359ef74a123a77b8beccd490b8d20a19014b66894fc7009e4f5862dbb1  musl.patch"

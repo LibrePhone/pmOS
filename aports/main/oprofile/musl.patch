@@ -1,0 +1,46 @@
+loosely based on these two patches:
+https://github.com/openwrt/packages/commit/87b7d9075fb869086cdeee37de49907d9c65aec6
+https://github.com/openwrt/openwrt/commit/5c9f2944f4cf26a3b6b51efbfadabcc283bdce98
+
+--- a/pe_profiling/operf.cpp
++++ b/pe_profiling/operf.cpp
+@@ -860,9 +860,9 @@ static int __delete_old_previous_sample_data(const char *fpath,
+ {
+ 	if (remove(fpath)) {
+ 		perror("sample data removal error");
+-		return FTW_STOP;
++		return errno;
+ 	} else {
+-		return FTW_CONTINUE;
++		return 0;
+ 	}
+ }
+ 
+@@ -897,7 +897,7 @@ static void convert_sample_data(void)
+ 		return;
+ 
+ 	if (!operf_options::append) {
+-                int flags = FTW_DEPTH | FTW_ACTIONRETVAL;
++                int flags = FTW_DEPTH;
+ 		errno = 0;
+ 		if (nftw(previous_sampledir.c_str(), __delete_old_previous_sample_data, 32, flags) !=0 &&
+ 				errno != ENOENT) {
+--- a/pp/oparchive.cpp
++++ b/pp/oparchive.cpp
+@@ -16,6 +16,7 @@
+ #include <fstream>
+ #include <cstdlib>
+ 
++#include <libgen.h>
+ #include <errno.h>
+ #include <string.h>
+ #include <dirent.h>
+@@ -261,7 +262,7 @@ int oparchive(options::spec const & spec)
+ 		/* determine the session name of sample file */
+ 		int offset = sample_name.find('{');
+ 		string base_samples_dir = sample_name.substr(0, offset-1);
+-		string session = basename(base_samples_dir.c_str());
++		string session = basename((char *)base_samples_dir.c_str());
+ 		/* Get rid of the the archive_path from the name */
+ 		string sample_base = sample_name.substr(offset);
+ 		string sample_archive_file = dest_samples_dir + "/" + session + "/" + sample_base;
