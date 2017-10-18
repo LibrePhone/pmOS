@@ -1,0 +1,13 @@
+diff --git a/libutil++/op_bfd.cpp b/libutil++/op_bfd.cpp
+index af501bd..aee88de 100644
+--- a/libutil++/op_bfd.cpp
++++ b/libutil++/op_bfd.cpp
+@@ -415,7 +415,7 @@ void op_bfd::get_symbol_range(symbol_index_t sym_idx,
+ {
+ 	op_bfd_symbol const & sym = syms[sym_idx];
+ 
+-	bool const verbose = cverb << (vbfd & vlevel1);
++	bool const verbose = static_cast<bool>(cverb << (vbfd & vlevel1));
+ 
+ 	if (anon_obj)
+ 		start = sym.vma();

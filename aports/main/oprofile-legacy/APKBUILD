@@ -1,0 +1,39 @@
+_pkgname=oprofile
+pkgname=oprofile-legacy
+pkgver=0.9.9
+pkgrel=0
+pkgdesc="System-wide profiler for Linux systems (legacy release)"
+url="http://oprofile.sourceforge.net"
+arch="all"
+license="GPL2"
+depends=""
+makedepends="linux-headers popt-dev binutils-dev musl-dev"
+subpackages="$pkgname-doc"
+source="${_pkgname}-${pkgver}.tar.gz::https://downloads.sourceforge.net/project/oprofile/oprofile/oprofile-$pkgver/oprofile-$pkgver.tar.gz
+	0001-gcc6-cast-issue.patch
+	0002-musl.patch
+	"
+options="!check"
+builddir="${srcdir}/${_pkgname}-${pkgver}"
+build() {
+	cd "$builddir"
+	./configure --prefix=/usr CXXFLAGS="-DSYNTHESIZE_SYMBOLS=0" CFLAGS="-DSYNTHESIZE_SYMBOLS=0"
+	make
+
+	# disable libregex testcase
+	printf "check:\ninstall:\n" > libregex/tests/Makefile
+}
+
+check() {
+	cd "$builddir"
+	make check
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="98cc3d2c15744d02ed649833cf4797482aec73bd52653e916f80b490e17a8250d988c4c945e52dd8999a0d0603fec405e99c9570dfc54baa4992950fe4d8763f  oprofile-0.9.9.tar.gz
+68dcd487b36f416a8332efb83268b3d7ab0a5b60b4318527d5e8e9167eb704e3647a425222cd22f77a9513fc94087e8de1795c23df46ff75905cf06e06d87d1e  0001-gcc6-cast-issue.patch
+329c667bc2b2ce80a64c5460932dd0f9308daba050dda00e484bd1b061dfdbe82ae4868d5f9e463ab5b0018ef00073d1f995ce6d325f3bfcc955a86b2abe38ab  0002-musl.patch"
