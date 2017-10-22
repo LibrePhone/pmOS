@@ -33,6 +33,14 @@ package() {
 	for i in nanopb_generator.py protoc-gen-nanopb; do
 		install -Dm755 "generator/$i" "$pkgdir/usr/bin/$i"
 	done
+
+	# Protocol definitions for generator
+	make -C generator/proto
+	for i in __init__.py nanopb_pb2.py plugin_pb2.py; do
+		echo "installing $i"
+		install -Dm755 "generator/proto/$i" "$pkgdir/usr/lib/python2.7/proto/$i"
+	done
+
 }
 
 sha512sums="1fa18d69ebfba2a58214beebd31fbbdd1edd71a19978754288adc09be6d5782feeb7bab2916448add2ab5bf7072d377101c7441b3e74619339dc545df3a73275  nanopb-0.3.9.tar.gz"
