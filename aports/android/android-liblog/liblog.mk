@@ -9,7 +9,7 @@ CPPFLAGS += -Iinclude \
             -DLIBLOG_LOG_TAG=1005 \
             -DFAKE_LOG_DEVICE=1 \
             -DSNET_EVENT_LOG_TAG=1397638484 \
-			-fPIC
+            -fPIC
 LDFLAGS += -shared -Wl,-soname,$(NAME).so.0 -lpthread
 
 build: $(SOURCES)
