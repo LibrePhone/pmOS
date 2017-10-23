@@ -1,0 +1,35 @@
+pkgname=timekeep
+pkgver=r18
+pkgrel=0
+pkgdesc="small utility to keep track of time & date since the RTC driver on Qualcomm chipset is read-only."
+url="https://github.com/sonyxperiadev/timekeep"
+arch="all"
+license="BSD-3-Clause"
+depends="android-liblog"
+makedepends="android-liblog android-liblog-dev android-libcutils-dev"
+subpackages=""
+_commit=193d39a2411eb336717595b580a45a50f9a6d62d
+source="
+	https://raw.githubusercontent.com/sonyxperiadev/timekeep/$_commit/timekeep.c
+	00_timekeep.patch
+"
+options="!check"
+builddir="$srcdir"
+
+prepare() {
+	cd "$builddir"
+	patch --follow-symlinks -Np1 < "$srcdir"/00_timekeep.patch
+}
+
+build() {
+	cd "$builddir"
+	gcc -I/usr/include/android timekeep.c -L/usr/lib/android -llog -Wl,-rpath=/usr/lib/android -o timekeep
+}
+
+package() {
+	cd "$builddir"
+	install -Dm755 timekeep "$pkgdir"/usr/bin/timekeep
+}
+
+sha512sums="a8dd8275a2c71aba283b725bd3a817bd2937c037a914c0957e2254a4712164ab62764aed3641f2512dccf721afd31d7a20d1ecd892c158186ca61be26dc64d94  timekeep.c
+a68239756cc591a80d5af97dacfe31190526e74eda199e1d1fe543b52706f212c53ba6d4fcec090698f8ed89e96ce01aa8c75a4c6402c87f1b6df3924cdd0c04  00_timekeep.patch"

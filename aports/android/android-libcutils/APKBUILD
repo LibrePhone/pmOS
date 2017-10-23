@@ -1,0 +1,42 @@
+pkgname=android-libcutils
+pkgver=7.0.0_r34
+pkgrel=0
+pkgdesc="Android low-level utility library"
+url="https://github.com/android/platform_system_core"
+arch="all"
+license="APACHE2"
+depends=""
+makedepends="bsd-compat-headers android-liblog android-liblog-dev"
+options="!check"
+source="
+	android_platform_system_core-$pkgver.tar.gz::https://github.com/android/platform_system_core/archive/android-${pkgver}.tar.gz
+	libcutils.mk"
+_lib="cutils"
+subpackages="$pkgname-dev"
+builddir="$srcdir"/platform_system_core-android-$pkgver/
+
+prepare() {
+	cp "$srcdir"/libcutils.mk "$builddir"
+}
+
+build() {
+	cd "$builddir"
+	make -f libcutils.mk
+}
+
+package() {
+	# Library
+	_libs="lib${_lib}.so lib${_lib}.so.0"
+	for _l in $_libs; do
+		install -Dm644 "${builddir}/$_l" \
+			"${pkgdir}/usr/lib/android/$_l"
+	done
+
+	# Header files
+	mkdir -p "${pkgdir}/usr/include/android/"
+	cp -r "${srcdir}/platform_system_core-android-${pkgver}/include/${_lib}" \
+		"${pkgdir}/usr/include/android/"
+}
+
+sha512sums="f84d31db61f86c73b8aecbaf788d43b0a2cc984121fd7244a2f7ca2a2a751437b8708acdd27cb86a260162e866c40f6015f14d52beb3a85e9ae2efd6f44b73f3  android_platform_system_core-7.0.0_r34.tar.gz
+8ca413b5823638884311581dafeb8bfa88d48af9b7dc49ea52086008dea004336b4afc4e21b2808384766be4af971810688d1d6606e1386049377427bc3b6415  libcutils.mk"

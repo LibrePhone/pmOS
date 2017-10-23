@@ -1,0 +1,30 @@
+--- a/timekeep.c	2017-10-23 23:13:38.636123825 +0200
++++ b/timekeep.c	2017-10-23 23:07:14.420151708 +0200
+@@ -38,7 +38,7 @@
+ 
+ #define LOG_TAG "TimeKeep"
+ 
+-#include <cutils/properties.h>
++//#include <cutils/properties.h>
+ #include <cutils/log.h>
+ #include <errno.h>
+ 
+@@ -46,6 +46,18 @@
+ #define RTC_ATS_FILE "/data/time/ats_2"
+ #define TIME_ADJUST_PROP "persist.sys.timeadjust"
+ 
++#define PROPERTY_VALUE_MAX 92
++
++int property_set(char* prop, char* prop2) {
++	ALOGD("Setting prop...");
++	return 0;
++}
++
++int property_get(char* prop, char* prop2, char* default_) {
++	ALOGD("Getting prop...");
++	return 0;
++}
++
+ int read_epoch(unsigned long* epoch) {
+ 	int res = 0;
+ 
