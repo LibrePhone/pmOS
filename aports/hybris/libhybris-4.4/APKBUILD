@@ -1,0 +1,82 @@
+pkgname=libhybris-4.4
+_pkgname=libhybris
+pkgver=1263.013cf7e
+pkgrel=1
+arch="all"
+url="https://github.com/libhybris/libhybris"
+license="Apache"
+makedepends="autoconf automake libtool wayland-dev linux-headers bsd-compat-headers android-headers-4.4"
+depends_dev="bsd-compat-headers android-headers-4.4"
+_rev=059484e11848deffede2ff68c2e02acc2b2748bf
+source="$_pkgname-$_rev.tar.gz::https://github.com/NotKit/libhybris/archive/$_rev.tar.gz"
+pkgdesc="libhybris allows to use bionic-based HW adaptations"
+subpackages="$pkgname-dev $pkgname-egl $pkgname-gles $pkgname-libwayland-egl:_wayland"
+provides="_pkgname"
+options="!check !strip"
+
+builddir="$srcdir/$_pkgname-$_rev"
+
+build() {
+	cd "$builddir/hybris"
+
+	./autogen.sh \
+		--prefix=/usr \
+		--enable-wayland \
+		--enable-trace \
+		--enable-debug \
+		--enable-experimental \
+		--with-android-headers=/usr/include/android \
+		--with-default-hybris-ld-library-path=/usr/libexec/droid-hybris:/system/lib:/vendor/lib:/system/lib \
+		--enable-arch=arm \
+		--enable-property-cache
+	make
+}
+
+package() {
+	cd "$builddir/hybris"
+
+	make DESTDIR="${pkgdir}" install
+}
+
+egl() {
+	pkgdesc="libhybris libEGL runtime libraries"
+	install -d "$subpkgdir"/usr/lib
+	mv "$pkgdir"/usr/lib/libEGL.so.* \
+		"$subpkgdir"/usr/lib/
+}
+
+gles() {
+	pkgdesc="libhybris libGLESv2 runtime libraries"
+	install -d "$subpkgdir"/usr/lib
+	mv "$pkgdir"/usr/lib/libGLES*.so.* \
+		"$subpkgdir"/usr/lib/
+}
+
+_wayland() {
+	pkgdesc="libhybris libwayland-egl library"
+	mkdir -p "$subpkgdir"/usr/lib
+	mv "$pkgdir"/usr/lib/libwayland-egl.so.* "$subpkgdir"/usr/lib/ \
+		|| return 1
+}
+
+dev() {
+	default_dev
+
+	# Avoid conflicts with mesa-dev
+	rm -f "$subpkgdir"/usr/lib/lib*GL*.so
+	rm -f "$subpkgdir"/usr/lib/libwayland-egl.so
+
+	cd "$subpkgdir"/usr/lib/pkgconfig
+	rm -f egl.pc glesv*.pc wayland-egl.pc
+
+	cd "$subpkgdir"/usr/include
+	# Move libhybris-provided headers into hybris dir
+	mv CL EGL GLES GLES2 KHR VG hybris
+
+	# Symlink eglhybris.h
+	mkdir -p EGL
+	cd EGL
+	ln -s ../hybris/EGL/eglhybris.h .
+}
+
+sha512sums="24f60ad2f4def210bba26be15ada3bc188deb2824dfc6ad2d30aaf83c3d7052c0e626816e146380485be781ef75c2656d84e1b978cadbe0ec5d6f4023ac50736  libhybris-059484e11848deffede2ff68c2e02acc2b2748bf.tar.gz"
