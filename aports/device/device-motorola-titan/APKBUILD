@@ -1,6 +1,6 @@
 pkgname=device-motorola-titan
 pkgver=1
-pkgrel=17
+pkgrel=18
 pkgdesc="Motorola Moto G 2014"
 url="https://github.com/postmarketOS"
 arch="noarch"
@@ -9,7 +9,7 @@ depends="linux-motorola-titan firmware-motorola-titan mkbootimg msm-fb-refresher
 makedepends=""
 install="$pkgname.post-install"
 subpackages="$pkgname-weston"
-source="deviceinfo 90-android-touch-dev.rules profile.sh udev-v4l-hack.sh weston.ini"
+source="deviceinfo 90-android-touch-dev.rules fb.modes pointercal profile.sh udev-v4l-hack.sh weston.ini"
 options="!check"
 
 package() {
@@ -17,6 +17,10 @@ package() {
 		"$pkgdir/etc/deviceinfo"
 	install -Dm644 "$srcdir"/90-android-touch-dev.rules \
 		"$pkgdir"/etc/udev/rules.d/90-android-touch-dev.rules
+	install -Dm644 "$srcdir/fb.modes" \
+		"$pkgdir/etc/fb.modes"
+	install -Dm644 "$srcdir/pointercal" \
+		"$pkgdir/etc/pointercal"
 	install -Dm644 "$srcdir"/profile.sh \
 		"$pkgdir"/etc/profile.d/00-$pkgname.sh
 	install -Dm644 "$srcdir"/udev-v4l-hack.sh \
@@ -29,8 +33,10 @@ weston() {
 		"$subpkgdir"/etc/xdg/weston/weston.ini
 }
 
-sha512sums="0f975a652f6ad14fb51469d832467eec0ca8f873a827c92ee168153c256c98f0749c0f165239c6839b5854ae06b9f6e52c0f6217e3b96ed5427052facc1be30a  deviceinfo
+sha512sums="261378e28476a132de45aff0334fed4e81fc9aa357af3ce2fde65112b7630b3f9211c49e7692e7704b54980753238a35455e710135f893d6785abda78b412b43  deviceinfo
 8406968cd554393ea1e350967c80810d059de2b1d33ea1302e265780c1f0110d64cf15a68c2f374981a88906d0317315e0a71995c85fd5eaf93bb47ed427529c  90-android-touch-dev.rules
+0d61beca53f48f8c8fc0389baa2f2e5ae4447ca76af830794ee64b5e317780f275970a9e5ebb3f0a88104a951b6e2e226e1ae080c4cbac1bd8b091f5269b286f  fb.modes
+f7aed449704c9798d8c6de2213d1f650af02d553dfc2f3942e23409f9462926fa7f3ed1244b43289e6775b352ada42a4086d88cad64e28240bdd34cf8bdaca60  pointercal
 d04013c17caf77a87ebea167dbe48f7efa9c9d3123c5743d359f3ea8ccc6b268fa021535a4bf8291eb4a352f0c92f6eb527da0db340421f53bc1cc439a453306  profile.sh
 4f528656c4febb18742e89552dfe7fdc824ed4ad6ad2777d20b4f55040edd93d8e3ea657baabcdbe77bd0fb4bd3d23e5e0b2dae574f0df6723b2e26216ee81e1  udev-v4l-hack.sh
 4f321242005b4da012322a8e9bce14a3734281d6ab410f60e7c9c28a6df905876ccce65c3b914233f351118718ccd81b9be41724ee2099ca36d40b4cfff46b93  weston.ini"

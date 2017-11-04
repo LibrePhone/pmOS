@@ -15,9 +15,10 @@ deviceinfo_flash_methods="fastboot"
 deviceinfo_arch="armhf"
 deviceinfo_msm_refresher="true"
 
-# Splash screen
+# Device related
 deviceinfo_screen_width="720"
 deviceinfo_screen_height="1280"
+deviceinfo_dev_touchscreen="/dev/input/event4"
 
 # Fastboot related
 deviceinfo_flash_offset_kernel="0x00008000"
