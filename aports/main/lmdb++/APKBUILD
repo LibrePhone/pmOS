@@ -1,0 +1,25 @@
+pkgname=lmdb++
+_commit="0b43ca87d8cfabba392dfe884eb1edb83874de02"
+pkgver=0.9.14.0_git20160229
+pkgrel=0
+pkgdesc="C++11 wrapper for the LMDB embedded B+ tree database library"
+url="https://github.com/bendiken/lmdbxx"
+arch="noarch"
+license="Unlicense"
+depends=""
+makedepends=""
+source="$pkgname-$_commit.tar.gz::https://github.com/bendiken/lmdbxx/archive/$_commit.tar.gz"
+options="!check"
+subpackages="$pkgname-dev"
+
+builddir="$srcdir/lmdbxx-$_commit"
+build() {
+	make
+}
+
+package() {
+	cd "$builddir"
+	make PREFIX=/usr DESTDIR="${pkgdir}" install
+	install -m644 -D UNLICENSE $pkgdir/usr/share/licenses/$pkgname/LICENSE
+}
+sha512sums="025a945288a398b09549c91c98509a57912f8614c14b476e7c8d4fb0dc8fc1288fa1b3a33567cccea474277a1c48b3701f2df31e8a6acc851eb9549a9822f074  lmdb++-0b43ca87d8cfabba392dfe884eb1edb83874de02.tar.gz"

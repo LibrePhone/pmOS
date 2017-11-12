@@ -1,0 +1,56 @@
+pkgname=nheko
+_commit="4a912a2dff31468468b6fd544653e25c82568157"
+pkgver=0.0_git20171110
+pkgrel=0
+pkgdesc="Desktop client for the Matrix protocol"
+url="https://github.com/mujx/nheko"
+arch="all"
+license="GPL3"
+depends="fontconfig"
+makedepends="cmake gcc fontconfig qt5-qtbase-dev qt5-qttools-dev lmdb-dev lmdb++-dev"
+subpackages=""
+source="$pkgname-$_commit.tar.gz::https://github.com/mujx/nheko/archive/$_commit.tar.gz"
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	cd "$builddir"
+	if [ "$CBUILD" != "$CHOST" ]; then
+		CMAKE_CROSSOPTS="-DCMAKE_SYSTEM_NAME=Linux -DCMAKE_HOST_SYSTEM_NAME=Linux"
+	fi
+	cmake \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_LIBDIR=lib \
+		-DBUILD_SHARED_LIBS=True \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+		-DCMAKE_C_FLAGS="$CFLAGS" \
+		${CMAKE_CROSSOPTS}
+	make
+}
+
+package() {
+	cd "$builddir"
+	# Creating needed directories
+	install -dm755 "$pkgdir/usr/bin"
+	install -dm755 "$pkgdir/usr/share/pixmaps/"
+	install -dm755 "$pkgdir/usr/share/applications/"
+
+	# Program
+	install -Dm755 "nheko" "$pkgdir/usr/bin/nheko"
+
+	# Desktop launcher
+	install -Dm644 "resources/nheko-256.png" \
+		"$pkgdir/usr/share/pixmaps/nheko.png"
+	install -Dm644 "resources/nheko.desktop" \
+		"$pkgdir/usr/share/applications/nheko.desktop"
+
+	# Icons
+	local icon_size icon_dir
+	for icon_size in 16 32 48 64 128 256 512; do
+		icon_dir="$pkgdir/usr/share/icons/hicolor/${icon_size}x${icon_size}/apps"
+		install -Dm644 "resources/nheko-${icon_size}.png" \
+			"$icon_dir/nheko.png"
+	done
+}
+
+sha512sums="6b7738166a2240dd72a0babafd1ca2a256af20a1396db9d3e8603e060aafbbe24be63ecccd6859f36ac446f30c7426dbaf5bc5cd02087a32503a1725d4dce7db  nheko-4a912a2dff31468468b6fd544653e25c82568157.tar.gz"
