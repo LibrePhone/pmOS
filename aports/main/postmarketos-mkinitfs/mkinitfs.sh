@@ -337,6 +337,12 @@ if [ "${deviceinfo_msm_refresher}" == "true" ] && ! [ -e /usr/sbin/msm-fb-refres
 	exit 1
 fi
 
+if [ "${deviceinfo_bootimg_qcdt}" == "true" ] && ! [ -e /usr/bin/dtbTool ]; then
+	echo "ERROR: Please add dtbtool as dependency to your linux package,"
+	echo "or set bootimg_qcdt to false in your deviceinfo!"
+	exit 1
+fi
+
 # set up initfs in temp folder
 create_folders
 copy_files "$(get_modules)" "$tmpdir"
