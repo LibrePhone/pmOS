@@ -109,7 +109,7 @@ def generate_deviceinfo(args, pkgname, name, manufacturer, arch, has_keyboard,
     content_fastboot = """\
         deviceinfo_kernel_cmdline=""
         deviceinfo_generate_bootimg="true"
-        deviceinfo_bootimg_qcdt="false"
+        deviceinfo_bootimg_qcdt=""
         deviceinfo_flash_offset_base=""
         deviceinfo_flash_offset_kernel=""
         deviceinfo_flash_offset_ramdisk=""
