@@ -38,6 +38,8 @@ done
 # Set permissions and start the installation script
 chmod 755 "$CHROOT"/bin/*
 chmod 755 "$CHROOT"/lib/*
+export LD_LIBRARY_PATH='/lib'
+alias chroot="$CHROOT/lib/libc.musl-*.so.1 $CHROOT/bin/busybox chroot"
 chroot "$CHROOT" /bin/pmos_install || {
 	echo 'Installation script failed.'
 	echo 'Check /tmp/postmarketos/chroot/pmos.log for more information.'
