@@ -156,7 +156,7 @@ build_packages = ["abuild", "build-base", "ccache"]
 
 # fnmatch for supported pkgnames, that can be directly compiled inside
 # the native chroot and a cross-compiler, without using distcc
-build_cross_native = ["linux-*"]
+build_cross_native = ["linux-*", "qt5-qtwebchannel"]
 
 # Necessary kernel config options
 necessary_kconfig_options = {

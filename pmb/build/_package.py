@@ -190,7 +190,21 @@ def init_buildenv(args, apkbuild, arch, strict=False, force=False, cross=None,
         pmb.chroot.apk.install(args, ["distcc"], suffix=suffix,
                                build=False)
         pmb.chroot.distccd.start(args, arch)
-
+    if cross == "native":
+        makedepends_build = apkbuild["makedepends_build"]
+        if len(makedepends_build):
+            pmb.chroot.apk.install(args, makedepends_build,
+                                   "buildroot_" + arch)
+            target = args.work + "/chroot_native/mnt/buildroot_" + arch
+            source = args.work + "/chroot_buildroot_" + arch
+            pmb.helpers.mount.bind(args, source, target)
+        else:
+            logging.debug("NOTE: Cross-compiling in native mode, but"
+                          " without installing anything in the target"
+                          " arch chroot and without mounting it as"
+                          " sysroot inside the native chroot.")
+            logging.debug("NOTE: To do so, set the 'makedepends_build'"
+                          " in the APKBUILD.")
     return True
 
 
@@ -224,6 +238,21 @@ def run_abuild(args, apkbuild, arch, strict=False, force=False, cross=None,
         hostspec = pmb.parse.arch.alpine_to_hostspec(arch)
         env["CROSS_COMPILE"] = hostspec + "-"
         env["CC"] = hostspec + "-gcc"
+        if len(apkbuild["makedepends_build"]):
+            buildroot = "/mnt/buildroot_" + arch
+            env["CBUILDROOT"] = buildroot
+            env["CHOST"] = hostspec
+            env["CROSS_CFLAGS"] = "--sysroot=" + buildroot
+            env["CPPFLAGS"] = "--sysroot=" + buildroot
+            env["LDFLAGS"] = ("\"--sysroot=" + buildroot +
+                              " -L" + buildroot + "/lib" +
+                              " -L" + buildroot + "/usr/lib" +
+                              " -Wl," +
+                              "-rpath-link," + buildroot + "/lib," +
+                              "-rpath-link," + buildroot + "/usr/lib\"")
+            env["PKG_CONFIG_PATH"] = (buildroot + "/usr/lib/pkgconfig/:" +
+                                      buildroot + "/usr/share/pkgconfig")
+            env["PKG_CONFIG_SYSROOT_DIR"] = buildroot
     if cross == "distcc":
         env["PATH"] = "/usr/lib/distcc/bin:" + pmb.config.chroot_path
         env["DISTCC_HOSTS"] = "127.0.0.1:" + args.port_distccd

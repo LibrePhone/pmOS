@@ -13,7 +13,7 @@ arch="all"
 license="LGPLv2 with exceptions or GPLv3 with exceptions"
 options="!check" #upstream does not provide check
 depends="qt5-qtdeclarative qt5-qtquickcontrols2-dev"
-makedepends="qt5-qtbase-dev qt5-websockets-dev qt5-qtdeclarative-dev qt5-qtquickcontrols2-dev"
+makedepends_build="qt5-qtbase-dev qt5-websockets-dev qt5-qtdeclarative-dev qt5-qtquickcontrols2-dev"
 subpackages="$pkgname-dev"
 
 case $_pkgver in
