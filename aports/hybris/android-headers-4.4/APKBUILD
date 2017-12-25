@@ -20,10 +20,10 @@ package() {
   rpmextract.sh ../$_filename
 
   mkdir -p "${pkgdir}/usr/include"
-  cp -r "usr/lib/droid-devel/droid-headers" "${pkgdir}/usr/include/android"
+  cp -r "usr/lib/droid-devel/droid-headers" "${pkgdir}/usr/include/android-$pkgver"
 
-  install -Dm644 "$srcdir/android-headers.pc" "${pkgdir}/usr/lib/pkgconfig"
+  install -Dm644 "$srcdir/android-headers.pc" "${pkgdir}/usr/lib/pkgconfig/android-headers-$pkgver.pc"
 }
 
 sha512sums="48b1651c6cba972cb1eb9090ac715f0479c43e8ade28d5d6a390ddd8d8a20ebcea10bec8bc0bb50c8459bd7f86fc754f9913ce41695e73d7cbf2d8964c9ee592  droid-hal-maserati-devel-0.0.6-201709301630.armv7hl.rpm
-7a35307d5caf86c4b8861f587586102419f13bb352578b539c7533931a00d3c77b70e2d97e4031118596eda3e7c2050c0a41f2877e44a6da0639e1b4a5b93e43  android-headers.pc"
+331f2670da9ce2690225694196265a55e2f41c35a1a12b71a75de3478b3b266c215be9bd451ab5ea13d4802e9f7d4e1bab8aa006d0df81fc264b2a132a022640  android-headers.pc"
