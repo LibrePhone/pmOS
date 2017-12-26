@@ -249,6 +249,15 @@ def parse_apkindex(args):
             raise RuntimeError("Package not found in the APKINDEX: " +
                                args.package)
         result = result[args.package]
+
+    # Filter --depends
+    if args.depends:
+        result_new = {}
+        for pkgname, package in result.items():
+            if args.depends in package["depends"]:
+                result_new[pkgname] = package
+        result = result_new
+
     print(json.dumps(result, indent=4))
 
 

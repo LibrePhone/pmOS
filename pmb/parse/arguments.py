@@ -314,6 +314,9 @@ def arguments():
     parse_apkindex = sub.add_parser("parse_apkindex")
     parse_apkindex.add_argument("apkindex_path")
     parse_apkindex.add_argument("package", default=None, nargs="?")
+    parse_apkindex.add_argument("--depends", default=None, help="only list"
+                                " packages depending on a specific package"
+                                " (e.g. so:libstdc++.so.6)")
 
     # Action: config
     config = sub.add_parser("config",
