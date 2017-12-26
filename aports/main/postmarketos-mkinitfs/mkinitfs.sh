@@ -120,6 +120,7 @@ BINARIES_EXTRA="
 	/usr/sbin/parted
 	/usr/sbin/resize2fs
 	/usr/sbin/thd
+	/sbin/lvm
 "
 get_binaries()
 {

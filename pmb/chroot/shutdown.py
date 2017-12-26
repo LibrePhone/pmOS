@@ -74,6 +74,9 @@ def shutdown(args, only_install_related=False):
     pmb.helpers.mount.umount_all(args, args.work +
                                  "/chroot_native/mnt/install")
     shutdown_cryptsetup_device(args, "pm_crypt")
+    
+    # Deactivate the LVM logical volume
+    pmb.chroot.root(args, ["lvm", "lvchange", "-an", "pmOS_vg"], check=False)
 
     # Umount all losetup mounted images
     chroot = args.work + "/chroot_native"

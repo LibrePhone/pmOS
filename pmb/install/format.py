@@ -32,9 +32,22 @@ def format_and_mount_boot(args):
 
 
 def format_and_mount_root(args):
-    mountpoint = "/dev/mapper/pm_crypt"
     device = "/dev/installp2"
+
+    # Create LVM physical volume
+    pmb.chroot.root(args, ["pvcreate", device])
+    # Create LVM volume group
+    pmb.chroot.root(args, ["vgcreate", "pmOS_vg", device])
+    # Create LVM logical volume
+    pmb.chroot.root(args, ["lvcreate", "-l", "100%FREE", "-n", "pmOS_lv",
+                           "pmOS_vg"])
+    # Activate the LVM logical volume
+    pmb.chroot.root(args, ["vgchange", "-ay", "pmOS_vg"])
+
     if args.full_disk_encryption:
+        device = "/dev/pmOS_vg/pmOS_lv"
+        mountpoint = "/dev/mapper/pm_crypt"
+
         logging.info("(native) format " + device + " (root, luks), mount to " +
                      mountpoint)
         logging.info(
@@ -53,7 +66,7 @@ def format_and_mount_pm_crypt(args):
     if args.full_disk_encryption:
         device = "/dev/mapper/pm_crypt"
     else:
-        device = "/dev/installp2"
+        device = "/dev/pmOS_vg/pmOS_lv"
 
     # Format
     if not args.rsync:

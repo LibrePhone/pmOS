@@ -129,8 +129,16 @@ wait_root_partition() {
 	done
 }
 
-resize_root_partition() {
-	partition=$(find_root_partition)
+find_lvm_partition() {
+	lvm pvs -o vg_name,pv_name --noheadings --separator ':' | grep pmOS_vg | cut -d: -f2
+}
+
+find_lvm_lv_path() {
+	lvm lvs -o vg_name,lv_path --noheadings --separator ':' | grep pmOS_vg | cut -d: -f2
+}
+
+resize_and_activate_lvm() {
+	partition=$(find_lvm_partition)
 	# Only resize the partition if it's inside the device-mapper, which means
 	# that the partition is stored as a subpartition inside another one.
 	# In this case we want to resize it to use all the unused space of the 
@@ -143,10 +151,12 @@ resize_root_partition() {
 		if parted -s "$partition_dev" print free | tail -n2 | \
 			head -n1 | grep -qi "free space"; then
 			echo "Resize root partition ($partition)"
-			# unmount subpartition, resize and remount it
+			# Unmount subpartition, resize and remount it
 			kpartx -d "$partition"
 			parted -s "$partition_dev" resizepart 2 100%
 			kpartx -afs "$partition_dev"
+			# Resize LVM physical volume
+			lvm pvresize "$partition"
 		fi
 	fi
 	# Resize the root partition (non-subpartitions). Usually we do not want this,
@@ -156,7 +166,17 @@ resize_root_partition() {
 		echo "Resize root partition ($partition)"
 		parted -s "$(echo "$partition" | sed -E 's/p?2$//')" resizepart 2 100%
 		partprobe
+		# Resize LVM physical volume
+		lvm pvresize "$partition"
 	fi
+
+	lv_path=$(find_lvm_lv_path)
+
+	# Resize LVM logical volume
+	lvm lvresize -l +100%FREE $lv_path
+	
+	# Activate LVM logical volume
+	lvm lvchange -ay $lv_path
 }
 
 unlock_root_partition() {
