@@ -1,0 +1,64 @@
+pkgname=qt5-qpa-hwcomposer-plugin
+pkgver=5.6.2.1_git20170505
+pkgrel=0
+arch="armhf aarch64"
+url='https://github.com/mer-hybris/qt5-qpa-hwcomposer-plugin'
+license="LGPL"
+pkgdesc="Qt QPA plugin for Android hwcomposer"
+depends=""
+depends_dev=""
+makedepends="qt5-qtbase-dev eudev-dev mtdev-dev libhybris-dev"
+_commit=bb95d09b893761c25409363e15f7048739c436ba
+source="$pkgname-$_commit.tar.gz::https://github.com/mer-hybris/qt5-qpa-hwcomposer-plugin/archive/$_commit.tar.gz
+	0001-qt-5.7.0-support.patch
+	0002-qt-5.8.0.patch
+	0003-compatibility-with-upstream-qtbase-and-mer-qtbase.patch
+	0004-fix-aarch64-compilation.patch"
+
+if [ "$CARCH" == "armhf" ]; then
+	_vers="7.1 7.1-caf 4.4"
+elif [ "$CARCH" == "aarch64" ]; then
+	_vers="7.1 7.1-caf"
+fi
+
+for _ver in $_vers; do
+	subpackages="$subpackages $pkgname-$_ver:_specific"
+done
+
+builddir="$srcdir/$pkgname-$_commit"
+_tmppkgdir="$srcdir/tmpinstall"
+
+build() {
+	cd "$builddir/hwcomposer"
+	mkdir "$builddir/pkgconfig"
+
+	for _ver in $_vers; do
+		msg "building $pkgname-$_ver"
+
+		ln -sf /usr/lib/pkgconfig/android-headers-$_ver.pc "$builddir/pkgconfig/android-headers.pc"
+		export PKG_CONFIG_PATH="$builddir/pkgconfig"
+
+		qmake-qt5
+		make clean
+		make
+		make INSTALL_ROOT="${_tmppkgdir}/$pkgname-$_ver" install
+	done
+}
+
+package() {
+	cd "$builddir/hwcomposer"
+	make INSTALL_ROOT="$pkgdir" install
+	rm "$pkgdir/usr/lib/qt5/plugins/platforms/libhwcomposer.so"
+}
+
+_specific() {
+	_lib="qt5/plugins/platforms/libhwcomposer.so"
+	install -Dm644 "${_tmppkgdir}/${subpkgname}/usr/lib/${_lib}" \
+			"${subpkgdir}/usr/lib/${_lib}"
+}
+
+sha512sums="a16a3d78843db676af983daab5292e9af9221c4344faef4619da9155844aac17075043f3c20b7f354caab3718e2ca3af379039889f8badc278dbbcbcbf3ce78d  qt5-qpa-hwcomposer-plugin-bb95d09b893761c25409363e15f7048739c436ba.tar.gz
+642766bec945fd3af6e779607e2a567bb9aa6b8d4cbff035379122658ef60b76ecfc6df7c3aedfe19d0b4da6bb5e09490097dd7c22c10a9fa27325d9f7e97ac1  0001-qt-5.7.0-support.patch
+79f1af4c05cb8a1fea9d72e9fc88be5e0463194e65ecfbd69cd3a3ae3a9ddf11fe614e1b68558f70eb850529575c612da4cb4220ba206e5457a8cd07f290abf8  0002-qt-5.8.0.patch
+71e50a3b0c0b6fb8df92709a995aaba2f0abab6399e9664676c3ebe9390a239fd1195ca3129a524f93a31443bec5586851f0bdf803cfe70a83908180621b81da  0003-compatibility-with-upstream-qtbase-and-mer-qtbase.patch
+cb6d1330b087afc4e2ecad55004ed28c9453fc7a6ec4afbbc4f1608ccf25dac278d62f434e62643515ed6e92aabaa24c00008d75714bfe374d85976870dba962  0004-fix-aarch64-compilation.patch"

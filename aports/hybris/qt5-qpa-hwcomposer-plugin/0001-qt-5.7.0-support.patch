@@ -1,0 +1,29 @@
+From 42afb7d58f01ab6e63a1060724ade58fd504eb3d Mon Sep 17 00:00:00 2001
+From: mickybart <mickybart@pygoscelis.org>
+Date: Thu, 4 Aug 2016 15:54:30 -0400
+Subject: [PATCH 1/6] Qt 5.7.0 support
+
+remove compositor-private from pro file.
+This dependency was provided by QtWayland and is now renamed waylandcompositor-private.
+
+This dependency is not needed to compile the plugin
+---
+ hwcomposer/hwcomposer.pro | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/hwcomposer/hwcomposer.pro b/hwcomposer/hwcomposer.pro
+index c394286..1859033 100644
+--- a/hwcomposer/hwcomposer.pro
++++ b/hwcomposer/hwcomposer.pro
+@@ -28,7 +28,7 @@ SOURCES += hwcomposer_backend_v11.cpp
+ HEADERS += hwcomposer_backend_v11.h
+ 
+ 
+-QT += core-private compositor-private gui-private platformsupport-private dbus
++QT += core-private gui-private platformsupport-private dbus
+ 
+ DEFINES += QEGL_EXTRA_DEBUG
+ CONFIG += egl qpa/genericunixfontdatabase
+-- 
+2.15.1
+
