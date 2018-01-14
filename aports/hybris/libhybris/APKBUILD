@@ -12,11 +12,19 @@ _rev=54dd4749706334882f9c404fca01a19f01325d07
 source="$pkgname-$_rev.tar.gz::https://github.com/libhybris/libhybris/archive/$_rev.tar.gz
 	0001-Make-libhybris-compile-with-musl.patch
 	0002-tests-Regression-test-for-EGL-glibc-TLS-conflict.patch
-	0003-Implement-X11-EGL-platform-based-on-wayland-code.patch"
+	0003-Implement-X11-EGL-platform-based-on-wayland-code.patch
+	0004-mtk-test_hwcomposer-fix.patch
+	0005-dont-hardcode-libhardware-path.patch"
 
 pkgdesc="libhybris allows to use bionic-based HW adaptations"
 subpackages="$pkgname-dev $pkgname-egl $pkgname-gles $pkgname-libwayland-egl:_wayland
 	$pkgname-7.1:_specific $pkgname-7.1-caf:_specific $pkgname-4.4:_specific"
+
+if [ "$CARCH" == "aarch64" ]; then
+subpackages="$pkgname-dev $pkgname-egl $pkgname-gles $pkgname-libwayland-egl:_wayland
+	$pkgname-7.1:_specific $pkgname-7.1-caf:_specific"
+fi
+
 options="!check !strip"
 
 builddir="$srcdir/$pkgname-$_rev"
@@ -42,7 +50,17 @@ build() {
 
 	NOCONFIGURE=1 ./autogen.sh
 
-	for _headers_ver in 7.1 7.1-caf 4.4; do
+	if [ "$CARCH" == "armhf" ]; then
+        _vers="7.1 7.1-caf 4.4"
+        _ldpath="/usr/libexec/droid-hybris/system/lib:/vendor/lib:/system/lib"
+        _arch="arm"
+	elif [ "$CARCH" == "aarch64" ]; then
+        _vers="7.1 7.1-caf"
+        _ldpath="/usr/libexec/droid-hybris/system/lib64:/vendor/lib64:/system/lib64"
+        _arch="arm64"
+    fi
+
+	for _headers_ver in $_vers; do
 		msg "building $pkgname-$_headers_ver"
 		./configure \
 			--prefix=/usr \
@@ -51,8 +69,8 @@ build() {
 			--enable-debug \
 			--enable-experimental \
 			--with-android-headers=/usr/include/android-$_headers_ver \
-			--with-default-hybris-ld-library-path=/usr/libexec/droid-hybris:/system/lib:/vendor/lib:/system/lib \
-			--enable-arch=arm \
+			--with-default-hybris-ld-library-path=$_ldpath \
+			--enable-arch=$_arch \
 			--enable-property-cache
 		make DESTDIR="${_tmppkgdir}/$pkgname-$_headers_ver" install
 	done
@@ -87,6 +105,7 @@ _specific() {
 }
 
 egl() {
+	options="!tracedeps"
 	pkgdesc="libhybris libEGL runtime libraries"
 	install -d "$subpkgdir"/usr/lib
 	mv "$pkgdir"/usr/lib/libEGL.so.* \
@@ -94,6 +113,7 @@ egl() {
 }
 
 gles() {
+	options="!tracedeps"
 	pkgdesc="libhybris libGLESv2 runtime libraries"
 	install -d "$subpkgdir"/usr/lib
 	mv "$pkgdir"/usr/lib/libGLES*.so.* \
@@ -128,6 +148,8 @@ dev() {
 }
 
 sha512sums="798360130e540d9dd29ec937b3d01a1b146881c45ec6a2dd1a599a0164d46886b58927d38575993b525a06e99fcc2dd46f020e70f7e5c7cc43258b840ae183f8  libhybris-54dd4749706334882f9c404fca01a19f01325d07.tar.gz
-9825449ea88f0038bc66f499684bf891720f095b7138ce0b8bbe1d98e8401f148e67902c7e6c67777f5671e0e6822bc4857856e3446f89f54609b7c1794aa19e  0001-Make-libhybris-compile-with-musl.patch
-3a6317fa56d2398180667d80201b7c825a50993318b6bc6f2483e58487a27d4786ef86072a69fbbd32f1ad3a9aa1c0d467c6ed2503a779255da39f6aa92d37c8  0002-tests-Regression-test-for-EGL-glibc-TLS-conflict.patch
-aefa206d577114173e05a7f4fc0677232864ec93bd40be30f247df2e9b938fd03da38b703987a6b43d9fd9165a0072533f53825e8bd9cda00c463e38a0a512d2  0003-Implement-X11-EGL-platform-based-on-wayland-code.patch"
+065d0f4f5db08b0aa240672fed5a498c2fa05677c0c3c3929edb27ca6d2077ddb310f9a1d1dd3167c72edc4540c6cd6a6ee0aef36334fa78b132f3e19cd5a198  0001-Make-libhybris-compile-with-musl.patch
+c9a14fa22b2799cc2f8c4ac7103e6c5484a2d91e7a92c5361e7e6c8b372f378ccd39913e941796c4edabfa70dc2518141e48da8b61dd5c570679d182fc6c6ea0  0002-tests-Regression-test-for-EGL-glibc-TLS-conflict.patch
+6c5aca2213a5ef29973d717d3bb25b4c9c845c6614769e805cd3bdd4282f418a7dda17ad3382e09b45e83826b320339a520904a998a62797f32782b0a049fda6  0003-Implement-X11-EGL-platform-based-on-wayland-code.patch
+30a5fbee8bc6c6b5590cb0e8adbbced2fbea80d8ce094c2cf79a776deb3ba012489fc779d51157bb56e08daaacab68bb4333223dea791d72d583f79813bcd7a8  0004-mtk-test_hwcomposer-fix.patch
+88a26d6c56c2b3871fa2b6c724180846d03482b0a25e7fec45c69f48ed530b7c8a253987e6ece95cdebbad79fd981e8ed4c69f796e2130b91c09fd04bfc3513e  0005-dont-hardcode-libhardware-path.patch"

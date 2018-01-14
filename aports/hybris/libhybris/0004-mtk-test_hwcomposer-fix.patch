@@ -1,0 +1,31 @@
+From dc40287f1c38b427e6686904968e0f0385b6df06 Mon Sep 17 00:00:00 2001
+From: NeKit <nekit1000@gmail.com>
+Date: Fri, 10 Nov 2017 23:03:53 +0300
+Subject: [PATCH] Assign the layer list only to the first display
+
+It's done the same way in
+https://github.com/mer-hybris/qt5-qpa-hwcomposer-plugin/blob/master/hwcomposer/hwcomposer_backend_v11.cpp#L229
+
+This fixes test_hwcomposer on MediaTek Helio X10, as otherwise HWC will freeze
+if there are no other displays connected.
+---
+ hybris/tests/test_hwcomposer.cpp | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/hybris/tests/test_hwcomposer.cpp b/hybris/tests/test_hwcomposer.cpp
+index 0186342a..2253d503 100644
+--- a/hybris/tests/test_hwcomposer.cpp
++++ b/hybris/tests/test_hwcomposer.cpp
+@@ -218,7 +218,11 @@ int main(int argc, char **argv)
+ 
+ 	int counter = 0;
+ 	for (; counter < HWC_NUM_DISPLAY_TYPES; counter++)
+-		mList[counter] = list;
++		mList[counter] = NULL;
++
++	// Assign the layer list only to the first display,
++	// otherwise HWC might freeze if others are disconnected
++	mList[0] = list;
+ 
+ 	hwc_layer_1_t *layer = &list->hwLayers[0];
+ 	memset(layer, 0, sizeof(hwc_layer_1_t));

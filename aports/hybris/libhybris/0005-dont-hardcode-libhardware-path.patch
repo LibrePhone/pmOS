@@ -1,0 +1,13 @@
+diff --git a/hybris/hardware/hardware.c b/hybris/hardware/hardware.c
+index 74b6b20..0b19b6e 100644
+--- a/hybris/hardware/hardware.c
++++ b/hybris/hardware/hardware.c
+@@ -22,7 +22,7 @@
+ #include <hybris/common/binding.h>
+ 
+ #pragma GCC visibility push(hidden)
+-HYBRIS_LIBRARY_INITIALIZE(hardware, "/system/lib/libhardware.so");
++HYBRIS_LIBRARY_INITIALIZE(hardware, "libhardware.so");
+ #pragma GCC visibility pop
+ 
+ HYBRIS_IMPLEMENT_FUNCTION2(hardware, int, hw_get_module, const char *, const struct hw_module_t **);

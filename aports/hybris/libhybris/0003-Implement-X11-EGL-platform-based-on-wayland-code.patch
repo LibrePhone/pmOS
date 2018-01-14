@@ -1,4 +1,4 @@
-From e07a2814dc5bcc97b24a7926b93256c588b202e2 Mon Sep 17 00:00:00 2001
+From 02d5583f68c0f751eba4ddf36dda6073c112630b Mon Sep 17 00:00:00 2001
 From: NeKit <nekit1000@gmail.com>
 Date: Wed, 18 Oct 2017 23:12:51 +0300
 Subject: [PATCH 3/3] Implement X11 EGL platform based on wayland code.
@@ -465,8 +465,8 @@ index 0000000..6c7be45
 +    this->m_connection = XGetXCBConnection(xl_display);
 +    this->m_image = 0;
 +    this->m_useShm = true;
-+    this->m_format = HAL_PIXEL_FORMAT_BGRA_8888;
-+    //this->m_format = HAL_PIXEL_FORMAT_RGBA_8888;
++    //this->m_format = HAL_PIXEL_FORMAT_BGRA_8888;
++    this->m_format = HAL_PIXEL_FORMAT_RGBA_8888;
 +
 +    const_cast<int&>(ANativeWindow::minSwapInterval) = 0;
 +    const_cast<int&>(ANativeWindow::maxSwapInterval) = 1;
@@ -877,14 +877,14 @@ index 0000000..6c7be45
 +}
 +
 +int X11NativeWindow::setBuffersFormat(int format) {
-+//     if (format != m_format)
-+//     {
-+//         TRACE("old-format:x%x new-format:x%x", m_format, format);
-+//         m_format = format;
-+//         /* Buffers will be re-allocated when dequeued */
-+//     } else {
-+//         TRACE("format:x%x", format);
-+//     }
++    if (format != m_format)
++    {
++        TRACE("old-format:x%x new-format:x%x", m_format, format);
++        m_format = format;
++        /* Buffers will be re-allocated when dequeued */
++    } else {
++        TRACE("format:x%x", format);
++    }
 +    return NO_ERROR;
 +}
 +
@@ -1669,5 +1669,5 @@ index c4811c0..92b221a 100644
  
  #endif
 -- 
-2.13.2
+2.15.1
 
