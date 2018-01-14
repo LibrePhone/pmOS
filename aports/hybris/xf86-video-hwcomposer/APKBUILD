@@ -1,0 +1,69 @@
+pkgname=xf86-video-hwcomposer
+pkgver=1.0_git20180114
+pkgrel=0
+pkgdesc="X.Org driver for Android devices rendering through HWComposer API"
+url="https://github.com/NotKit/xf86-video-hwcomposer"
+arch="all"
+license="MIT"
+depends=
+makedepends="autoconf automake util-macros
+	xorg-server-dev libxi-dev fontsproto randrproto
+	videoproto renderproto xf86dgaproto glamor-hybris-dev libhybris-dev"
+_commit=ad7e6ccc174adaa0ba91da97f60136a918cf40f3
+source="$pkgname-$_commit.tar.gz::https://github.com/NotKit/$pkgname/archive/$_commit.tar.gz"
+
+subpackages="$pkgname-doc"
+
+if [ "$CARCH" == "armhf" ]; then
+	_vers="7.1 7.1-caf 4.4"
+	_arch="arm"
+elif [ "$CARCH" == "aarch64" ]; then
+	_vers="7.1 7.1-caf"
+fi
+
+for _ver in $_vers; do
+	subpackages="$subpackages $pkgname-$_ver:_specific"
+done
+
+builddir="$srcdir/$pkgname-$_commit"
+_tmppkgdir="$srcdir/tmpinstall"
+
+build() {
+	cd "$builddir"
+	export LDFLAGS="$LDFLAGS -Wl,-z,lazy"
+	export CPPFLAGS="$CPPFLAGS -I/usr/include/android-7.1 -DMESA_EGL_NO_X11_HEADERS"
+
+	NOCONFIGURE=1 ./autogen.sh
+
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--enable-drihybris \
+		--enable-glamor-hybris
+
+	for _ver in $_vers; do
+		msg "building $pkgname-$_ver"
+
+		for _makefile in "Makefile src/Makefile"; do
+			sed -i -E "s~/usr/include/android-[^ ]+~/usr/include/android-$_ver~g" $_makefile
+		done
+
+		make clean
+		make
+		make DESTDIR="${_tmppkgdir}/$pkgname-$_ver" install
+	done
+}
+
+package() {
+	cd "$builddir"
+	install -Dm644 COPYING "$pkgdir"/usr/share/licenses/$pkgname/COPYING
+}
+
+_specific() {
+	_lib="xorg/modules/drivers/hwcomposer_drv.so"
+	install -Dm644 "${_tmppkgdir}/${subpkgname}/usr/lib/${_lib}" \
+			"${subpkgdir}/usr/lib/${_lib}"
+}
+
+sha512sums="0f08e9742ed460daf196febaa6aa2b2c640a0b6503baa1d12098fd3cd97a31769ec656916a34f135b0e554c30ac9efaa61766032edffd24b95c2cd7a862f9cfa  xf86-video-hwcomposer-ad7e6ccc174adaa0ba91da97f60136a918cf40f3.tar.gz"
