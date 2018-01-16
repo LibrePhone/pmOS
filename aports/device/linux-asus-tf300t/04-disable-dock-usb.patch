@@ -1,0 +1,13 @@
+diff --git a/drivers/input/asusec/asusdec.h b/drivers/input/asusec/asusdec.h
+index da1defb..557cb2e 100644
+--- a/drivers/input/asusec/asusdec.h
++++ b/drivers/input/asusec/asusdec.h
+@@ -12,7 +12,7 @@
+ #define TOUCHPAD_MODE			1	// 0: relative mode, 1: absolute mode
+ #define TOUCHPAD_ELAN			1	// 0: not elan, 1:elantech
+ #define DOCK_SPEAKER			0	// 0: not ready, 1: ready
+-#define DOCK_USB				1	// 0: not ready, 1: ready
++#define DOCK_USB				0	// 0: not ready, 1: ready
+ #define BATTERY_DRIVER			1	// 0: not ready, 1: ready
+ #define AUDIO_DOCK_STAND		1	// 0: not ready, 1: ready
+ /*

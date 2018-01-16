@@ -1,10 +1,10 @@
 _vendor=asus
 _flavor=asus-tf300t
-_hash="cf97102d099f78f3535b6da1209184002bfe6434"
+_hash="e497b0370deea136cb41e9ae7ae3e979bd3cfe46"
 _config="config-${_flavor}.armhf"
 
 pkgname=linux-${_flavor}
-pkgver=4.14
+pkgver=3.1.0
 case $pkgver in
 	*.*.*)  _kernver=${pkgver%.*};;
 	*.*) _kernver=$pkgver;;
@@ -12,14 +12,20 @@ esac
 pkgrel=1
 arch="armhf"
 pkgdesc="Asus Transformer Pad TF300T"
-url="https://rere.qmqm.pl/git/?p=linux"
+url="https://github.com/LineageOS/android_kernel_asus_tf300t"
 depends="postmarketos-mkinitfs"
 makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev xz"
 options="!strip !check !tracedeps"
 install=
 source="
-	$pkgname-$_hash.tar.gz::$url;a=snapshot;h=${_hash};sf=tgz
+	$pkgname-$_hash.tar.gz::https://github.com/LineageOS/android_kernel_asus_tf300t/archive/${_hash}.tar.gz
 	$_config
+	compiler-gcc6.h
+	00_fix_return_address.patch
+	01-fix-cardhu-include.patch
+	02_timeconst_fix.patch
+	03-tegra-gcc5.patch
+	04-disable-dock-usb.patch
 "
 subpackages=""
 license="GPL2"
@@ -29,64 +35,40 @@ _carch="arm"
 HOSTCC="${CC:-gcc}"
 HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
 
-ksrcdir="$srcdir/linux-cf97102"
+builddir="$srcdir/android_kernel_asus_tf300t-${_hash}"
 
 prepare() {
-	local _patch_failed=
-	cd "$ksrcdir"
+        default_prepare
 
-	# first apply patches in specified order
-	for i in $source; do
-		case $i in
-		*.patch)
-			msg "Applying $i..."
-			if ! patch -s -p1 -N -i "$srcdir"/$i; then
-				echo $i >>failed
-				_patch_failed=1
-			fi
-			;;
-		esac
-	done
+        # gcc6 support
+        cp -v "$srcdir/compiler-gcc6.h" "$builddir/include/linux/"
 
-	if ! [ -z "$_patch_failed" ]; then
-		error "The following patches failed:"
-		cat failed
-		return 1
-	fi
-
-	mkdir -p "$srcdir"/build
-	cp "$srcdir"/$_config "$srcdir"/build/.config || return 1
-	make -C "$ksrcdir" O="$srcdir"/build ARCH="$_carch" HOSTCC="$HOSTCC" \
-		silentoldconfig
+        cp "$srcdir"/$_config "$builddir"/.config
+        make ARCH="$_carch" HOSTCC="$HOSTCC" silentoldconfig
 }
 
-
-
-# this is so we can do: 'abuild menuconfig' to reconfigure kernel
 menuconfig() {
-	cd "$srcdir"/build || return 1
-	make ARCH="$_carch" menuconfig
-	cp .config "$startdir"/$_config
+        cd "$builddir"
+        make ARCH="$_carch" menuconfig
+        cp .config "$startdir"/$_config
 }
 
 build() {
-	cd "$srcdir"/build
-	unset LDFLAGS
-	make ARCH="$_carch" CC="${CC:-gcc}" \
-		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-Alpine" \
-		|| return 1
+        unset LDFLAGS
+        make ARCH="$_carch" CC="${CC:-gcc}" \
+                KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-Alpine"
 }
 
 package() {
-	cd "$srcdir/build/arch/arm/boot"
-	cat zImage dts/tegra30-asus-tf300t.dtb > zImage-dtb
-	
-	install -Dm644 "$srcdir/build/arch/arm/boot/zImage-dtb" \
-		"$pkgdir/boot/vmlinuz-$_flavor"
+        install -Dm644 "$builddir/arch/arm/boot/zImage" \
+                "$pkgdir/boot/vmlinuz-$_flavor"
 
-	install -D "$srcdir/build/include/config/kernel.release" \
-		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+        install -D "$builddir/include/config/kernel.release" \
+                "$pkgdir/usr/share/kernel/$_flavor/kernel.release"
 }
-
-sha512sums="db77d76b5122be436f1e13cadb87c53e0c6d342bca6985bf157711c9c2217c3472cbb3adb9014d47f0c9109545f148ad86888beb8b9220b5dc2d3cc707ee4800  linux-asus-tf300t-cf97102d099f78f3535b6da1209184002bfe6434.tar.gz
-08a9c9ef2fa2a65b91ce598bd3ed81a6967668c7c25085a7ed94fb98004877ae4382978c0d79e3ca96de12cce2275be3d75d8cc530ac9c3ab7db3852c74c5f03  config-asus-tf300t.armhf"
+sha512sums="5f4edd04f895025f3c55148b1f411135c0688df92326324ea9ea7367bf123dbddcb175d6c894c4913e54df26d4b9870fa7d8cf76160bc2b5262d37eb214c4b96  linux-asus-tf300t-e497b0370deea136cb41e9ae7ae3e979bd3cfe46.tar.gz
+2b90d4b2f6f0a0c4bec1ca4ddaf092afbfab74f4d34c8a7d42c298795d9c283d826fe6b5c8ce7b3605ae1ea6508443b96e04dd835da9932ff97e9f77e35985a0  config-asus-tf300t.armhf
+d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h
+ea1d3b5a234fa565e3c1a792de48f4fc4e6023d281d303c8e319c7ef28edc5739ab0e4dea0139a41f0a5c7d03e27921ccaa214fd0ac5c72245a094ce60128864  00_fix_return_address.patch
+a2bb98fb8d988bbb659cae00fbaca360828300e9b98b90aed5ee0dd839c3f740696df4094a9021b813cbada06820d115aabed581a47cdd2c947e8d853c20b145  02_timeconst_fix.patch
+a2f62a792be93a049f1f14e6bfd924849ebffa3b88ad1f11c3f0dc05faf847c5df8859121c3b2286733c067626dce6e73c9ab161aaf67752cd5bdf1b8875d6f4  03-tegra-gcc5.patch"

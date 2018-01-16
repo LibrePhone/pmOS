@@ -1,0 +1,13 @@
+diff --git a/arch/arm/mach-tegra/pm-irq.c b/arch/arm/mach-tegra/pm-irq.c
+index 138d7d03..973e29f7 100644
+--- a/arch/arm/mach-tegra/pm-irq.c
++++ b/arch/arm/mach-tegra/pm-irq.c
+@@ -110,7 +110,7 @@ static inline void write_pmc_wake_level(u64 value)
+ #endif
+ }
+ 
+-inline u64 read_pmc_wake_status(void)
++extern inline u64 read_pmc_wake_status(void)
+ {
+ 	u64 reg;
+ 
