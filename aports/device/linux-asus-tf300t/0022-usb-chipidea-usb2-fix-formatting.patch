@@ -1,0 +1,34 @@
+From 48b57ec1414d927d5f6ffc163047c17ccc4cb729 Mon Sep 17 00:00:00 2001
+Message-Id: <48b57ec1414d927d5f6ffc163047c17ccc4cb729.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 05:43:34 +0200
+Subject: [PATCH 22/52] usb: chipidea: usb2: fix formatting
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/usb/chipidea/ci_hdrc_usb2.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/chipidea/ci_hdrc_usb2.c b/drivers/usb/chipidea/ci_hdrc_usb2.c
+index 82c405dff6b8..5f5c57510c59 100644
+--- a/drivers/usb/chipidea/ci_hdrc_usb2.c
++++ b/drivers/usb/chipidea/ci_hdrc_usb2.c
+@@ -36,8 +36,8 @@ static const struct ci_hdrc_platform_data ci_zynq_pdata = {
+ };
+ 
+ static const struct of_device_id ci_hdrc_usb2_of_match[] = {
+-	{ .compatible = "chipidea,usb2"},
+-	{ .compatible = "xlnx,zynq-usb-2.20a", .data = &ci_zynq_pdata},
++	{ .compatible = "chipidea,usb2" },
++	{ .compatible = "xlnx,zynq-usb-2.20a", .data = &ci_zynq_pdata },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, ci_hdrc_usb2_of_match);
+-- 
+2.14.2
+

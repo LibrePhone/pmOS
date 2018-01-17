@@ -1,0 +1,135 @@
+From f049bc50cc060fedcfd925480b645d33dbaa00f7 Mon Sep 17 00:00:00 2001
+Message-Id: <f049bc50cc060fedcfd925480b645d33dbaa00f7.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Wed, 4 Oct 2017 22:09:43 +0200
+Subject: [PATCH 48/52] leds: add driver for LEDs on Asus TF300T
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Add driver for using tablet's built-in LEDs for custom indications.
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/leds/Kconfig       |  8 +++++
+ drivers/leds/Makefile      |  1 +
+ drivers/leds/leds-asusec.c | 74 ++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 83 insertions(+)
+ create mode 100644 drivers/leds/leds-asusec.c
+
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 52ea34e337cd..ece17bec2591 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -67,6 +67,14 @@ config LEDS_AS3645A
+ 	  controller. V4L2 flash API is provided as well if
+ 	  CONFIG_V4L2_FLASH_API is enabled.
+ 
++config LEDS_ASUSEC
++	tristate "LED Support for Asus Transformer charging LED"
++	depends on LEDS_CLASS
++	depends on MFD_ASUSEC
++	help
++	  This option enables support for charging indicator on
++	  Asus Transformer Pad and it's dock.
++
+ config LEDS_BCM6328
+ 	tristate "LED Support for Broadcom BCM6328"
+ 	depends on LEDS_CLASS
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index 7d7b26552923..ea0375e26cb4 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_LEDS_TRIGGERS)		+= led-triggers.o
+ obj-$(CONFIG_LEDS_88PM860X)		+= leds-88pm860x.o
+ obj-$(CONFIG_LEDS_AAT1290)		+= leds-aat1290.o
+ obj-$(CONFIG_LEDS_AS3645A)		+= leds-as3645a.o
++obj-$(CONFIG_LEDS_ASUSEC)		+= leds-asusec.o
+ obj-$(CONFIG_LEDS_BCM6328)		+= leds-bcm6328.o
+ obj-$(CONFIG_LEDS_BCM6358)		+= leds-bcm6358.o
+ obj-$(CONFIG_LEDS_BD2802)		+= leds-bd2802.o
+diff --git a/drivers/leds/leds-asusec.c b/drivers/leds/leds-asusec.c
+new file mode 100644
+index 000000000000..cb60ceb2a925
+--- /dev/null
++++ b/drivers/leds/leds-asusec.c
+@@ -0,0 +1,74 @@
++/*
++ * ASUS EC driver - battery LED
++ *
++ * Written by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
++ *
++ * Copyright (C) 2017 Michał Mirosław
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/leds.h>
++#include <linux/mfd/asusec.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++
++#define ASUSEC_CTL_LED_BLINK		(1ull << 0x28)		// 5.0
++#define ASUSEC_CTL_LED_ORANGE_ON	(1ull << 0x29)		// 5.1
++#define ASUSEC_CTL_LED_GREEN_ON		(1ull << 0x2A)		// 5.2
++#define ASUSEC_CTL_LED_TEST_MASK	(7ull << 0x28)
++
++static void asusec_led_set_brightness(struct led_classdev *led,
++				      enum led_brightness brightness)
++{
++	const struct asusec_info *ec = dev_get_drvdata(led->dev->parent);
++
++	if (brightness > 7)
++		brightness = 0;
++
++	// F[5] & 0x07
++	//  auto: brightness == 0
++	//  bit 0: blink / charger on?
++	//  bit 1: orange on
++	//  bit 2: green on
++	asusec_update_ctl(ec, ASUSEC_CTL_LED_TEST_MASK,
++			 (u64)brightness << 0x28);
++}
++
++static int asusec_led_probe(struct platform_device *dev)
++{
++	const struct asusec_info *ec = asusec_cell_to_ec(dev);
++	struct led_classdev *led;
++	int ret;
++
++	platform_set_drvdata(dev, (void *)ec);
++
++	led = devm_kzalloc(&dev->dev, sizeof(*led), GFP_KERNEL);
++	if (!led)
++		return -ENOMEM;
++
++	led->name = devm_kasprintf(&dev->dev, GFP_KERNEL,
++				   "%s_battery::charging", ec->name);
++	led->default_trigger = "default-off";
++	led->brightness_set = asusec_led_set_brightness;
++
++	ret = devm_led_classdev_register(&dev->dev, led);
++	if (ret)
++		dev_err(&dev->dev, "can't register LED: %d", ret);
++
++	return ret;
++}
++
++static struct platform_driver asusec_led_driver = {
++	.driver.name = "leds-asusec",
++	.probe = asusec_led_probe,
++};
++
++module_platform_driver(asusec_led_driver);
++
++MODULE_AUTHOR("Michał Mirosław <mirq-linux@rere.qmqm.pl>");
++MODULE_DESCRIPTION("ASUS Transformer's charging LED driver");
++MODULE_LICENSE("GPL");
+-- 
+2.14.2
+

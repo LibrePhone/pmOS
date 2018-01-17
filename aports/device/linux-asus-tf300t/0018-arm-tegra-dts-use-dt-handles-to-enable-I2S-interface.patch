@@ -1,0 +1,137 @@
+From 9f3c189bc1a52af2d5c4c2ee3bc42eef3241019d Mon Sep 17 00:00:00 2001
+Message-Id: <9f3c189bc1a52af2d5c4c2ee3bc42eef3241019d.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Sat, 12 Aug 2017 18:09:04 +0200
+Subject: [PATCH 18/52] arm: tegra: dts: use dt-handles to enable I2S
+ interfaces
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ arch/arm/boot/dts/tegra30-apalis.dtsi  | 11 +++++------
+ arch/arm/boot/dts/tegra30-beaver.dts   | 10 ++++------
+ arch/arm/boot/dts/tegra30-cardhu.dtsi  | 10 ++++------
+ arch/arm/boot/dts/tegra30-colibri.dtsi | 11 +++++------
+ 4 files changed, 18 insertions(+), 24 deletions(-)
+
+diff --git a/arch/arm/boot/dts/tegra30-apalis.dtsi b/arch/arm/boot/dts/tegra30-apalis.dtsi
+index 58fbc48d2242..506ab70b5303 100644
+--- a/arch/arm/boot/dts/tegra30-apalis.dtsi
++++ b/arch/arm/boot/dts/tegra30-apalis.dtsi
+@@ -446,12 +446,6 @@
+ 		nvidia,sys-clock-req-active-high;
+ 	};
+ 
+-	ahub@70080000 {
+-		i2s@70080500 {
+-			status = "okay";
+-		};
+-	};
+-
+ 	clocks {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -777,6 +771,11 @@ hdmiddc: &i2c4 {
+ 	};
+ };
+ 
++/* I2S2: SGTL5000 */
++&tegra_i2s2 {
++	status = "okay";
++};
++
+ /* eMMC */
+ &sdmmc4 {
+ 	status = "okay";
+diff --git a/arch/arm/boot/dts/tegra30-beaver.dts b/arch/arm/boot/dts/tegra30-beaver.dts
+index ccc120fa31f7..a866443b1634 100644
+--- a/arch/arm/boot/dts/tegra30-beaver.dts
++++ b/arch/arm/boot/dts/tegra30-beaver.dts
+@@ -1745,12 +1745,6 @@
+ 		nvidia,sys-clock-req-active-high;
+ 	};
+ 
+-	ahub@70080000 {
+-		i2s@70080400 {
+-			status = "okay";
+-		};
+-	};
+-
+ 	clocks {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -2076,6 +2070,10 @@ hdmiddc: &i2c4 {
+ 	};
+ };
+ 
++&tegra_i2s1 {
++	status = "okay";
++};
++
+ &sdmmc1 {
+ 	status = "okay";
+ 	vqmmc-supply = <&ldo5_reg>;
+diff --git a/arch/arm/boot/dts/tegra30-cardhu.dtsi b/arch/arm/boot/dts/tegra30-cardhu.dtsi
+index 7a8e5efd3cff..fd7c4491d02c 100644
+--- a/arch/arm/boot/dts/tegra30-cardhu.dtsi
++++ b/arch/arm/boot/dts/tegra30-cardhu.dtsi
+@@ -190,12 +190,6 @@
+ 		nvidia,sys-clock-req-active-high;
+ 	};
+ 
+-	ahub@70080000 {
+-		i2s@70080400 {
+-			status = "okay";
+-		};
+-	};
+-
+ 	backlight: backlight {
+ 		compatible = "pwm-backlight";
+ 
+@@ -627,6 +621,10 @@ panelddc: &i2c1 {
+ 	};
+ };
+ 
++&tegra_i2s1 {
++	status = "okay";
++};
++
+ &sdmmc1 {
+ 	status = "okay";
+ 	cd-gpios = <&gpio TEGRA_GPIO(I, 5) GPIO_ACTIVE_LOW>;
+diff --git a/arch/arm/boot/dts/tegra30-colibri.dtsi b/arch/arm/boot/dts/tegra30-colibri.dtsi
+index 45a57d4e85b8..caff1037815c 100644
+--- a/arch/arm/boot/dts/tegra30-colibri.dtsi
++++ b/arch/arm/boot/dts/tegra30-colibri.dtsi
+@@ -224,12 +224,6 @@
+ 		nvidia,sys-clock-req-active-high;
+ 	};
+ 
+-	ahub@70080000 {
+-		i2s@70080500 {
+-			status = "okay";
+-		};
+-	};
+-
+ 	clocks {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -505,6 +499,11 @@ hdmiddc: &i2c4 {
+ 	};
+ };
+ 
++/* SGTL5000 */
++&tegra_i2s2 {
++	status = "okay";
++};
++
+ /* eMMC */
+ &sdmmc4 {
+ 	status = "okay";
+-- 
+2.14.2
+

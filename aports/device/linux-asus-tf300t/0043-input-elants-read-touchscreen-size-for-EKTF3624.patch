@@ -1,0 +1,156 @@
+From b3bc6f121d242fe2ecd0b97b89356005408d98c5 Mon Sep 17 00:00:00 2001
+Message-Id: <b3bc6f121d242fe2ecd0b97b89356005408d98c5.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Tue, 19 Sep 2017 00:02:20 +0200
+Subject: [PATCH 43/52] input: elants: read touchscreen size for EKTF3624
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+EKTF3624 as present in Asus TF300T tablet has touchscreen size encoded
+in different registers.
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/input/touchscreen/elants_i2c.c | 74 +++++++++++++++++++++++++++++++---
+ 1 file changed, 68 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/input/touchscreen/elants_i2c.c b/drivers/input/touchscreen/elants_i2c.c
+index 2e499d2be99d..0f827641d0e3 100644
+--- a/drivers/input/touchscreen/elants_i2c.c
++++ b/drivers/input/touchscreen/elants_i2c.c
+@@ -27,7 +27,6 @@
+ #include <linux/module.h>
+ #include <linux/input.h>
+ #include <linux/interrupt.h>
+-#include <linux/platform_device.h>
+ #include <linux/async.h>
+ #include <linux/i2c.h>
+ #include <linux/delay.h>
+@@ -38,7 +37,7 @@
+ #include <linux/input/touchscreen.h>
+ #include <linux/input/mt.h>
+ #include <linux/acpi.h>
+-#include <linux/of.h>
++#include <linux/of_device.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/regulator/consumer.h>
+ #include <asm/unaligned.h>
+@@ -47,6 +46,10 @@
+ #define DEVICE_NAME	"elants_i2c"
+ #define DRV_VERSION	"1.0.9"
+ 
++/* Device IDs */
++#define EKTH3500	0
++#define EKTF3624	1
++
+ /* Convert from rows or columns into resolution */
+ #define ELAN_TS_RESOLUTION(n, m)   (((n) - 1) * (m))
+ 
+@@ -167,6 +170,7 @@ struct elants_data {
+ 
+ 	bool wake_irq_enabled;
+ 	bool keep_power_in_suspend;
++	u8 chip_id;
+ };
+ 
+ static int elants_i2c_send(struct i2c_client *client,
+@@ -437,7 +441,53 @@ static int elants_i2c_query_bc_version(struct elants_data *ts)
+ 	return 0;
+ }
+ 
+-static int elants_i2c_query_ts_info(struct elants_data *ts)
++static int elants_i2c_query_ts_info_ektf(struct elants_data *ts)
++{
++	struct i2c_client *client = ts->client;
++	int error;
++	u8 resp[4];
++	u16 phy_x, phy_y;
++	const u8 get_xres_cmd[] = {
++		CMD_HEADER_READ, E_INFO_X_RES, 0x00, 0x00
++	};
++	const u8 get_yres_cmd[] = {
++		CMD_HEADER_READ, E_INFO_Y_RES, 0x00, 0x00
++	};
++
++	/* Get X/Y size in mm */
++	error = elants_i2c_execute_command(client, get_xres_cmd,
++					   sizeof(get_xres_cmd),
++					   resp, sizeof(resp), 1,
++					   "get X size");
++	if (error)
++		return error;
++
++	phy_x = resp[2] | ((resp[3] & 0xF0) << 4);
++
++	error = elants_i2c_execute_command(client, get_yres_cmd,
++					   sizeof(get_yres_cmd),
++					   resp, sizeof(resp), 1,
++					   "get Y size");
++	if (error)
++		return error;
++
++	phy_y = resp[2] | ((resp[3] & 0xF0) << 4);
++
++	/* calculate resolution from size */
++	if (!ts->prop.max_x)
++		ts->prop.max_x = 2240;
++	ts->x_res = DIV_ROUND_CLOSEST(ts->prop.max_x, phy_x);
++
++	if (!ts->prop.max_y)
++		ts->prop.max_y = 1408;
++	ts->y_res = DIV_ROUND_CLOSEST(ts->prop.max_y, phy_y);
++
++	dev_dbg(&client->dev, "phy_x=%d, phy_y=%d\n", phy_x, phy_y);
++
++	return 0;
++}
++
++static int elants_i2c_query_ts_info_ekth(struct elants_data *ts)
+ {
+ 	struct i2c_client *client = ts->client;
+ 	int error;
+@@ -590,8 +640,16 @@ static int elants_i2c_initialize(struct elants_data *ts)
+ 		error = elants_i2c_query_test_version(ts);
+ 	if (!error)
+ 		error = elants_i2c_query_bc_version(ts);
+-	if (!error)
+-		error = elants_i2c_query_ts_info(ts);
++
++	if (!error) switch (ts->chip_id) {
++	case EKTH3500:
++	default:
++		error = elants_i2c_query_ts_info_ekth(ts);
++		break;
++	case EKTF3624:
++		error = elants_i2c_query_ts_info_ektf(ts);
++		break;
++	}
+ 
+ 	if (error)
+ 		ts->iap_mode = ELAN_IAP_RECOVERY;
+@@ -1191,6 +1249,9 @@ static int elants_i2c_probe(struct i2c_client *client,
+ 	ts->client = client;
+ 	i2c_set_clientdata(client, ts);
+ 
++	if (client->dev.of_node)
++		ts->chip_id = (uintptr_t)of_device_get_match_data(&client->dev);
++
+ 	ts->vcc33 = devm_regulator_get(&client->dev, "vcc33");
+ 	if (IS_ERR(ts->vcc33)) {
+ 		error = PTR_ERR(ts->vcc33);
+@@ -1429,7 +1490,8 @@ MODULE_DEVICE_TABLE(acpi, elants_acpi_id);
+ 
+ #ifdef CONFIG_OF
+ static const struct of_device_id elants_of_match[] = {
+-	{ .compatible = "elan,ekth3500" },
++	{ .compatible = "elan,ekth3500", .data = (void *)EKTH3500 },
++	{ .compatible = "elan,ektf3624", .data = (void *)EKTF3624 },
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(of, elants_of_match);
+-- 
+2.14.2
+

@@ -1,0 +1,46 @@
+From 6ac71933a28db3a0e01cb3b99afed5200fd03fb5 Mon Sep 17 00:00:00 2001
+Message-Id: <6ac71933a28db3a0e01cb3b99afed5200fd03fb5.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 06:11:28 +0200
+Subject: [PATCH 25/52] usb: chipidea: allow disabling Tegra UDC
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/usb/chipidea/Kconfig  | 6 ++++++
+ drivers/usb/chipidea/Makefile | 3 +--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/chipidea/Kconfig b/drivers/usb/chipidea/Kconfig
+index 3ce64b5b41cf..ac6dcd939769 100644
+--- a/drivers/usb/chipidea/Kconfig
++++ b/drivers/usb/chipidea/Kconfig
+@@ -54,4 +54,10 @@ config USB_CHIPIDEA_GENERIC
+ 	tristate "Enable generic USB2 glue driver" if EMBEDDED
+ 	default USB_CHIPIDEA
+ 
++config USB_CHIPIDEA_TEGRA
++	tristate "Enable Tegra UDC glue driver" if EMBEDDED
++	depends on OF
++	depends on USB_CHIPIDEA_UDC
++	default USB_CHIPIDEA
++
+ endif
+diff --git a/drivers/usb/chipidea/Makefile b/drivers/usb/chipidea/Makefile
+index b2ed00426a3f..49be06952a3f 100644
+--- a/drivers/usb/chipidea/Makefile
++++ b/drivers/usb/chipidea/Makefile
+@@ -12,5 +12,4 @@ obj-$(CONFIG_USB_CHIPIDEA_GENERIC)	+= ci_hdrc_usb2.o
+ obj-$(CONFIG_USB_CHIPIDEA_MSM)		+= ci_hdrc_msm.o
+ obj-$(CONFIG_USB_CHIPIDEA_PCI)		+= ci_hdrc_pci.o
+ obj-$(CONFIG_USB_CHIPIDEA_IMX)		+= ci_hdrc_imx.o usbmisc_imx.o
+-
+-obj-$(CONFIG_USB_CHIPIDEA_OF)	+= ci_hdrc_tegra.o
++obj-$(CONFIG_USB_CHIPIDEA_TEGRA)	+= ci_hdrc_tegra.o
+-- 
+2.14.2
+

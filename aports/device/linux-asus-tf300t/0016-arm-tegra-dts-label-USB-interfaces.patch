@@ -1,0 +1,328 @@
+From 01b5a01e7791aef0dce5f541a3062b234ab57604 Mon Sep 17 00:00:00 2001
+Message-Id: <01b5a01e7791aef0dce5f541a3062b234ab57604.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Fri, 21 Jul 2017 02:43:31 +0200
+Subject: [PATCH 16/52] arm: tegra: dts: label USB interfaces
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ arch/arm/boot/dts/tegra30-apalis-eval.dts     | 62 +++++++++++++--------------
+ arch/arm/boot/dts/tegra30-beaver.dts          | 56 ++++++++++++------------
+ arch/arm/boot/dts/tegra30-cardhu.dtsi         | 18 ++++----
+ arch/arm/boot/dts/tegra30-colibri-eval-v3.dts | 42 +++++++++---------
+ arch/arm/boot/dts/tegra30-colibri.dtsi        | 20 ++++-----
+ arch/arm/boot/dts/tegra30.dtsi                |  6 +--
+ 6 files changed, 102 insertions(+), 102 deletions(-)
+
+diff --git a/arch/arm/boot/dts/tegra30-apalis-eval.dts b/arch/arm/boot/dts/tegra30-apalis-eval.dts
+index 9719da929aa8..23a21990f4de 100644
+--- a/arch/arm/boot/dts/tegra30-apalis-eval.dts
++++ b/arch/arm/boot/dts/tegra30-apalis-eval.dts
+@@ -98,37 +98,6 @@
+ 		status = "okay";
+ 	};
+ 
+-	/* EHCI instance 0: USB1_DP/N -> USBO1_DP/N */
+-	usb@7d000000 {
+-		status = "okay";
+-	};
+-
+-	usb-phy@7d000000 {
+-		status = "okay";
+-		dr_mode = "otg";
+-		vbus-supply = <&usbo1_vbus_reg>;
+-	};
+-
+-	/* EHCI instance 1: USB2_DP/N -> USBH2_DP/N */
+-	usb@7d004000 {
+-		status = "okay";
+-	};
+-
+-	usb-phy@7d004000 {
+-		status = "okay";
+-		vbus-supply = <&usbh_vbus_reg>;
+-	};
+-
+-	/* EHCI instance 2: USB3_DP/N -> USBH3_DP/N */
+-	usb@7d008000 {
+-		status = "okay";
+-	};
+-
+-	usb-phy@7d008000 {
+-		status = "okay";
+-		vbus-supply = <&usbh_vbus_reg>;
+-	};
+-
+ 	backlight: backlight {
+ 		compatible = "pwm-backlight";
+ 
+@@ -271,3 +240,34 @@ mmc1: &sdmmc3 {
+ 	cd-gpios = <&gpio TEGRA_GPIO(V, 3) GPIO_ACTIVE_LOW>;
+ 	no-1-8-v;
+ };
++
++/* EHCI instance 0: USB1_DP/N -> USBO1_DP/N */
++&usb1 {
++	status = "okay";
++};
++
++&phy1 {
++	status = "okay";
++	dr_mode = "otg";
++	vbus-supply = <&usbo1_vbus_reg>;
++};
++
++/* EHCI instance 1: USB2_DP/N -> USBH2_DP/N */
++&usb2 {
++	status = "okay";
++};
++
++&phy2 {
++	status = "okay";
++	vbus-supply = <&usbh_vbus_reg>;
++};
++
++/* EHCI instance 2: USB3_DP/N -> USBH3_DP/N */
++&usb3 {
++	status = "okay";
++};
++
++&phy3 {
++	status = "okay";
++	vbus-supply = <&usbh_vbus_reg>;
++};
+diff --git a/arch/arm/boot/dts/tegra30-beaver.dts b/arch/arm/boot/dts/tegra30-beaver.dts
+index 78302fe3de88..8fe5be6b4a71 100644
+--- a/arch/arm/boot/dts/tegra30-beaver.dts
++++ b/arch/arm/boot/dts/tegra30-beaver.dts
+@@ -1761,34 +1761,6 @@
+ 		};
+ 	};
+ 
+-	usb@7d000000 {
+-		compatible = "nvidia,tegra30-udc";
+-		status = "okay";
+-		dr_mode = "peripheral";
+-	};
+-
+-	usb-phy@7d000000 {
+-		status = "okay";
+-	};
+-
+-	usb@7d004000 {
+-		status = "okay";
+-	};
+-
+-	phy2: usb-phy@7d004000 {
+-		vbus-supply = <&sys_3v3_reg>;
+-		status = "okay";
+-	};
+-
+-	usb@7d008000 {
+-		status = "okay";
+-	};
+-
+-	usb-phy@7d008000 {
+-		vbus-supply = <&usb3_vbus_reg>;
+-		status = "okay";
+-	};
+-
+ 	clocks {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -2117,3 +2089,31 @@ hdmiddc: &i2c4 {
+ 	bus-width = <8>;
+ 	non-removable;
+ };
++
++&usb1 {
++	compatible = "nvidia,tegra30-udc";
++	status = "okay";
++	dr_mode = "peripheral";
++};
++
++&phy1 {
++	status = "okay";
++};
++
++&usb2 {
++	status = "okay";
++};
++
++&phy2 {
++	vbus-supply = <&sys_3v3_reg>;
++	status = "okay";
++};
++
++&usb3 {
++	status = "okay";
++};
++
++&phy3 {
++	vbus-supply = <&usb3_vbus_reg>;
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/tegra30-cardhu.dtsi b/arch/arm/boot/dts/tegra30-cardhu.dtsi
+index a1f6fde7e77e..d80eef57f46a 100644
+--- a/arch/arm/boot/dts/tegra30-cardhu.dtsi
++++ b/arch/arm/boot/dts/tegra30-cardhu.dtsi
+@@ -206,15 +206,6 @@
+ 		};
+ 	};
+ 
+-	usb@7d008000 {
+-		status = "okay";
+-	};
+-
+-	usb-phy@7d008000 {
+-		vbus-supply = <&usb3_vbus_reg>;
+-		status = "okay";
+-	};
+-
+ 	backlight: backlight {
+ 		compatible = "pwm-backlight";
+ 
+@@ -648,3 +639,12 @@ panelddc: &i2c1 {
+ 	bus-width = <8>;
+ 	non-removable;
+ };
++
++&usb3 {
++	status = "okay";
++};
++
++&phy3 {
++	vbus-supply = <&usb3_vbus_reg>;
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts b/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts
+index 6dcdff340f6a..2ece79bb9e77 100644
+--- a/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts
++++ b/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts
+@@ -68,27 +68,6 @@
+ 		};
+ 	};
+ 
+-	/* EHCI instance 0: USB1_DP/N -> USBC_P/N */
+-	usb@7d000000 {
+-		status = "okay";
+-	};
+-
+-	usb-phy@7d000000 {
+-		status = "okay";
+-		dr_mode = "otg";
+-		vbus-supply = <&usbc_vbus_reg>;
+-	};
+-
+-	/* EHCI instance 2: USB3_DP/N -> USBH_P/N */
+-	usb@7d008000 {
+-		status = "okay";
+-	};
+-
+-	usb-phy@7d008000 {
+-		status = "okay";
+-		vbus-supply = <&usbh_vbus_reg>;
+-	};
+-
+ 	backlight: backlight {
+ 		compatible = "pwm-backlight";
+ 
+@@ -211,3 +190,24 @@
+ 	cd-gpios = <&gpio TEGRA_GPIO(C, 7) GPIO_ACTIVE_LOW>;
+ 	no-1-8-v;
+ };
++
++/* EHCI instance 0: USB1_DP/N -> USBC_P/N */
++&usb1 {
++	status = "okay";
++};
++
++&phy1 {
++	status = "okay";
++	dr_mode = "otg";
++	vbus-supply = <&usbc_vbus_reg>;
++};
++
++/* EHCI instance 2: USB3_DP/N -> USBH_P/N */
++&usb3 {
++	status = "okay";
++};
++
++&phy3 {
++	status = "okay";
++	vbus-supply = <&usbh_vbus_reg>;
++};
+diff --git a/arch/arm/boot/dts/tegra30-colibri.dtsi b/arch/arm/boot/dts/tegra30-colibri.dtsi
+index 117481964f12..45a57d4e85b8 100644
+--- a/arch/arm/boot/dts/tegra30-colibri.dtsi
++++ b/arch/arm/boot/dts/tegra30-colibri.dtsi
+@@ -230,16 +230,6 @@
+ 		};
+ 	};
+ 
+-	/* EHCI instance 1: USB2_DP/N -> AX88772B */
+-	usb@7d004000 {
+-		status = "okay";
+-	};
+-
+-	usb-phy@7d004000 {
+-		status = "okay";
+-		nvidia,is-wired = <1>;
+-	};
+-
+ 	clocks {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -521,3 +511,13 @@ hdmiddc: &i2c4 {
+ 	bus-width = <8>;
+ 	non-removable;
+ };
++
++/* EHCI instance 1: USB2_DP/N -> AX88772B */
++&usb2 {
++	status = "okay";
++};
++
++&phy2 {
++	status = "okay";
++	nvidia,is-wired = <1>;
++};
+diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
+index 46e35ad050c7..58f195fc642c 100644
+--- a/arch/arm/boot/dts/tegra30.dtsi
++++ b/arch/arm/boot/dts/tegra30.dtsi
+@@ -811,7 +811,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	usb@7d000000 {
++	usb1: usb@7d000000 {
+ 		compatible = "nvidia,tegra30-ehci", "usb-ehci";
+ 		reg = <0x7d000000 0x4000>;
+ 		interrupts = <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
+@@ -850,7 +850,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	usb@7d004000 {
++	usb2: usb@7d004000 {
+ 		compatible = "nvidia,tegra30-ehci", "usb-ehci";
+ 		reg = <0x7d004000 0x4000>;
+ 		interrupts = <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
+@@ -886,7 +886,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	usb@7d008000 {
++	usb3: usb@7d008000 {
+ 		compatible = "nvidia,tegra30-ehci", "usb-ehci";
+ 		reg = <0x7d008000 0x4000>;
+ 		interrupts = <GIC_SPI 97 IRQ_TYPE_LEVEL_HIGH>;
+-- 
+2.14.2
+

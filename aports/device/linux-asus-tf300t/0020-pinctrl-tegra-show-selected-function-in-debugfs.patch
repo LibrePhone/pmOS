@@ -1,0 +1,67 @@
+From 2b71188597e463336b096e25644ad53a57a9c998 Mon Sep 17 00:00:00 2001
+Message-Id: <2b71188597e463336b096e25644ad53a57a9c998.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Fri, 4 Aug 2017 07:33:19 +0200
+Subject: [PATCH 20/52] pinctrl/tegra: show selected function in debugfs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/pinctrl/tegra/pinctrl-tegra.c | 33 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/pinctrl/tegra/pinctrl-tegra.c b/drivers/pinctrl/tegra/pinctrl-tegra.c
+index 51716819129d..c55b5646a9ae 100644
+--- a/drivers/pinctrl/tegra/pinctrl-tegra.c
++++ b/drivers/pinctrl/tegra/pinctrl-tegra.c
+@@ -83,11 +83,42 @@ static int tegra_pinctrl_get_group_pins(struct pinctrl_dev *pctldev,
+ }
+ 
+ #ifdef CONFIG_DEBUG_FS
++static const struct tegra_pingroup *tegra_find_mux_group(
++	struct tegra_pmx *pmx, unsigned pin)
++{
++	const struct tegra_pingroup *g;
++	int i, j;
++
++	for (i = 0; i < pmx->soc->ngroups; ++i) {
++		g = &pmx->soc->groups[i];
++		if (g->mux_reg < 0)
++			continue;
++
++		for (j = 0; j < g->npins; ++j)
++			if (pin == g->pins[j])
++				return g;
++	}
++
++	return NULL;
++}
++
+ static void tegra_pinctrl_pin_dbg_show(struct pinctrl_dev *pctldev,
+ 				       struct seq_file *s,
+-				       unsigned offset)
++				       unsigned pin)
+ {
++	struct tegra_pmx *pmx = pinctrl_dev_get_drvdata(pctldev);
++	const struct tegra_pingroup *g = tegra_find_mux_group(pmx, pin);
++	u32 func;
++
+ 	seq_printf(s, " %s", dev_name(pctldev->dev));
++
++	if (!g)
++		return;
++
++	func = pmx_readl(pmx, g->mux_bank, g->mux_reg) >> g->mux_bit;
++	func &= 3;
++
++	seq_printf(s, " func=%s", pmx->soc->functions[g->funcs[func]].name);
+ }
+ #endif
+ 
+-- 
+2.14.2
+

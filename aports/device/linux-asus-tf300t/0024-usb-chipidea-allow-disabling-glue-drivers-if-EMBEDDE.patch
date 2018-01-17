@@ -1,0 +1,85 @@
+From 382f6c4254678c3833f96b4d7f0f93fd4b267175 Mon Sep 17 00:00:00 2001
+Message-Id: <382f6c4254678c3833f96b4d7f0f93fd4b267175.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 06:10:16 +0200
+Subject: [PATCH 24/52] usb: chipidea: allow disabling glue drivers if EMBEDDED
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/usb/chipidea/Kconfig  | 30 +++++++++++++++++++-----------
+ drivers/usb/chipidea/Makefile |  9 ++++-----
+ 2 files changed, 23 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/usb/chipidea/Kconfig b/drivers/usb/chipidea/Kconfig
+index 51f4157bbecf..3ce64b5b41cf 100644
+--- a/drivers/usb/chipidea/Kconfig
++++ b/drivers/usb/chipidea/Kconfig
+@@ -13,17 +13,6 @@ config USB_CHIPIDEA
+ 
+ if USB_CHIPIDEA
+ 
+-config USB_CHIPIDEA_OF
+-	tristate
+-	depends on OF
+-	default USB_CHIPIDEA
+-
+-config USB_CHIPIDEA_PCI
+-	tristate
+-	depends on USB_PCI
+-	depends on NOP_USB_XCEIV
+-	default USB_CHIPIDEA
+-
+ config USB_CHIPIDEA_UDC
+ 	bool "ChipIdea device controller"
+ 	depends on USB_GADGET
+@@ -46,4 +35,23 @@ config USB_CHIPIDEA_ULPI
+ 	  Say Y here if you have a ULPI PHY attached to your ChipIdea
+ 	  controller.
+ 
++config USB_CHIPIDEA_PCI
++	tristate "Enable PCI glue driver" if EMBEDDED
++	depends on USB_PCI
++	depends on NOP_USB_XCEIV
++	default USB_CHIPIDEA
++
++config USB_CHIPIDEA_MSM
++	tristate "Enable MSM hsusb glue driver" if EMBEDDED
++	default USB_CHIPIDEA
++
++config USB_CHIPIDEA_IMX
++	tristate "Enable i.MX USB glue driver" if EMBEDDED
++	depends on OF
++	default USB_CHIPIDEA
++
++config USB_CHIPIDEA_GENERIC
++	tristate "Enable generic USB2 glue driver" if EMBEDDED
++	default USB_CHIPIDEA
++
+ endif
+diff --git a/drivers/usb/chipidea/Makefile b/drivers/usb/chipidea/Makefile
+index a1a43c2c805b..b2ed00426a3f 100644
+--- a/drivers/usb/chipidea/Makefile
++++ b/drivers/usb/chipidea/Makefile
+@@ -8,10 +8,9 @@ ci_hdrc-$(CONFIG_USB_CHIPIDEA_ULPI)	+= ulpi.o
+ 
+ # Glue/Bridge layers go here
+ 
+-obj-$(CONFIG_USB_CHIPIDEA)	+= ci_hdrc_usb2.o
+-obj-$(CONFIG_USB_CHIPIDEA)	+= ci_hdrc_msm.o
++obj-$(CONFIG_USB_CHIPIDEA_GENERIC)	+= ci_hdrc_usb2.o
++obj-$(CONFIG_USB_CHIPIDEA_MSM)		+= ci_hdrc_msm.o
++obj-$(CONFIG_USB_CHIPIDEA_PCI)		+= ci_hdrc_pci.o
++obj-$(CONFIG_USB_CHIPIDEA_IMX)		+= ci_hdrc_imx.o usbmisc_imx.o
+ 
+-obj-$(CONFIG_USB_CHIPIDEA_PCI)	+= ci_hdrc_pci.o
+-
+-obj-$(CONFIG_USB_CHIPIDEA_OF)	+= usbmisc_imx.o ci_hdrc_imx.o
+ obj-$(CONFIG_USB_CHIPIDEA_OF)	+= ci_hdrc_tegra.o
+-- 
+2.14.2
+

@@ -1,0 +1,43 @@
+From 5008ff0fdcf488f2f5b55dd6b84241a241bb8444 Mon Sep 17 00:00:00 2001
+Message-Id: <5008ff0fdcf488f2f5b55dd6b84241a241bb8444.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Tue, 18 Jul 2017 02:27:51 +0200
+Subject: [PATCH 08/52] ARM: tegra: avoid touching Secure registers in reset
+ handler
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This allows secondary CPUs to boot with Trusted Foundations firmware.
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ arch/arm/mach-tegra/reset-handler.S | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm/mach-tegra/reset-handler.S b/arch/arm/mach-tegra/reset-handler.S
+index aae7f5961563..f642032a5a08 100644
+--- a/arch/arm/mach-tegra/reset-handler.S
++++ b/arch/arm/mach-tegra/reset-handler.S
+@@ -143,6 +143,8 @@ ENTRY(__tegra_cpu_reset_handler)
+ 	cpsid	aif, 0x13			@ SVC mode, interrupts disabled
+ 
+ 	tegra_get_soc_id TEGRA_APB_MISC_BASE, r6
++
++#ifdef CONFIG_ARCH_ASSUME_SECURE_PLATFORM
+ #ifdef CONFIG_ARCH_TEGRA_2x_SOC
+ t20_check:
+ 	cmp	r6, #TEGRA20
+@@ -172,6 +174,7 @@ t30_errata:
+ 	b	after_errata
+ after_t30_check:
+ #endif
++#endif	/* CONFIG_ARCH_ASSUME_SECURE_PLATFORM */
+ after_errata:
+ 	mrc	p15, 0, r10, c0, c0, 5		@ MPIDR
+ 	and	r10, r10, #0x3			@ R10 = CPU number
+-- 
+2.14.2
+

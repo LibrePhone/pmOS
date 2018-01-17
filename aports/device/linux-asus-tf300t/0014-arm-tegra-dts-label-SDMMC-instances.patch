@@ -1,0 +1,348 @@
+From 8af3e7d18e9929ba5ebb45ef80d95b7c56563807 Mon Sep 17 00:00:00 2001
+Message-Id: <8af3e7d18e9929ba5ebb45ef80d95b7c56563807.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Fri, 21 Jul 2017 01:58:28 +0200
+Subject: [PATCH 14/52] arm: tegra: dts: label SDMMC instances
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ arch/arm/boot/dts/tegra30-apalis-eval.dts     | 32 +++++++++++++--------------
+ arch/arm/boot/dts/tegra30-apalis.dtsi         | 14 ++++++------
+ arch/arm/boot/dts/tegra30-beaver.dts          | 30 ++++++++++++-------------
+ arch/arm/boot/dts/tegra30-cardhu-a02.dts      | 13 +++++------
+ arch/arm/boot/dts/tegra30-cardhu-a04.dts      | 14 ++++++------
+ arch/arm/boot/dts/tegra30-cardhu.dtsi         | 28 +++++++++++------------
+ arch/arm/boot/dts/tegra30-colibri-eval-v3.dts | 16 +++++++-------
+ arch/arm/boot/dts/tegra30-colibri.dtsi        | 14 ++++++------
+ arch/arm/boot/dts/tegra30.dtsi                |  8 +++----
+ 9 files changed, 84 insertions(+), 85 deletions(-)
+
+diff --git a/arch/arm/boot/dts/tegra30-apalis-eval.dts b/arch/arm/boot/dts/tegra30-apalis-eval.dts
+index fc530e4a96c4..5e9c8528d1d2 100644
+--- a/arch/arm/boot/dts/tegra30-apalis-eval.dts
++++ b/arch/arm/boot/dts/tegra30-apalis-eval.dts
+@@ -134,22 +134,6 @@
+ 		status = "okay";
+ 	};
+ 
+-	sd1: sdhci@78000000 {
+-		status = "okay";
+-		bus-width = <4>;
+-		/* SD1_CD# */
+-		cd-gpios = <&gpio TEGRA_GPIO(CC, 5) GPIO_ACTIVE_LOW>;
+-		no-1-8-v;
+-	};
+-
+-	mmc1: sdhci@78000400 {
+-		status = "okay";
+-		bus-width = <8>;
+-		/* MMC1_CD# */
+-		cd-gpios = <&gpio TEGRA_GPIO(V, 3) GPIO_ACTIVE_LOW>;
+-		no-1-8-v;
+-	};
+-
+ 	/* EHCI instance 0: USB1_DP/N -> USBO1_DP/N */
+ 	usb@7d000000 {
+ 		status = "okay";
+@@ -271,3 +255,19 @@
+ 		};
+ 	};
+ };
++
++sd1: &sdmmc1 {
++	status = "okay";
++	bus-width = <4>;
++	/* SD1_CD# */
++	cd-gpios = <&gpio TEGRA_GPIO(CC, 5) GPIO_ACTIVE_LOW>;
++	no-1-8-v;
++};
++
++mmc1: &sdmmc3 {
++	status = "okay";
++	bus-width = <8>;
++	/* MMC1_CD# */
++	cd-gpios = <&gpio TEGRA_GPIO(V, 3) GPIO_ACTIVE_LOW>;
++	no-1-8-v;
++};
+diff --git a/arch/arm/boot/dts/tegra30-apalis.dtsi b/arch/arm/boot/dts/tegra30-apalis.dtsi
+index 7a6a1a014603..8c0d8bbc6eeb 100644
+--- a/arch/arm/boot/dts/tegra30-apalis.dtsi
++++ b/arch/arm/boot/dts/tegra30-apalis.dtsi
+@@ -693,13 +693,6 @@
+ 		};
+ 	};
+ 
+-	/* eMMC */
+-	sdhci@78000600 {
+-		status = "okay";
+-		bus-width = <8>;
+-		non-removable;
+-	};
+-
+ 	clocks {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -783,3 +776,10 @@
+ 		clock-names = "pll_a", "pll_a_out0", "mclk";
+ 	};
+ };
++
++/* eMMC */
++&sdmmc4 {
++	status = "okay";
++	bus-width = <8>;
++	non-removable;
++};
+diff --git a/arch/arm/boot/dts/tegra30-beaver.dts b/arch/arm/boot/dts/tegra30-beaver.dts
+index 3e104ddeb220..573feedfee08 100644
+--- a/arch/arm/boot/dts/tegra30-beaver.dts
++++ b/arch/arm/boot/dts/tegra30-beaver.dts
+@@ -1912,21 +1912,6 @@
+ 		};
+ 	};
+ 
+-	sdhci@78000000 {
+-		status = "okay";
+-		vqmmc-supply = <&ldo5_reg>;
+-		cd-gpios = <&gpio TEGRA_GPIO(I, 5) GPIO_ACTIVE_LOW>;
+-		wp-gpios = <&gpio TEGRA_GPIO(T, 3) GPIO_ACTIVE_HIGH>;
+-		power-gpios = <&gpio TEGRA_GPIO(D, 7) GPIO_ACTIVE_HIGH>;
+-		bus-width = <4>;
+-	};
+-
+-	sdhci@78000600 {
+-		status = "okay";
+-		bus-width = <8>;
+-		non-removable;
+-	};
+-
+ 	usb@7d000000 {
+ 		compatible = "nvidia,tegra30-udc";
+ 		status = "okay";
+@@ -2117,3 +2102,18 @@
+ 		clock-names = "pll_a", "pll_a_out0", "mclk";
+ 	};
+ };
++
++&sdmmc1 {
++	status = "okay";
++	vqmmc-supply = <&ldo5_reg>;
++	cd-gpios = <&gpio TEGRA_GPIO(I, 5) GPIO_ACTIVE_LOW>;
++	wp-gpios = <&gpio TEGRA_GPIO(T, 3) GPIO_ACTIVE_HIGH>;
++	power-gpios = <&gpio TEGRA_GPIO(D, 7) GPIO_ACTIVE_HIGH>;
++	bus-width = <4>;
++};
++
++&sdmmc4 {
++	status = "okay";
++	bus-width = <8>;
++	non-removable;
++};
+diff --git a/arch/arm/boot/dts/tegra30-cardhu-a02.dts b/arch/arm/boot/dts/tegra30-cardhu-a02.dts
+index c9bfedcca6ed..ef132fbad025 100644
+--- a/arch/arm/boot/dts/tegra30-cardhu-a02.dts
++++ b/arch/arm/boot/dts/tegra30-cardhu-a02.dts
+@@ -8,13 +8,6 @@
+ 	model = "NVIDIA Tegra30 Cardhu A02 evaluation board";
+ 	compatible = "nvidia,cardhu-a02", "nvidia,cardhu", "nvidia,tegra30";
+ 
+-	sdhci@78000400 {
+-		status = "okay";
+-		power-gpios = <&gpio TEGRA_GPIO(D, 4) GPIO_ACTIVE_HIGH>;
+-		bus-width = <4>;
+-		keep-power-in-suspend;
+-	};
+-
+ 	regulators {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -92,3 +85,9 @@
+ 	};
+ };
+ 
++&sdmmc3 {
++	status = "okay";
++	power-gpios = <&gpio TEGRA_GPIO(D, 4) GPIO_ACTIVE_HIGH>;
++	bus-width = <4>;
++	keep-power-in-suspend;
++};
+diff --git a/arch/arm/boot/dts/tegra30-cardhu-a04.dts b/arch/arm/boot/dts/tegra30-cardhu-a04.dts
+index fadf55e46b2b..cf8a844ed117 100644
+--- a/arch/arm/boot/dts/tegra30-cardhu-a04.dts
++++ b/arch/arm/boot/dts/tegra30-cardhu-a04.dts
+@@ -8,13 +8,6 @@
+ 	model = "NVIDIA Tegra30 Cardhu A04 (A05, A06, A07) evaluation board";
+ 	compatible = "nvidia,cardhu-a04", "nvidia,cardhu", "nvidia,tegra30";
+ 
+-	sdhci@78000400 {
+-		status = "okay";
+-		power-gpios = <&gpio TEGRA_GPIO(D, 3) GPIO_ACTIVE_HIGH>;
+-		bus-width = <4>;
+-		keep-power-in-suspend;
+-	};
+-
+ 	regulators {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -103,3 +96,10 @@
+ 		};
+ 	};
+ };
++
++&sdmmc3 {
++	status = "okay";
++	power-gpios = <&gpio TEGRA_GPIO(D, 3) GPIO_ACTIVE_HIGH>;
++	bus-width = <4>;
++	keep-power-in-suspend;
++};
+diff --git a/arch/arm/boot/dts/tegra30-cardhu.dtsi b/arch/arm/boot/dts/tegra30-cardhu.dtsi
+index 83dc14a9b353..44a883fceca0 100644
+--- a/arch/arm/boot/dts/tegra30-cardhu.dtsi
++++ b/arch/arm/boot/dts/tegra30-cardhu.dtsi
+@@ -382,20 +382,6 @@
+ 		};
+ 	};
+ 
+-	sdhci@78000000 {
+-		status = "okay";
+-		cd-gpios = <&gpio TEGRA_GPIO(I, 5) GPIO_ACTIVE_LOW>;
+-		wp-gpios = <&gpio TEGRA_GPIO(T, 3) GPIO_ACTIVE_HIGH>;
+-		power-gpios = <&gpio TEGRA_GPIO(D, 7) GPIO_ACTIVE_HIGH>;
+-		bus-width = <4>;
+-	};
+-
+-	sdhci@78000600 {
+-		status = "okay";
+-		bus-width = <8>;
+-		non-removable;
+-	};
+-
+ 	usb@7d008000 {
+ 		status = "okay";
+ 	};
+@@ -648,3 +634,17 @@
+ 		};
+ 	};
+ };
++
++&sdmmc1 {
++	status = "okay";
++	cd-gpios = <&gpio TEGRA_GPIO(I, 5) GPIO_ACTIVE_LOW>;
++	wp-gpios = <&gpio TEGRA_GPIO(T, 3) GPIO_ACTIVE_HIGH>;
++	power-gpios = <&gpio TEGRA_GPIO(D, 7) GPIO_ACTIVE_HIGH>;
++	bus-width = <4>;
++};
++
++&sdmmc4 {
++	status = "okay";
++	bus-width = <8>;
++	non-removable;
++};
+diff --git a/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts b/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts
+index a8c0318743b6..4f03c1466f04 100644
+--- a/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts
++++ b/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts
+@@ -88,14 +88,6 @@
+ 		};
+ 	};
+ 
+-	/* SD/MMC */
+-	sdhci@78000200 {
+-		status = "okay";
+-		bus-width = <4>;
+-		cd-gpios = <&gpio TEGRA_GPIO(C, 7) GPIO_ACTIVE_LOW>;
+-		no-1-8-v;
+-	};
+-
+ 	/* EHCI instance 0: USB1_DP/N -> USBC_P/N */
+ 	usb@7d000000 {
+ 		status = "okay";
+@@ -211,3 +203,11 @@
+ 		};
+ 	};
+ };
++
++/* SD/MMC */
++&sdmmc2 {
++	status = "okay";
++	bus-width = <4>;
++	cd-gpios = <&gpio TEGRA_GPIO(C, 7) GPIO_ACTIVE_LOW>;
++	no-1-8-v;
++};
+diff --git a/arch/arm/boot/dts/tegra30-colibri.dtsi b/arch/arm/boot/dts/tegra30-colibri.dtsi
+index 5360d638eedc..2b98f43ab742 100644
+--- a/arch/arm/boot/dts/tegra30-colibri.dtsi
++++ b/arch/arm/boot/dts/tegra30-colibri.dtsi
+@@ -429,13 +429,6 @@
+ 		};
+ 	};
+ 
+-	/* eMMC */
+-	sdhci@78000600 {
+-		status = "okay";
+-		bus-width = <8>;
+-		non-removable;
+-	};
+-
+ 	/* EHCI instance 1: USB2_DP/N -> AX88772B */
+ 	usb@7d004000 {
+ 		status = "okay";
+@@ -521,3 +514,10 @@
+ 		clock-names = "pll_a", "pll_a_out0", "mclk";
+ 	};
+ };
++
++/* eMMC */
++&sdmmc4 {
++	status = "okay";
++	bus-width = <8>;
++	non-removable;
++};
+diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
+index c8b837241a65..ba481b38cfd2 100644
+--- a/arch/arm/boot/dts/tegra30.dtsi
++++ b/arch/arm/boot/dts/tegra30.dtsi
+@@ -771,7 +771,7 @@
+ 		};
+ 	};
+ 
+-	sdhci@78000000 {
++	sdmmc1: sdhci@78000000 {
+ 		compatible = "nvidia,tegra30-sdhci", "nvidia,tegra20-sdhci";
+ 		reg = <0x78000000 0x200>;
+ 		interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
+@@ -781,7 +781,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	sdhci@78000200 {
++	sdmmc2: sdhci@78000200 {
+ 		compatible = "nvidia,tegra30-sdhci", "nvidia,tegra20-sdhci";
+ 		reg = <0x78000200 0x200>;
+ 		interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
+@@ -791,7 +791,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	sdhci@78000400 {
++	sdmmc3: sdhci@78000400 {
+ 		compatible = "nvidia,tegra30-sdhci", "nvidia,tegra20-sdhci";
+ 		reg = <0x78000400 0x200>;
+ 		interrupts = <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>;
+@@ -801,7 +801,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	sdhci@78000600 {
++	sdmmc4: sdhci@78000600 {
+ 		compatible = "nvidia,tegra30-sdhci", "nvidia,tegra20-sdhci";
+ 		reg = <0x78000600 0x200>;
+ 		interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+-- 
+2.14.2
+

@@ -1,0 +1,306 @@
+From e3a6519b87a0afc7f695de73503dc36f7d0d7339 Mon Sep 17 00:00:00 2001
+Message-Id: <e3a6519b87a0afc7f695de73503dc36f7d0d7339.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Tue, 18 Jul 2017 01:14:57 +0200
+Subject: [PATCH 13/52] usb: phy: tegra: enable peripheral mode
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ arch/arm/boot/dts/tegra30.dtsi    |   1 +
+ drivers/usb/phy/phy-tegra-usb.c   | 197 +++++++++++++++++++++++++++++++++++++-
+ include/linux/usb/tegra_usb_phy.h |   4 +
+ 3 files changed, 201 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
+index 13960fda7471..c8b837241a65 100644
+--- a/arch/arm/boot/dts/tegra30.dtsi
++++ b/arch/arm/boot/dts/tegra30.dtsi
+@@ -828,6 +828,7 @@
+ 		compatible = "nvidia,tegra30-usb-phy";
+ 		reg = <0x7d000000 0x4000 0x7d000000 0x4000>;
+ 		phy_type = "utmi";
++		interrupts = <GIC_SPI 21 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&tegra_car TEGRA30_CLK_USBD>,
+ 			 <&tegra_car TEGRA30_CLK_PLL_U>,
+ 			 <&tegra_car TEGRA30_CLK_USBD>;
+diff --git a/drivers/usb/phy/phy-tegra-usb.c b/drivers/usb/phy/phy-tegra-usb.c
+index 5fe4a5704bde..b1e2dc64cc52 100644
+--- a/drivers/usb/phy/phy-tegra-usb.c
++++ b/drivers/usb/phy/phy-tegra-usb.c
+@@ -34,8 +34,11 @@
+ #include <linux/usb/ulpi.h>
+ #include <linux/usb/of.h>
+ #include <linux/usb/ehci_def.h>
++#include <linux/usb/hcd.h>
++#include <linux/usb/gadget.h>
+ #include <linux/usb/tegra_usb_phy.h>
+ #include <linux/regulator/consumer.h>
++#include "../host/ehci.h"
+ 
+ #define ULPI_VIEWPORT		0x170
+ 
+@@ -64,6 +67,14 @@
+ #define   USB_SUSP_SET		(1 << 14)
+ #define   USB_WAKEUP_DEBOUNCE_COUNT(x)	(((x) & 0x7) << 16)
+ 
++#define VBUS_SENSOR_REG_OFFSET			0x404
++#define VBUS_WAKEUP_REG_OFFSET			0x408
++#define  USB_VBUS_WAKEUP_ENABLE		0x40000000
++#define  USB_VBUS_WAKEUP_INT_ENABLE		0x100
++#define  USB_VBUS_WAKEUP_INT_STATUS		0x200
++#define  USB_VBUS_STATUS			0x400
++#define  USB_ID_PIN_STATUS			0x4
++
+ #define USB1_LEGACY_CTRL	0x410
+ #define   USB1_NO_LEGACY_MODE			(1 << 0)
+ #define   USB1_VBUS_SENSE_CTL_MASK		(3 << 1)
+@@ -945,6 +956,161 @@ static int utmi_phy_probe(struct tegra_usb_phy *tegra_phy,
+ 	return 0;
+ }
+ 
++static void tegra_enable_vbus_sense(struct tegra_usb_phy *tegra_phy, bool enable)
++{
++	u32 tmp = readl(tegra_phy->regs + VBUS_WAKEUP_REG_OFFSET);
++	if (enable)
++		tmp |= USB_VBUS_WAKEUP_INT_ENABLE | USB_VBUS_WAKEUP_ENABLE;
++	else
++		tmp &= ~(USB_VBUS_WAKEUP_INT_ENABLE | USB_VBUS_WAKEUP_ENABLE);
++	tmp &= ~USB_VBUS_WAKEUP_INT_STATUS;
++	writel(tmp, tegra_phy->regs + VBUS_WAKEUP_REG_OFFSET);
++}
++
++static int tegra_phy_switch_role(struct tegra_usb_phy *phy, int make_host)
++{
++	struct usb_gadget *gadget = phy->u_phy.otg->gadget;
++	struct usb_bus *host = phy->u_phy.otg->host;
++	struct device *pdev = NULL, *hdev = NULL;
++
++	dev_info(phy->u_phy.dev, "switching role: %s -> %s\n",
++		phy->in_host_mode ? "host" : phy->in_peripheral_mode ? "peripheral" : "idle",
++		make_host ? "host" : "peripheral");
++
++	if (make_host == phy->in_host_mode)
++		return 0;
++	if (!make_host == phy->in_peripheral_mode)
++		return 0;
++
++	if (gadget)
++		pdev = gadget->dev.parent;
++	if (host)
++		hdev = host->controller;
++
++	if (!make_host && phy->in_host_mode) {
++		if (hdev && hdev->driver->pm && hdev->driver->pm->suspend) {
++			int ret = hdev->driver->pm->suspend(hdev);
++			if (ret)
++				dev_warn(phy->u_phy.dev, "failed to suspend host device: %d\n", ret);
++		}
++
++		phy->in_host_mode = false;
++	}
++
++	if (make_host && phy->in_peripheral_mode) {
++		if (pdev && pdev->driver->suspend) {
++			static const pm_message_t otg_suspend_state = { .event = 1 };
++
++			int ret = pdev->driver->suspend(pdev, otg_suspend_state);
++			if (ret)
++				dev_warn(phy->u_phy.dev, "failed to suspend gadget device: %d\n", ret);
++		}
++
++		phy->in_peripheral_mode = false;
++	}
++
++	if (make_host) {
++		if (!hdev)
++			return -ENODEV;
++
++		if (hdev->driver->pm && hdev->driver->pm->resume) {
++			int ret = hdev->driver->pm->resume(hdev);
++			if (ret) {
++				dev_warn(phy->u_phy.dev, "failed to resume host device: %d\n", ret);
++				return ret;
++			}
++		}
++
++		phy->in_host_mode = true;
++	} else {
++		if (!pdev)
++			return -ENODEV;
++
++		if (pdev->driver->resume) {
++			int ret = pdev->driver->resume(pdev);
++			if (ret) {
++				dev_warn(phy->u_phy.dev, "failed to resume gadget device: %d\n", ret);
++				return ret;
++			}
++		}
++
++		phy->in_peripheral_mode = true;
++	}
++
++	return 0;
++}
++
++static irqreturn_t tegra_vbus_irq(int irq, void *_phy)
++{
++	struct tegra_usb_phy *phy = _phy;
++	void __iomem *base = phy->regs;
++	u32 val;
++
++	val = readl(base + VBUS_WAKEUP_REG_OFFSET);
++	/* clear IRQ */
++	writel(val, base + VBUS_WAKEUP_REG_OFFSET);
++
++	if (val & USB_VBUS_WAKEUP_INT_STATUS)
++		return IRQ_WAKE_THREAD;
++
++	return IRQ_NONE;
++}
++
++static irqreturn_t tegra_vbus_work(int irq, void *_phy)
++{
++	struct tegra_usb_phy *phy = _phy;
++	struct usb_gadget *gadget = phy->u_phy.otg->gadget;
++	void __iomem *base = phy->regs;
++	u32 val;
++
++	if (!gadget)
++		return IRQ_NONE;
++
++	val = readl(base + VBUS_WAKEUP_REG_OFFSET) & USB_VBUS_STATUS;
++
++	dev_dbg(phy->u_phy.dev, "VBUS is %s\n", val ? "on" : "off");
++
++	if (val)
++		usb_gadget_vbus_connect(gadget);
++	else
++		usb_gadget_vbus_disconnect(gadget);
++
++	return IRQ_HANDLED;
++}
++
++static int tegra_phy_set_host(struct usb_otg *otg, struct usb_bus *host)
++{
++	struct tegra_usb_phy *phy = container_of(otg->usb_phy, struct tegra_usb_phy, u_phy);
++
++	otg->host = host;
++	if (!phy->in_peripheral_mode)
++		phy->in_host_mode = true;
++
++	return 0;
++}
++
++static int tegra_phy_set_peripheral(struct usb_otg *otg,
++				    struct usb_gadget *gadget)
++{
++	struct tegra_usb_phy *phy = container_of(otg->usb_phy, struct tegra_usb_phy, u_phy);
++	int ret;
++
++	if (phy->mode == USB_DR_MODE_HOST)
++		return -EINVAL;
++
++	if (otg->gadget)
++		usb_gadget_vbus_disconnect(otg->gadget);
++
++	otg->gadget = gadget;
++
++	ret = tegra_phy_switch_role(phy, 0);
++	if (ret)
++		return ret;
++
++	tegra_vbus_work(0, phy);
++	return 0;
++}
++
+ static const struct tegra_phy_soc_config tegra20_soc_config = {
+ 	.utmi_pll_config_in_car_module = false,
+ 	.has_hostpc = false,
+@@ -1038,6 +1204,8 @@ static int tegra_usb_phy_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
++	dev_info(&pdev->dev, "phy mode: %u\n", tegra_phy->mode);
++
+ 	/* On some boards, the VBUS regulator doesn't need to be controlled */
+ 	if (of_find_property(np, "vbus-supply", NULL)) {
+ 		tegra_phy->vbus = devm_regulator_get(&pdev->dev, "vbus");
+@@ -1050,19 +1218,43 @@ static int tegra_usb_phy_probe(struct platform_device *pdev)
+ 
+ 	tegra_phy->u_phy.dev = &pdev->dev;
+ 	err = tegra_usb_phy_init(tegra_phy);
+-	if (err < 0)
++	if (err < 0) {
++		dev_err(&pdev->dev, "phy init error: %d\n", err);
+ 		return err;
++	}
+ 
+ 	tegra_phy->u_phy.set_suspend = tegra_usb_phy_suspend;
+ 
+ 	platform_set_drvdata(pdev, tegra_phy);
+ 
++	tegra_phy->u_phy.otg = &tegra_phy->otg;
++	tegra_phy->otg.state = OTG_STATE_UNDEFINED;
++	tegra_phy->otg.set_host = tegra_phy_set_host;
++	tegra_phy->otg.set_peripheral = tegra_phy_set_peripheral;
++	tegra_phy->otg.usb_phy = &tegra_phy->u_phy;
++
++	if (tegra_phy->mode != USB_DR_MODE_HOST) {
++		tegra_enable_vbus_sense(tegra_phy, false);
++
++		tegra_phy->vbus_irq = platform_get_irq(pdev, 0);
++		err = devm_request_threaded_irq(&pdev->dev, tegra_phy->vbus_irq,
++			tegra_vbus_irq, tegra_vbus_work,
++			IRQF_SHARED, "vbus-sense", tegra_phy);
++		if (err) {
++			tegra_usb_phy_close(tegra_phy);
++			return err;
++		}
++	}
++
+ 	err = usb_add_phy_dev(&tegra_phy->u_phy);
+ 	if (err < 0) {
+ 		tegra_usb_phy_close(tegra_phy);
+ 		return err;
+ 	}
+ 
++	if (tegra_phy->mode != USB_DR_MODE_HOST)
++		tegra_phy_switch_role(tegra_phy, 0);
++
+ 	return 0;
+ }
+ 
+@@ -1070,6 +1262,9 @@ static int tegra_usb_phy_remove(struct platform_device *pdev)
+ {
+ 	struct tegra_usb_phy *tegra_phy = platform_get_drvdata(pdev);
+ 
++	tegra_enable_vbus_sense(tegra_phy, false);
++	if (tegra_phy->u_phy.otg)
++		devm_free_irq(&pdev->dev, tegra_phy->vbus_irq, tegra_phy);
+ 	usb_remove_phy(&tegra_phy->u_phy);
+ 	tegra_usb_phy_close(tegra_phy);
+ 
+diff --git a/include/linux/usb/tegra_usb_phy.h b/include/linux/usb/tegra_usb_phy.h
+index 1de16c324ec8..9cd7036605e4 100644
+--- a/include/linux/usb/tegra_usb_phy.h
++++ b/include/linux/usb/tegra_usb_phy.h
+@@ -74,7 +74,11 @@ struct tegra_usb_phy {
+ 	struct usb_phy u_phy;
+ 	bool is_legacy_phy;
+ 	bool is_ulpi_phy;
++	bool in_host_mode;
++	bool in_peripheral_mode;
+ 	int reset_gpio;
++	int vbus_irq;
++	struct usb_otg otg;
+ };
+ 
+ void tegra_usb_phy_preresume(struct usb_phy *phy);
+-- 
+2.14.2
+

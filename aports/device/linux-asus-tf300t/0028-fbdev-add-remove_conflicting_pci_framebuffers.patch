@@ -1,0 +1,98 @@
+From 6478f154646dc659299fc6c74dfb231bbfbcda88 Mon Sep 17 00:00:00 2001
+Message-Id: <6478f154646dc659299fc6c74dfb231bbfbcda88.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 10:53:26 +0200
+Subject: [PATCH 28/52] fbdev: add remove_conflicting_pci_framebuffers()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Almost all drivers using remove_conflicting_framebuffers() wrap it with
+the same code.
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/video/fbdev/core/fbmem.c | 22 ++++++++++++++++++++++
+ include/drm/drm_fb_helper.h      | 12 ++++++++++++
+ include/linux/fb.h               |  2 ++
+ 3 files changed, 36 insertions(+)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index ff2a3ab74a34..060a4d3a922d 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -34,6 +34,7 @@
+ #include <linux/fb.h>
+ #include <linux/fbcon.h>
+ #include <linux/mem_encrypt.h>
++#include <linux/pci.h>
+ 
+ #include <asm/fb.h>
+ 
+@@ -1789,6 +1790,27 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
+ }
+ EXPORT_SYMBOL(remove_conflicting_framebuffers);
+ 
++int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id, const char *name)
++{
++	struct apertures_struct *ap;
++	bool primary = false;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return -ENOMEM;
++
++	ap->ranges[0].base = pci_resource_start(pdev, res_id);
++	ap->ranges[0].size = pci_resource_len(pdev, res_id);
++#ifdef CONFIG_X86
++	primary = pdev->resource[PCI_ROM_RESOURCE].flags &
++					IORESOURCE_ROM_SHADOW;
++#endif
++	remove_conflicting_framebuffers(ap, name, primary);
++	kfree(ap);
++	return 0;
++}
++EXPORT_SYMBOL(remove_conflicting_pci_framebuffers);
++
+ /**
+  *	register_framebuffer - registers a frame buffer device
+  *	@fb_info: frame buffer info structure
+diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
+index 33fe95927742..ac3412290289 100644
+--- a/include/drm/drm_fb_helper.h
++++ b/include/drm/drm_fb_helper.h
+@@ -520,4 +520,16 @@ drm_fb_helper_remove_conflicting_framebuffers(struct apertures_struct *a,
+ #endif
+ }
+ 
++static inline int
++drm_fb_helper_remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
++						  int resource_id,
++						  const char *name)
++{
++#if IS_REACHABLE(CONFIG_FB)
++	return remove_conflicting_pci_framebuffers(pdev, resource_id, name);
++#else
++	return 0;
++#endif
++}
++
+ #endif
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index f4386b0ccf40..4196cb09e58e 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -624,6 +624,8 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+ extern int register_framebuffer(struct fb_info *fb_info);
+ extern int unregister_framebuffer(struct fb_info *fb_info);
+ extern int unlink_framebuffer(struct fb_info *fb_info);
++extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id,
++					       const char *name);
+ extern int remove_conflicting_framebuffers(struct apertures_struct *a,
+ 					   const char *name, bool primary);
+ extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
+-- 
+2.14.2
+

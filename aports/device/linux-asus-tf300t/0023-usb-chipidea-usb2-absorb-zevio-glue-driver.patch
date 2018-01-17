@@ -1,0 +1,165 @@
+From 7f10eaece61f75a69a98b6f263106bcda0c8360f Mon Sep 17 00:00:00 2001
+Message-Id: <7f10eaece61f75a69a98b6f263106bcda0c8360f.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 05:55:53 +0200
+Subject: [PATCH 23/52] usb: chipidea: usb2: absorb zevio glue driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This makes clock optional and enables runtime pm for zevio.
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/usb/chipidea/Makefile        |  1 -
+ drivers/usb/chipidea/ci_hdrc_usb2.c  | 18 +++++++--
+ drivers/usb/chipidea/ci_hdrc_zevio.c | 71 ------------------------------------
+ 3 files changed, 15 insertions(+), 75 deletions(-)
+ delete mode 100644 drivers/usb/chipidea/ci_hdrc_zevio.c
+
+diff --git a/drivers/usb/chipidea/Makefile b/drivers/usb/chipidea/Makefile
+index ddcbddf8361a..a1a43c2c805b 100644
+--- a/drivers/usb/chipidea/Makefile
++++ b/drivers/usb/chipidea/Makefile
+@@ -10,7 +10,6 @@ ci_hdrc-$(CONFIG_USB_CHIPIDEA_ULPI)	+= ulpi.o
+ 
+ obj-$(CONFIG_USB_CHIPIDEA)	+= ci_hdrc_usb2.o
+ obj-$(CONFIG_USB_CHIPIDEA)	+= ci_hdrc_msm.o
+-obj-$(CONFIG_USB_CHIPIDEA)	+= ci_hdrc_zevio.o
+ 
+ obj-$(CONFIG_USB_CHIPIDEA_PCI)	+= ci_hdrc_pci.o
+ 
+diff --git a/drivers/usb/chipidea/ci_hdrc_usb2.c b/drivers/usb/chipidea/ci_hdrc_usb2.c
+index 5f5c57510c59..545cfcae4a87 100644
+--- a/drivers/usb/chipidea/ci_hdrc_usb2.c
++++ b/drivers/usb/chipidea/ci_hdrc_usb2.c
+@@ -35,9 +35,15 @@ static const struct ci_hdrc_platform_data ci_zynq_pdata = {
+ 	.capoffset	= DEF_CAPOFFSET,
+ };
+ 
++static const struct ci_hdrc_platform_data ci_zevio_pdata = {
++	.capoffset	= DEF_CAPOFFSET,
++	.flags		= CI_HDRC_REGS_SHARED | CI_HDRC_FORCE_FULLSPEED,
++};
++
+ static const struct of_device_id ci_hdrc_usb2_of_match[] = {
+ 	{ .compatible = "chipidea,usb2" },
+ 	{ .compatible = "xlnx,zynq-usb-2.20a", .data = &ci_zynq_pdata },
++	{ .compatible = "lsi,zevio-usb", .data = &ci_zevio_pdata },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, ci_hdrc_usb2_of_match);
+@@ -68,7 +74,12 @@ static int ci_hdrc_usb2_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	priv->clk = devm_clk_get(dev, NULL);
+-	if (!IS_ERR(priv->clk)) {
++	if (IS_ERR(priv->clk)) {
++		ret = PTR_ERR(priv->clk);
++		if (ret != -ENOENT)
++			return ret;
++		priv->clk = NULL;
++	} else if (!IS_ERR(priv->clk)) {
+ 		ret = clk_prepare_enable(priv->clk);
+ 		if (ret) {
+ 			dev_err(dev, "failed to enable the clock: %d\n", ret);
+@@ -108,7 +119,8 @@ static int ci_hdrc_usb2_remove(struct platform_device *pdev)
+ 
+ 	pm_runtime_disable(&pdev->dev);
+ 	ci_hdrc_remove_device(priv->ci_pdev);
+-	clk_disable_unprepare(priv->clk);
++	if (priv->clk)
++		clk_disable_unprepare(priv->clk);
+ 
+ 	return 0;
+ }
+@@ -123,6 +135,6 @@ static struct platform_driver ci_hdrc_usb2_driver = {
+ };
+ module_platform_driver(ci_hdrc_usb2_driver);
+ 
+-MODULE_DESCRIPTION("ChipIdea HDRC USB2 binding for ci13xxx");
++MODULE_DESCRIPTION("ChipIdea HDRC generic USB2 binding");
+ MODULE_AUTHOR("Antoine Tenart <antoine.tenart@free-electrons.com>");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/usb/chipidea/ci_hdrc_zevio.c b/drivers/usb/chipidea/ci_hdrc_zevio.c
+deleted file mode 100644
+index 1264de505527..000000000000
+--- a/drivers/usb/chipidea/ci_hdrc_zevio.c
++++ /dev/null
+@@ -1,71 +0,0 @@
+-/*
+- *	Copyright (C) 2013 Daniel Tang <tangrs@tangrs.id.au>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2, as
+- * published by the Free Software Foundation.
+- *
+- * Based off drivers/usb/chipidea/ci_hdrc_msm.c
+- *
+- */
+-
+-#include <linux/module.h>
+-#include <linux/platform_device.h>
+-#include <linux/usb/gadget.h>
+-#include <linux/usb/chipidea.h>
+-
+-#include "ci.h"
+-
+-static struct ci_hdrc_platform_data ci_hdrc_zevio_platdata = {
+-	.name			= "ci_hdrc_zevio",
+-	.flags			= CI_HDRC_REGS_SHARED | CI_HDRC_FORCE_FULLSPEED,
+-	.capoffset		= DEF_CAPOFFSET,
+-};
+-
+-static int ci_hdrc_zevio_probe(struct platform_device *pdev)
+-{
+-	struct platform_device *ci_pdev;
+-
+-	dev_dbg(&pdev->dev, "ci_hdrc_zevio_probe\n");
+-
+-	ci_pdev = ci_hdrc_add_device(&pdev->dev,
+-				pdev->resource, pdev->num_resources,
+-				&ci_hdrc_zevio_platdata);
+-
+-	if (IS_ERR(ci_pdev)) {
+-		dev_err(&pdev->dev, "ci_hdrc_add_device failed!\n");
+-		return PTR_ERR(ci_pdev);
+-	}
+-
+-	platform_set_drvdata(pdev, ci_pdev);
+-
+-	return 0;
+-}
+-
+-static int ci_hdrc_zevio_remove(struct platform_device *pdev)
+-{
+-	struct platform_device *ci_pdev = platform_get_drvdata(pdev);
+-
+-	ci_hdrc_remove_device(ci_pdev);
+-
+-	return 0;
+-}
+-
+-static const struct of_device_id ci_hdrc_zevio_dt_ids[] = {
+-	{ .compatible = "lsi,zevio-usb", },
+-	{ /* sentinel */ }
+-};
+-
+-static struct platform_driver ci_hdrc_zevio_driver = {
+-	.probe = ci_hdrc_zevio_probe,
+-	.remove = ci_hdrc_zevio_remove,
+-	.driver = {
+-		.name = "zevio_usb",
+-		.of_match_table = ci_hdrc_zevio_dt_ids,
+-	},
+-};
+-
+-MODULE_DEVICE_TABLE(of, ci_hdrc_zevio_dt_ids);
+-module_platform_driver(ci_hdrc_zevio_driver);
+-
+-MODULE_LICENSE("GPL v2");
+-- 
+2.14.2
+

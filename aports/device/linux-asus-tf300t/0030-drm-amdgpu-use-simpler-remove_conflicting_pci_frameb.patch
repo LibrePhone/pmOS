@@ -1,0 +1,61 @@
+From 27010a6cf7dbf28c97ab80dc0c7bbb9a8025e838 Mon Sep 17 00:00:00 2001
+Message-Id: <27010a6cf7dbf28c97ab80dc0c7bbb9a8025e838.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 11:24:21 +0200
+Subject: [PATCH 30/52] drm: amdgpu: use simpler
+ remove_conflicting_pci_framebuffers()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c | 23 +----------------------
+ 1 file changed, 1 insertion(+), 22 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
+index 0f16986ec5bc..51fcd4bb9a3d 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
+@@ -529,27 +529,6 @@ MODULE_DEVICE_TABLE(pci, pciidlist);
+ 
+ static struct drm_driver kms_driver;
+ 
+-static int amdgpu_kick_out_firmware_fb(struct pci_dev *pdev)
+-{
+-	struct apertures_struct *ap;
+-	bool primary = false;
+-
+-	ap = alloc_apertures(1);
+-	if (!ap)
+-		return -ENOMEM;
+-
+-	ap->ranges[0].base = pci_resource_start(pdev, 0);
+-	ap->ranges[0].size = pci_resource_len(pdev, 0);
+-
+-#ifdef CONFIG_X86
+-	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
+-#endif
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "amdgpudrmfb", primary);
+-	kfree(ap);
+-
+-	return 0;
+-}
+-
+ static int amdgpu_pci_probe(struct pci_dev *pdev,
+ 			    const struct pci_device_id *ent)
+ {
+@@ -572,7 +551,7 @@ static int amdgpu_pci_probe(struct pci_dev *pdev,
+ 		return ret;
+ 
+ 	/* Get rid of things like offb */
+-	ret = amdgpu_kick_out_firmware_fb(pdev);
++	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "amdgpudrmfb");
+ 	if (ret)
+ 		return ret;
+ 
+-- 
+2.14.2
+

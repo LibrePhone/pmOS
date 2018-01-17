@@ -1,0 +1,32 @@
+From ccc82027de98a6f5354e1cbf12e1a7edc13fcd53 Mon Sep 17 00:00:00 2001
+Message-Id: <ccc82027de98a6f5354e1cbf12e1a7edc13fcd53.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Tue, 18 Jul 2017 01:16:18 +0200
+Subject: [PATCH 11/52] usb: gadget: gserial: fix message grammar
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/usb/gadget/function/u_serial.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/gadget/function/u_serial.c b/drivers/usb/gadget/function/u_serial.c
+index 4176216d54be..530fef2de3ad 100644
+--- a/drivers/usb/gadget/function/u_serial.c
++++ b/drivers/usb/gadget/function/u_serial.c
+@@ -1100,7 +1100,7 @@ static int gs_console_connect(int port_num)
+ 	struct usb_ep *ep;
+ 
+ 	if (port_num != gserial_cons.index) {
+-		pr_err("%s: port num [%d] is not support console\n",
++		pr_err("%s: port num [%d] does not support console\n",
+ 		       __func__, port_num);
+ 		return -ENXIO;
+ 	}
+-- 
+2.14.2
+

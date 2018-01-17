@@ -1,0 +1,34 @@
+From df925c6a0617bc893f984f970d3e74a58af07184 Mon Sep 17 00:00:00 2001
+Message-Id: <df925c6a0617bc893f984f970d3e74a58af07184.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 11:44:34 +0200
+Subject: [PATCH 38/52] drm/tegra: kick out simplefb
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/gpu/drm/tegra/drm.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/gpu/drm/tegra/drm.c b/drivers/gpu/drm/tegra/drm.c
+index 597d563d636a..2e2a35650f75 100644
+--- a/drivers/gpu/drm/tegra/drm.c
++++ b/drivers/gpu/drm/tegra/drm.c
+@@ -1238,6 +1238,10 @@ static int host1x_drm_probe(struct host1x_device *dev)
+ 
+ 	dev_set_drvdata(&dev->dev, drm);
+ 
++	err = drm_fb_helper_remove_conflicting_framebuffers(NULL, "tegradrmfb", false);
++	if (err < 0)
++		goto unref;
++
+ 	err = drm_dev_register(drm, 0);
+ 	if (err < 0)
+ 		goto unref;
+-- 
+2.14.2
+

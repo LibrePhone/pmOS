@@ -1,0 +1,309 @@
+From 417cb5cdd0a15b552d81ce55e33752d521ec9afe Mon Sep 17 00:00:00 2001
+Message-Id: <417cb5cdd0a15b552d81ce55e33752d521ec9afe.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Wed, 4 Oct 2017 22:16:23 +0200
+Subject: [PATCH 50/52] arm/tegra30: assorted DTS fixes [WIP]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
++ Power-off unused domains.
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ arch/arm/boot/dts/tegra30.dtsi | 126 +++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 116 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
+index 054bf8a36fc8..1adfa93c9d94 100644
+--- a/arch/arm/boot/dts/tegra30.dtsi
++++ b/arch/arm/boot/dts/tegra30.dtsi
+@@ -29,6 +29,8 @@
+ 		#address-cells = <3>;
+ 		#size-cells = <2>;
+ 
++		power-domains = <&pwr_pcie>;
++
+ 		ranges = <0x82000000 0 0x00000000 0x00000000 0 0x00001000   /* port 0 configuration space */
+ 			  0x82000000 0 0x00001000 0x00001000 0 0x00001000   /* port 1 configuration space */
+ 			  0x82000000 0 0x00004000 0x00004000 0 0x00001000   /* port 2 configuration space */
+@@ -99,6 +101,8 @@
+ 		resets = <&tegra_car 28>;
+ 		reset-names = "host1x";
+ 
++//		power-domains = <&pwr_heg>;
++
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 
+@@ -111,15 +115,19 @@
+ 			clocks = <&tegra_car TEGRA30_CLK_MPE>;
+ 			resets = <&tegra_car 60>;
+ 			reset-names = "mpe";
++			power-domains = <&pwr_mpe>;
+ 		};
+ 
+ 		vi@54080000 {
+ 			compatible = "nvidia,tegra30-vi";
+ 			reg = <0x54080000 0x00040000>;
+ 			interrupts = <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
+-			clocks = <&tegra_car TEGRA30_CLK_VI>;
+-			resets = <&tegra_car 20>;
+-			reset-names = "vi";
++			clocks = <&tegra_car TEGRA30_CLK_VI>,
++				 <&tegra_car TEGRA30_CLK_CSI>;
++			resets = <&tegra_car 20>,
++				 <&tegra_car 52>;
++			reset-names = "vi", "csi";
++			power-domains = <&pwr_venc>;
+ 		};
+ 
+ 		epp@540c0000 {
+@@ -129,6 +137,7 @@
+ 			clocks = <&tegra_car TEGRA30_CLK_EPP>;
+ 			resets = <&tegra_car 19>;
+ 			reset-names = "epp";
++//			power-domains = <&pwr_heg>;
+ 		};
+ 
+ 		isp@54100000 {
+@@ -138,6 +147,7 @@
+ 			clocks = <&tegra_car TEGRA30_CLK_ISP>;
+ 			resets = <&tegra_car 23>;
+ 			reset-names = "isp";
++			power-domains = <&pwr_venc>;
+ 		};
+ 
+ 		gr2d@54140000 {
+@@ -147,6 +157,7 @@
+ 			clocks = <&tegra_car TEGRA30_CLK_GR2D>;
+ 			resets = <&tegra_car 21>;
+ 			reset-names = "2d";
++//			power-domains = <&pwr_heg>;
+ 		};
+ 
+ 		gr3d@54180000 {
+@@ -158,6 +169,7 @@
+ 			resets = <&tegra_car 24>,
+ 				 <&tegra_car 98>;
+ 			reset-names = "3d", "3d2";
++//			power-domains = <&pwr_3d0>, <&pwr_3d1>;
+ 		};
+ 
+ 		dc@54200000 {
+@@ -215,6 +227,8 @@
+ 			reg = <0x542c0000 0x00040000>;
+ 			interrupts = <GIC_SPI 76 IRQ_TYPE_LEVEL_HIGH>;
+ 			clocks = <&tegra_car TEGRA30_CLK_TVO>;
++			resets = <&tegra_car 49>;
++			reset-names = "tvo";
+ 			status = "disabled";
+ 		};
+ 
+@@ -226,6 +240,15 @@
+ 			reset-names = "dsi";
+ 			status = "disabled";
+ 		};
++
++		dsi@54400000 {
++			compatible = "nvidia,tegra30-dsi";
++			reg = <0x54400000 0x00040000>;
++			clocks = <&tegra_car TEGRA30_CLK_DSIB>;
++			resets = <&tegra_car 79>;
++			reset-names = "dsi";
++			status = "disabled";
++		};
+ 	};
+ 
+ 	timer@50040600 {
+@@ -246,7 +269,7 @@
+ 		interrupt-parent = <&intc>;
+ 	};
+ 
+-	cache-controller@50043000 {
++	l2c: cache-controller@50043000 {
+ 		compatible = "arm,pl310-cache";
+ 		reg = <0x50043000 0x1000>;
+ 		arm,data-latency = <6 6 2>;
+@@ -352,9 +375,7 @@
+ 		gpio-controller;
+ 		#interrupt-cells = <2>;
+ 		interrupt-controller;
+-		/*
+ 		gpio-ranges = <&pinmux 0 0 248>;
+-		*/
+ 	};
+ 
+ 	apbmisc@70000800 {
+@@ -651,6 +672,71 @@
+ 		reg = <0x7000e400 0x400>;
+ 		clocks = <&tegra_car TEGRA30_CLK_PCLK>, <&clk32k_in>;
+ 		clock-names = "pclk", "clk32k_in";
++
++		powergates {
++/*
++			pwr_3d0: 3d0 {
++				clocks = <&tegra_car TEGRA30_CLK_GR3D>;
++				resets = <&tegra_car 24>;
++				#power-domain-cells = <0>;
++			};
++			pwr_3d1: 3d1 {
++				clocks = <&tegra_car TEGRA30_CLK_GR3D2>;
++				resets = <&tegra_car 98>;
++				#power-domain-cells = <0>;
++			};
++			pwr_heg: heg {
++				clocks = <&tegra_car TEGRA30_CLK_HOST1X>,
++					 <&tegra_car TEGRA30_CLK_GR2D>,
++					 <&tegra_car TEGRA30_CLK_EPP>;
++				resets = <&tegra_car 28>,
++					 <&tegra_car 21>,
++					 <&tegra_car 19>,
++					 <&tegra_car 24>;
++				#power-domain-cells = <0>;
++			};
++*/
++			pwr_mpe: mpe {
++				clocks = <&tegra_car TEGRA30_CLK_MPE>;
++				resets = <&tegra_car 60>;
++				#power-domain-cells = <0>;
++			};
++			pwr_pcie: pcie {
++				clocks = <&tegra_car TEGRA30_CLK_PCIE>,
++					 <&tegra_car TEGRA30_CLK_AFI>;
++				resets = <&tegra_car 70>,
++					 <&tegra_car 72>,
++					 <&tegra_car 74>;
++				#power-domain-cells = <0>;
++			};
++			pwr_sata: sata {
++				clocks = <&tegra_car TEGRA30_CLK_SATA>;
++				resets = <&tegra_car 124>,
++					 <&tegra_car 129>;
++				#power-domain-cells = <0>;
++			};
++			pwr_vdec: vdec {
++				clocks = <&tegra_car TEGRA30_CLK_VDE>;
++				resets = <&tegra_car 61>;
++				#power-domain-cells = <0>;
++			};
++			pwr_venc: venc {
++				clocks = <&tegra_car TEGRA30_CLK_VI>,
++					 <&tegra_car TEGRA30_CLK_CSI>,
++					 <&tegra_car TEGRA30_CLK_ISP>;
++				resets = <&tegra_car 20>,
++					 <&tegra_car 52>,
++					 <&tegra_car 23>;
++				#power-domain-cells = <0>;
++			};
++/*
++			pwr_cpulp: celp {
++				clocks = <&tegra_car TEGRA30_CLK_CCLK_LP>;
++				resets = <&tegra_car 97>;
++				#power-domain-cells = <0>;
++			};
++*/
++		};
+ 	};
+ 
+ 	mc: memory-controller@7000f000 {
+@@ -664,6 +750,13 @@
+ 		#iommu-cells = <1>;
+ 	};
+ 
++	emc: emc@7000f400 {
++		compatible = "nvidia,tegra30-emc";
++		reg = <0x7000f400 0x1000>;
++
++		nvidia,memory-controller = <&mc>;
++	};
++
+ 	fuse@7000f800 {
+ 		compatible = "nvidia,tegra30-efuse";
+ 		reg = <0x7000f800 0x400>;
+@@ -673,6 +766,15 @@
+ 		reset-names = "fuse";
+ 	};
+ 
++	hdmi-cec@70015000 {
++		compatible = "nvidia,tegra30-cec";
++		reg = <0x70015000 0x1000>;
++		clocks = <&tegra_car TEGRA30_CLK_CEC>;
++		resets = <&tegra_car 136>;
++		reset-names = "cec";
++		status = "disabled";
++	};
++
+ 	hda@70030000 {
+ 		compatible = "nvidia,tegra30-hda";
+ 		reg = <0x70030000 0x10000>;
+@@ -772,7 +874,7 @@
+ 	};
+ 
+ 	sdmmc1: sdhci@78000000 {
+-		compatible = "nvidia,tegra30-sdhci", "nvidia,tegra20-sdhci";
++		compatible = "nvidia,tegra30-sdhci";
+ 		reg = <0x78000000 0x200>;
+ 		interrupts = <GIC_SPI 14 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&tegra_car TEGRA30_CLK_SDMMC1>;
+@@ -782,7 +884,7 @@
+ 	};
+ 
+ 	sdmmc2: sdhci@78000200 {
+-		compatible = "nvidia,tegra30-sdhci", "nvidia,tegra20-sdhci";
++		compatible = "nvidia,tegra30-sdhci";
+ 		reg = <0x78000200 0x200>;
+ 		interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&tegra_car TEGRA30_CLK_SDMMC2>;
+@@ -792,7 +894,7 @@
+ 	};
+ 
+ 	sdmmc3: sdhci@78000400 {
+-		compatible = "nvidia,tegra30-sdhci", "nvidia,tegra20-sdhci";
++		compatible = "nvidia,tegra30-sdhci";
+ 		reg = <0x78000400 0x200>;
+ 		interrupts = <GIC_SPI 19 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&tegra_car TEGRA30_CLK_SDMMC3>;
+@@ -802,7 +904,7 @@
+ 	};
+ 
+ 	sdmmc4: sdhci@78000600 {
+-		compatible = "nvidia,tegra30-sdhci", "nvidia,tegra20-sdhci";
++		compatible = "nvidia,tegra30-sdhci";
+ 		reg = <0x78000600 0x200>;
+ 		interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&tegra_car TEGRA30_CLK_SDMMC4>;
+@@ -930,24 +1032,28 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <0>;
++			next-level-cache = <&l2c>;
+ 		};
+ 
+ 		cpu@1 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <1>;
++			next-level-cache = <&l2c>;
+ 		};
+ 
+ 		cpu@2 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <2>;
++			next-level-cache = <&l2c>;
+ 		};
+ 
+ 		cpu@3 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <3>;
++			next-level-cache = <&l2c>;
+ 		};
+ 	};
+ 
+-- 
+2.14.2
+

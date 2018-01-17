@@ -1,74 +1,278 @@
-_vendor=asus
 _flavor=asus-tf300t
-_hash="e497b0370deea136cb41e9ae7ae3e979bd3cfe46"
-_config="config-${_flavor}.armhf"
+_config="config-${_flavor}.${CARCH}"
 
 pkgname=linux-${_flavor}
-pkgver=3.1.0
+
+pkgver=4.14-rc3
 case $pkgver in
-	*.*.*)  _kernver=${pkgver%.*};;
+	*.*.*)	_kernver=${pkgver%.*};;
 	*.*) _kernver=$pkgver;;
 esac
-pkgrel=1
-arch="armhf"
-pkgdesc="Asus Transformer Pad TF300T"
-url="https://github.com/LineageOS/android_kernel_asus_tf300t"
+pkgrel=0
+
+arch="all"
+pkgdesc="Linux for the Asus tf300t with patches from Michał Mirosław"
+url="https://kernel.org/"
 depends="postmarketos-mkinitfs"
-makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev xz"
+makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev"
 options="!strip !check !tracedeps"
 install=
 source="
-	$pkgname-$_hash.tar.gz::https://github.com/LineageOS/android_kernel_asus_tf300t/archive/${_hash}.tar.gz
-	$_config
-	compiler-gcc6.h
-	00_fix_return_address.patch
-	01-fix-cardhu-include.patch
-	02_timeconst_fix.patch
-	03-tegra-gcc5.patch
-	04-disable-dock-usb.patch
+	https://git.kernel.org/torvalds/t/linux-${pkgver}.tar.gz
+	config-${_flavor}.armhf
+	0001-ARM-enable-secure-platform-only-erratas.patch
+	0002-arm-cache-l2x0-remove-duplicate-warning.patch
+	0003-arm-cache-l2x0-share-l2x0_base.patch
+	0004-ARM-trusted_foundations-enable-L2x0-cache-via-firmwa.patch
+	0005-ARM-trusted_foundations-announce-firmware-version.patch
+	0006-ARM-init-update-secondary_data-register-documentatio.patch
+	0007-ARM-tegra-enable-cache-via-TF.patch
+	0008-ARM-tegra-avoid-touching-Secure-registers-in-reset-h.patch
+	0009-ARM-tegra-fix-sleeping-while-atomic-in-CPU-idle.patch
+	0010-mmc-host-sdhci-Allow-use-of-controller-s-native-max-.patch
+	0011-usb-gadget-gserial-fix-message-grammar.patch
+	0012-usb-host-ehci-tegra-Implement-PM-callbacks.patch
+	0013-usb-phy-tegra-enable-peripheral-mode.patch
+	0014-arm-tegra-dts-label-SDMMC-instances.patch
+	0015-arm-tegra-dts-label-I2C-interfaces.patch
+	0016-arm-tegra-dts-label-USB-interfaces.patch
+	0017-arm-tegra-dts-label-SLINK-SPI-interfaces.patch
+	0018-arm-tegra-dts-use-dt-handles-to-enable-I2S-interface.patch
+	0019-clk-tegra30-fix-cclk_lp-divisor-register.patch
+	0020-pinctrl-tegra-show-selected-function-in-debugfs.patch
+	0021-usb-chipidea-usb2-constify-zynq_pdata.patch
+	0022-usb-chipidea-usb2-fix-formatting.patch
+	0023-usb-chipidea-usb2-absorb-zevio-glue-driver.patch
+	0024-usb-chipidea-allow-disabling-glue-drivers-if-EMBEDDE.patch
+	0025-usb-chipidea-allow-disabling-Tegra-UDC.patch
+	0026-fbdev-make-remove_conflicting_framebuffers-NULL-.-ma.patch
+	0027-fbdev-show-fbdev-number-for-debugging.patch
+	0028-fbdev-add-remove_conflicting_pci_framebuffers.patch
+	0029-drm-vc4-use-shorter-remove_conflicting_framebuffers.patch
+	0030-drm-amdgpu-use-simpler-remove_conflicting_pci_frameb.patch
+	0031-drm-bochs-use-simpler-remove_conflicting_pci_framebu.patch
+	0032-drm-cirrus-use-simpler-remove_conflicting_pci_frameb.patch
+	0033-drm-mgag200-use-simpler-remove_conflicting_pci_frame.patch
+	0034-drm-radeon-use-simpler-remove_conflicting_pci_frameb.patch
+	0035-drm-sun4i-use-simpler-remove_conflicting_framebuffer.patch
+	0036-drm-virtio-use-simpler-remove_conflicting_pci_frameb.patch
+	0037-staging-sm750fb-use-simpler-remove_conflicting_pci_f.patch
+	0038-drm-tegra-kick-out-simplefb.patch
+	0039-input-elants-support-old-touch-report-format.patch
+	0040-input-elants-support-common-touchscreen-DT-propertie.patch
+	0041-input-elants-detect-max_x-y-from-hardware.patch
+	0042-input-elants-refactor-elants_i2c_execute_command.patch
+	0043-input-elants-read-touchscreen-size-for-EKTF3624.patch
+	0044-iio-al3010-driver.patch
+	0045-i2c-GPIO-based-hotplug-gate.patch
+	0046-mfd-add-base-for-Asus-EC-support.patch
+	0047-input-Support-Asus-TF300T-MobileDock-inputs.patch
+	0048-leds-add-driver-for-LEDs-on-Asus-TF300T.patch
+	0049-power-supply-Add-driver-for-Asus-TF300T-batteries.patch
+	0050-arm-tegra30-assorted-DTS-fixes-WIP.patch
+	0051-arm-early-console-using-bootloader-framebuffer-WIP.patch
+	0052-arm-tegra-add-Asus-Transformer-Pad-TF300T-descriptio.patch
 "
-subpackages=""
-license="GPL2"
 
+subpackages="$pkgname-dev::$CBUILD_ARCH"
+
+license="GPL2"
 _abi_release=${pkgver}
-_carch="arm"
+_carch=${CARCH}
+case "$_carch" in
+aarch64*) _carch="arm64" ;;
+arm*) _carch="arm" ;;
+ppc*) _carch="powerpc" ;;
+s390*) _carch="s390" ;;
+esac
+
 HOSTCC="${CC:-gcc}"
 HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
 
-builddir="$srcdir/android_kernel_asus_tf300t-${_hash}"
+ksrcdir="$srcdir/linux-$_kernver"
 
 prepare() {
-        default_prepare
+	local _patch_failed=
+	cd "$ksrcdir"
+	if [ "$_kernver" != "$pkgver" ]; then
+		msg "Applying patch-$pkgver.xz"
+		unxz -c < "$srcdir"/patch-$pkgver.xz | patch -p1 -N
+	fi
 
-        # gcc6 support
-        cp -v "$srcdir/compiler-gcc6.h" "$builddir/include/linux/"
+	# first apply patches in specified order
+	for i in $source; do
+		case $i in
+		*.patch)
+			msg "Applying $i..."
+			if ! patch -s -p1 -N -i "$srcdir"/$i; then
+				echo $i >>failed
+				_patch_failed=1
+			fi
+			;;
+		esac
+	done
 
-        cp "$srcdir"/$_config "$builddir"/.config
-        make ARCH="$_carch" HOSTCC="$HOSTCC" silentoldconfig
+	if ! [ -z "$_patch_failed" ]; then
+		error "The following patches failed:"
+		cat failed
+		return 1
+	fi
+
+	mkdir -p "$srcdir"/build
+	cp -v "$srcdir"/$_config "$srcdir"/build/.config
+	make -C "$ksrcdir" O="$srcdir"/build ARCH="$_carch" HOSTCC="$HOSTCC" \
+		olddefconfig
 }
 
+
+
+# this is so we can do: 'abuild menuconfig' to reconfigure kernel
 menuconfig() {
-        cd "$builddir"
-        make ARCH="$_carch" menuconfig
-        cp .config "$startdir"/$_config
+	cd "$srcdir"/build
+	make ARCH="$_carch" menuconfig
+	cp .config "$startdir"/$_config
 }
 
 build() {
-        unset LDFLAGS
-        make ARCH="$_carch" CC="${CC:-gcc}" \
-                KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-Alpine"
+	cd "$srcdir"/build
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS" \
+		CFLAGS_MODULE=-fno-pic
 }
 
 package() {
-        install -Dm644 "$builddir/arch/arm/boot/zImage" \
-                "$pkgdir/boot/vmlinuz-$_flavor"
+	cd "$srcdir/build/arch/${_carch}/boot"
 
-        install -D "$builddir/include/config/kernel.release" \
-                "$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+	if [ "$CARCH" == "aarch64" ]; then
+		install -Dm644 "$srcdir/build/arch/${_carch}/boot/Image" \
+			"$pkgdir/boot/vmlinuz-$_flavor"
+	else
+		install -Dm644 "$srcdir/build/arch/${_carch}/boot/"*zImage \
+			"$pkgdir/boot/vmlinuz-$_flavor"
+	fi
+
+	install -D "$srcdir/build/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+
+	cd "$srcdir"/build
+
+	local _install
+	case "$CARCH" in
+	aarch64*|arm*)	_install="modules_install dtbs_install" ;;
+	*)		_install="modules_install" ;;
+	esac
+
+	make -j1 $_install \
+		ARCH="$_carch" \
+		INSTALL_MOD_PATH="$pkgdir" \
+		INSTALL_DTBS_PATH="$pkgdir/usr/share/dtb"
 }
-sha512sums="5f4edd04f895025f3c55148b1f411135c0688df92326324ea9ea7367bf123dbddcb175d6c894c4913e54df26d4b9870fa7d8cf76160bc2b5262d37eb214c4b96  linux-asus-tf300t-e497b0370deea136cb41e9ae7ae3e979bd3cfe46.tar.gz
-2b90d4b2f6f0a0c4bec1ca4ddaf092afbfab74f4d34c8a7d42c298795d9c283d826fe6b5c8ce7b3605ae1ea6508443b96e04dd835da9932ff97e9f77e35985a0  config-asus-tf300t.armhf
-d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h
-ea1d3b5a234fa565e3c1a792de48f4fc4e6023d281d303c8e319c7ef28edc5739ab0e4dea0139a41f0a5c7d03e27921ccaa214fd0ac5c72245a094ce60128864  00_fix_return_address.patch
-a2bb98fb8d988bbb659cae00fbaca360828300e9b98b90aed5ee0dd839c3f740696df4094a9021b813cbada06820d115aabed581a47cdd2c947e8d853c20b145  02_timeconst_fix.patch
-a2f62a792be93a049f1f14e6bfd924849ebffa3b88ad1f11c3f0dc05faf847c5df8859121c3b2286733c067626dce6e73c9ab161aaf67752cd5bdf1b8875d6f4  03-tegra-gcc5.patch"
+
+
+dev() {
+	# copy the only the parts that we really need for build 3rd party
+	# kernel modules and install those as /usr/src/linux-headers,
+	# simlar to what ubuntu does
+	#
+	# this way you dont need to install the 300-400 kernel sources to
+	# build a tiny kernel module
+	#
+	pkgdesc="Headers and script for third party modules for postmarketos kernel"
+	depends="gmp-dev bash perl"
+	local dir="$subpkgdir"/usr/src/linux-headers-${_abi_release}
+
+	# first we import config, run prepare to set up for building
+	# external modules, and create the scripts
+	mkdir -p "$dir"
+	cp "$srcdir"/$_config "$dir"/.config
+	make -j1 -C "$srcdir"/linux-$_kernver O="$dir" ARCH="$_carch" HOSTCC="$HOSTCC" \
+		olddefconfig prepare modules_prepare scripts
+
+	# needed for 3rd party modules
+	# https://bugzilla.kernel.org/show_bug.cgi?id=11143
+	case "$CARCH" in
+	ppc*) (cd "$dir" && make arch/powerpc/lib/crtsavres.o);;
+	esac
+
+	# remove the stuff that points to real sources. we want 3rd party
+	# modules to believe this is the soruces
+	rm "$dir"/Makefile "$dir"/source
+
+	# copy the needed stuff from real sources
+	#
+	# this is taken from ubuntu kernel build script
+	# http://kernel.ubuntu.com/git/ubuntu/ubuntu-zesty.git/tree/debian/rules.d/3-binary-indep.mk
+
+	cd "$srcdir"/linux-$_kernver
+	find . -path './include/*' -prune \
+		-o -path './scripts/*' -prune -o -type f \
+		\( -name 'Makefile*' -o -name 'Kconfig*' -o -name 'Kbuild*' -o \
+		   -name '*.sh' -o -name '*.pl' -o -name '*.lds' \) \
+		-print | cpio -pdm "$dir"
+	cp -a scripts include "$dir"
+	find $(find arch -name include -type d -print) -type f \
+		| cpio -pdm "$dir"
+
+	install -Dm644 "$srcdir"/build/Module.symvers \
+		"$dir"/Module.symvers
+
+	mkdir -p "$subpkgdir"/lib/modules/${_abi_release}
+	ln -sf /usr/src/linux-headers-${_abi_release} \
+		"$subpkgdir"/lib/modules/${_abi_release}/build
+}
+
+sha512sums="c1202459b6e728099aff4bbdcae623472e1d031f91777ae7d10d68556fba4a7c2d52d8aecbfe277d7b1cda076b7175d3e586f888603ad3e3ad2eb330dc99099f  linux-4.14-rc3.tar.gz
+45887632b82c4613b563488c91a4f19efe89e36bfc6f860c9b296ab3e079557d2c6dd2189a9c943da2b9ffd1b0fd6ebf391f193dae2bb1c49ad595cf79954576  config-asus-tf300t.armhf
+4acc74d3654ccddc3e3e02367a2336b866813c4e73df5e49238d9c725f4688ec8da3349280c73b3584722559b3b203985f298bd13ca4744be9f16d7f2fac1d7c  0001-ARM-enable-secure-platform-only-erratas.patch
+d3a3b3053b07530898926be71711abdaeb9cb09c2e4c9dbd7ddf4dce1527840449b8eceb67725b4b30a245b2e46c2408d5cf7a71d67ba2b53aeebbce9fb68de7  0002-arm-cache-l2x0-remove-duplicate-warning.patch
+300481632a4862dc8d5eda8bd06590589d3c73f4db47bb8e708c0760558bfc11896268f56fcf83646a5cb7373d4e1fa8d2772ea418589f2cdcda177965ddd2d8  0003-arm-cache-l2x0-share-l2x0_base.patch
+0ddceabc68a607c88b7e7b2814399ff9dc5c06db693af88271bb46038f26c332b6c5bffbeea43a7f492a0ea0c7d3d6e12ecffebad205272b26d67497bf3bbdb2  0004-ARM-trusted_foundations-enable-L2x0-cache-via-firmwa.patch
+be69ff3fbe4fcadafbe806ebc0625285edaa0c9cde402197acc14e699bc67da67303316a0f0ed1459414ecd3da9e76a8b1b36dab5c6f9b4360e1d2a03c8db474  0005-ARM-trusted_foundations-announce-firmware-version.patch
+48ae2bf6a883a86c988428b222d408b6af710de6c7d37d93c8349e46ce17fff678d5951e68673d1eead83c7fdbf372cab1b88294f003676e00c9129aa41d9dbe  0006-ARM-init-update-secondary_data-register-documentatio.patch
+bd115f76efac6eb4f7e1aa8ffffcaea33f097a04daef84b6e340d318a04e12505fa15ca8d2e6aa27fa6b84f5ca34a33ae76a934e54830498db0d7466bb2bd21f  0007-ARM-tegra-enable-cache-via-TF.patch
+9fc86e34c15d61eaf197e841b5370d2e2950bae4f2662dc80d324e8cb6f4903a902ae401527afa07f264260553b26d80c54790838e66c942387532809d31d1da  0008-ARM-tegra-avoid-touching-Secure-registers-in-reset-h.patch
+b28b4a9f91d274118897a8aa8cd0d1ede3040d2c337d54bc368461a71cb904b1025723ebd3f8cd2dfb0363bb3b86ad28dc739d43c9fb8ae4189f90765baa2607  0009-ARM-tegra-fix-sleeping-while-atomic-in-CPU-idle.patch
+f681ebd04e699b5a9cdf52f4dfa3c4abe31922700200b4056bf9733577464e6d6cda3f7204367893eb712063169852ef15190026084770e1418896c772d64623  0010-mmc-host-sdhci-Allow-use-of-controller-s-native-max-.patch
+5a2f55e998b17510e48aa46d1276e9897047f36dce8b022d931f1a948694fe779e9fcdecdd344bda667dc08c9b37599e1996fb8c6d70fc5572d7c171fd568311  0011-usb-gadget-gserial-fix-message-grammar.patch
+d70b7256f8af41714933d1d75fdd6376182d2053df17601bd5e4cbb7dafe51bf48b53ad904856dbf28f1e071cd6670336509215447daf595f82ffb75bf2812b8  0012-usb-host-ehci-tegra-Implement-PM-callbacks.patch
+5237b23423570bd1f6fca81d05a8f42a0b3bdc8ef3a2d3054b921769278b425ca50c3b7c6770872a8aca8b2f1b17d9575ca5e3318f7789d00d2f3697a8f92ef5  0013-usb-phy-tegra-enable-peripheral-mode.patch
+1dd2fc78a6691490704952ec27b87a26c22aaa72f0a69d69e86abb7004d3e6a8d690f138c8a0723d130d7238705fa3add55b77a8632f25852b7fbfc2b8724815  0014-arm-tegra-dts-label-SDMMC-instances.patch
+5ef917b97362360dc5a7ff67bb1ab00f2f96c5a0774e70f1d4bef3ab360146a18e9b9c963124d0d31099e6943ef10a61c39294418219e2d61aa829b15150ea4f  0015-arm-tegra-dts-label-I2C-interfaces.patch
+d9f1a908b8364cbc9b70f401a54006b00d5152b5b2c066fffdf48a6f3a8f4509d3b67d5354248c900e15b887be48f244c8530098162e54b664754754761fed98  0016-arm-tegra-dts-label-USB-interfaces.patch
+564b59b49cdc1e14f6a4731abe2c38ecc34ec8f6d0d18cf1d9f052015af32281cd8644b64a3d30fd92ecbc23dfcc4e2ab7a13a029153340b891c9b8aaead5e21  0017-arm-tegra-dts-label-SLINK-SPI-interfaces.patch
+988e01347ddf69d3ada515f848741d8a70c0f6414c5359d41ba4f1d1fd75d489ce1079a51f666c96b54847af27f5a7dfe5be2c299c41f67f8e26f283cfb6f79e  0018-arm-tegra-dts-use-dt-handles-to-enable-I2S-interface.patch
+9b9d31c27634d0c87060bedc995df4b9249ce22b20a588f3a402d405f35be799534416d8bfeb6d5596adcdbfde6872d9b7223ffaeadd073b3bce9fe33639af51  0019-clk-tegra30-fix-cclk_lp-divisor-register.patch
+901d345d8f3562f3e56159b796c1467e3601c190478df457e5fb0fb136f9a376f00734a17bffd81d7e2ce1b5666da19d396f5349ba03eaf9254217d6201bbe5e  0020-pinctrl-tegra-show-selected-function-in-debugfs.patch
+0f888dab88fce9e913e99f466ff830c3e87d94aba7d705a99c76ea16a823f749f7363332d2f18e10592805c4698eed332f1b7b0996ffc1d0f39748bbe64b5ece  0021-usb-chipidea-usb2-constify-zynq_pdata.patch
+2d3c317865404f8d7897016102778baf31a49dc4093afdb9c89cc637020f1526c2d9de8e5c9c2fac6c1071d3e455caa85118b326f6ce838368e9db11423fe943  0022-usb-chipidea-usb2-fix-formatting.patch
+c63a4abb5b0e1489e656786bad5550307a4203ef494353ac6c9fb3b306bf807dc66b2cb93b222c3b20df09d65bb6ee0feb2aa8258ae544f6ab1b8823101153e8  0023-usb-chipidea-usb2-absorb-zevio-glue-driver.patch
+30f1cbce3a064b4158dee4c2f79406d7f99e7849e524d4ee79408d64caed0abeaa8344d41f01701c4007ab7eb98342c9da9399001b23912211ea1ba10de3a659  0024-usb-chipidea-allow-disabling-glue-drivers-if-EMBEDDE.patch
+323aae3a0a676a0b9c0c006a1f4a88f776d0a5542753f51f723e1e3734022cada70ac2aeea0204621b9c6a06dc55f0afe00c6fe65264df91c49e169aa6af5f26  0025-usb-chipidea-allow-disabling-Tegra-UDC.patch
+bd0da5550fab4342f4a8b57f53a7501ab1c0e1e8c90cdb328b2f58be3843f142a52cd534d728d1e3d213a68126bca95958b83a732250ea43e70c179e44e4e38b  0026-fbdev-make-remove_conflicting_framebuffers-NULL-.-ma.patch
+accbd7a070003a0037bd6d549a0695a3bc1d1be751aaea98cc9c8b1e8dccc5979a6560a279af814a5904e55034119bfba51b31d4d04d191ac3cbc0ab3b99a7ef  0027-fbdev-show-fbdev-number-for-debugging.patch
+d4cf52217d0cb164f1e9c70af4e7da4f67d46c58a77aa845c43a22a79e9618cd02af36255fc169c3432f9b2f6c54e00d3fb352080269de72d78bc1f40a4e4192  0028-fbdev-add-remove_conflicting_pci_framebuffers.patch
+9e8f1a110f9ac63a46ff0b19462d0095fa03aa6220d472f49b85b1794f7504705cf4fe1ad2d5bb531b2553464237b00fea9cc552b5fe44f1b6ee45d24be68e98  0029-drm-vc4-use-shorter-remove_conflicting_framebuffers.patch
+8cd37aa38894fd55c77209f49465eb7babe08c76b4b83ea1c25a78e78007c277608a57576b4e6cac5c7d0c99c4757bb77a5499396fb5e78f5e945ff357064cd2  0030-drm-amdgpu-use-simpler-remove_conflicting_pci_frameb.patch
+92e3b4306923b6d25d8355ab5cf2b68d6e79058a5f686b5a9c3e7c05ae96e94c45a414824aeab1c25097c7815d9294686270d316b1627ad65823bad49e38e185  0031-drm-bochs-use-simpler-remove_conflicting_pci_framebu.patch
+f9910ef321a8126ede5aae6d38640d34d17fda0ddfc0caa15eaa7a6e86594b0c6d2fa9f736cd46c099c27a742ac63dc07699e25ec58e42222e293b2a6db22c5b  0032-drm-cirrus-use-simpler-remove_conflicting_pci_frameb.patch
+cb4ffbffb39be48550fb14bf44328cb9dac98d220d08ff884cefda0ec4e4d513fd282dac1a8a775c8740331aa8986ae00d28713c750de130cbcd1f1970107531  0033-drm-mgag200-use-simpler-remove_conflicting_pci_frame.patch
+b5f6c75289255295cf888dc9f2a31b28c20df4554014a0db0cdb7bede89eb58b8e141ab7ea654616be6376f2c78223e6b1f9d42220e5319f2f9cfa44a49b89d2  0034-drm-radeon-use-simpler-remove_conflicting_pci_frameb.patch
+a7dc56f83907d1a314857929443b67f4e52d7becb9f98ca4583a4154b84bf2fe6262c31c4d5eab45a277d17aa0827f15179b29e3f99975a4583bfd761057580a  0035-drm-sun4i-use-simpler-remove_conflicting_framebuffer.patch
+025e6bec32d206c35166c1011ae9e43090b135affb088fffe98a1b6a2e1e81905b5a023b3505bcc1dc7cc418fc84473553d6c29327c021623423e29cc1fb83a3  0036-drm-virtio-use-simpler-remove_conflicting_pci_frameb.patch
+111a8af3bfa62fd7b3521086c6380ed6837c51aa1824302e92de419bb2eaf147028ddc87e48fbfd98a3e254470adc4a5ce89bf74d5b9dc604ac1d4b94666f1c3  0037-staging-sm750fb-use-simpler-remove_conflicting_pci_f.patch
+d4c82b238ad6a6e5e478fe468e740a6939a217f38759cf6ffc7939d3bcc8e3b335291d759981a452a9f9252109186f3a3441520ef8f9e158c328cb1ff3717028  0038-drm-tegra-kick-out-simplefb.patch
+b09456a67688d3d65ba13aa1c35fa94202b411a7d79eab4ad11d73345c8f5bf89231b3ba39a044667b7181bb3b7869822e839f6437e8e35e34fb987564d42aee  0039-input-elants-support-old-touch-report-format.patch
+8a4079eba6bed95434df324943cc36a14428cea88894cb67111b5984fb7fd9f764bb964d3f977b8e371189ced4a9237eb5d065efcf47a2113a0ccff60a3a775f  0040-input-elants-support-common-touchscreen-DT-propertie.patch
+f8a1a1c591cf8191b787e6e57427faa68e19e31ac3ab2ee794c969d77121dab469e7e2c6a20a26ed96b2ba43c3229a45802c02ec9d1ebc8fa2377c91cc0d6a26  0041-input-elants-detect-max_x-y-from-hardware.patch
+8a2639fdc331ee2569b8fb9eb8a177cc388ef5e97dcc215de4e824bc152d4d47068184442baed7f52397ed48ed11c2d5a0068d43702d865e6833070695e372bf  0042-input-elants-refactor-elants_i2c_execute_command.patch
+df77d7d6669774f55f94135552e855f7fe249c4b1a9404ad7b174daad875f51f576b3d26f1e0721aa9c9ab92ad9897a2ab9e739d0323cd9437dfb43c6fd8cdeb  0043-input-elants-read-touchscreen-size-for-EKTF3624.patch
+d9ad54b888b46d7ecef1d742fb3576df6f687846728b0b430e46f609dfef5008a99d8b6ee04448cb1dd9aa8c6b1be53909e62cfc5db0108b3c91fe73e94be810  0044-iio-al3010-driver.patch
+c2bde622b3e887a06d99b9f7a1799622aa8bb1402a6d26df744561b4fc30cb6be810418ed1ab5f6579fba3d95d498771f4d04b892d24dd46d1c41465bd44e64a  0045-i2c-GPIO-based-hotplug-gate.patch
+ff66f3282f0eec03b68b66fced469c5b0d0010231ad8f61422295ea65d447d0305eac9ab8ec95fa47290816f5f88949253b49af9bb4ac3602f954db14efd00b9  0046-mfd-add-base-for-Asus-EC-support.patch
+9409e2bd341287a7dbc1ecc9e358bcd2e743dce4a604fc30b1f33983f2b5368240bb99c7e5fd1cdd4f96d456274f0b15bd389ff069321b7239245a34694496ba  0047-input-Support-Asus-TF300T-MobileDock-inputs.patch
+430563c490ea9fc9a23399150b0ee04fcc43b3b2f75c1da8bd56cb6bd13fbbd0b1f41eacd1f59eac2af2004939ee353e923ff0d58907a4a81b088783904bb26c  0048-leds-add-driver-for-LEDs-on-Asus-TF300T.patch
+cf5de5fe4eda7665981e7890e34bf67216f9bd72cf70b4fc11684738b400b5a59e596a01fc15794ace1d72e78ac8653db0b786f67e82979a9516b0d968b0ddea  0049-power-supply-Add-driver-for-Asus-TF300T-batteries.patch
+2c6d09492c647bea6dc2b46c64d5c7cbb0d04a7f5654a5a9f4ecb5360842c376b2a8dbfb2ddc75193e4eabfd0944e65371fb1dd1e4c599afb70f27d986d92880  0050-arm-tegra30-assorted-DTS-fixes-WIP.patch
+22edf7a8d4e0d4c91a076ac93740bbba6c4a2b8fe90c8a6407254ff4bdbbc806e66a18c17003d0559d87acfa48a81dfb09c0379a368384d613bfa297f3409511  0051-arm-early-console-using-bootloader-framebuffer-WIP.patch
+8e7732ed3611e0efae342c556351ff12469eb7282acfb94f04c774f06b85672ea2556e9d04ef7b2cc5a44eb519e8a8287cb175287ce062228cd1d7f223d7c6d5  0052-arm-tegra-add-Asus-Transformer-Pad-TF300T-descriptio.patch"

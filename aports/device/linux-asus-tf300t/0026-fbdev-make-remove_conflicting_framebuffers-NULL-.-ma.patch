@@ -1,0 +1,41 @@
+From 92a6ef82c2b08826420d7a539dd91b0a1c789ac8 Mon Sep 17 00:00:00 2001
+Message-Id: <92a6ef82c2b08826420d7a539dd91b0a1c789ac8.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 10:21:48 +0200
+Subject: [PATCH 26/52] fbdev: make remove_conflicting_framebuffers(NULL, ...)
+ match any
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Let remove_conflicting_framebuffers(NULL, ...) match NULL aperture
+with any non-NULL framebuffer aperture.  This simplifies drivers which
+can scanout from system memory and allocate aperture struct just
+to free it after the call.
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/video/fbdev/core/fbmem.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index f741ba8df01b..f44f9421a4d0 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1576,8 +1576,9 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
+ 				    struct apertures_struct *hwa)
+ {
+ 	int i, j;
+-	if (!hwa || !gena)
+-		return false;
++
++	if (!hwa)
++		return !!gena;
+ 
+ 	for (i = 0; i < hwa->count; ++i) {
+ 		struct aperture *h = &hwa->ranges[i];
+-- 
+2.14.2
+

@@ -1,0 +1,59 @@
+From af06e439b9502654d654b328d80b88d2f3fa756c Mon Sep 17 00:00:00 2001
+Message-Id: <af06e439b9502654d654b328d80b88d2f3fa756c.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 10:55:27 +0200
+Subject: [PATCH 29/52] drm: vc4: use shorter remove_conflicting_framebuffers()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Use newly introduced remove_conflicting_framebuffers(NULL).
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/gpu/drm/vc4/vc4_drv.c | 20 +-------------------
+ 1 file changed, 1 insertion(+), 19 deletions(-)
+
+diff --git a/drivers/gpu/drm/vc4/vc4_drv.c b/drivers/gpu/drm/vc4/vc4_drv.c
+index 1c96edcb302b..000a73d4ef6e 100644
+--- a/drivers/gpu/drm/vc4/vc4_drv.c
++++ b/drivers/gpu/drm/vc4/vc4_drv.c
+@@ -219,24 +219,6 @@ static void vc4_match_add_drivers(struct device *dev,
+ 	}
+ }
+ 
+-static void vc4_kick_out_firmware_fb(void)
+-{
+-	struct apertures_struct *ap;
+-
+-	ap = alloc_apertures(1);
+-	if (!ap)
+-		return;
+-
+-	/* Since VC4 is a UMA device, the simplefb node may have been
+-	 * located anywhere in memory.
+-	 */
+-	ap->ranges[0].base = 0;
+-	ap->ranges[0].size = ~0;
+-
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "vc4drmfb", false);
+-	kfree(ap);
+-}
+-
+ static int vc4_drm_bind(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+@@ -269,7 +251,7 @@ static int vc4_drm_bind(struct device *dev)
+ 	if (ret)
+ 		goto gem_destroy;
+ 
+-	vc4_kick_out_firmware_fb();
++	drm_fb_helper_remove_conflicting_framebuffers(NULL, "vc4drmfb", false);
+ 
+ 	ret = drm_dev_register(drm, 0);
+ 	if (ret < 0)
+-- 
+2.14.2
+

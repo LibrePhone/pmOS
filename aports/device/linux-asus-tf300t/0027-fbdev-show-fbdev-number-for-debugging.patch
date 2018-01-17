@@ -1,0 +1,34 @@
+From 439bfbdbcec7321adbdece5822099f41259d4496 Mon Sep 17 00:00:00 2001
+Message-Id: <439bfbdbcec7321adbdece5822099f41259d4496.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 10:42:59 +0200
+Subject: [PATCH 27/52] fbdev: show fbdev number for debugging
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/video/fbdev/core/fbmem.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index f44f9421a4d0..ff2a3ab74a34 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1619,8 +1619,8 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 			(primary && gen_aper && gen_aper->count &&
+ 			 gen_aper->ranges[0].base == VGA_FB_PHYS)) {
+ 
+-			printk(KERN_INFO "fb: switching to %s from %s\n",
+-			       name, registered_fb[i]->fix.id);
++			printk(KERN_INFO "fb%d: switching to %s from %s\n",
++			       i, name, registered_fb[i]->fix.id);
+ 			ret = do_unregister_framebuffer(registered_fb[i]);
+ 			if (ret)
+ 				return ret;
+-- 
+2.14.2
+

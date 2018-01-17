@@ -1,0 +1,34 @@
+From 70b405c2ba5b803e654e3628d572bc4e48d42f37 Mon Sep 17 00:00:00 2001
+Message-Id: <70b405c2ba5b803e654e3628d572bc4e48d42f37.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 3 Aug 2017 05:39:10 +0200
+Subject: [PATCH 21/52] usb: chipidea: usb2: constify zynq_pdata
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+pdata is copied anyway to allow setting device name.
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ drivers/usb/chipidea/ci_hdrc_usb2.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/usb/chipidea/ci_hdrc_usb2.c b/drivers/usb/chipidea/ci_hdrc_usb2.c
+index 99425db9ba62..82c405dff6b8 100644
+--- a/drivers/usb/chipidea/ci_hdrc_usb2.c
++++ b/drivers/usb/chipidea/ci_hdrc_usb2.c
+@@ -31,7 +31,7 @@ static const struct ci_hdrc_platform_data ci_default_pdata = {
+ 	.flags		= CI_HDRC_DISABLE_STREAMING,
+ };
+ 
+-static struct ci_hdrc_platform_data ci_zynq_pdata = {
++static const struct ci_hdrc_platform_data ci_zynq_pdata = {
+ 	.capoffset	= DEF_CAPOFFSET,
+ };
+ 
+-- 
+2.14.2
+

@@ -1,0 +1,1808 @@
+From a4ad875f4722196aeadc4065f6ec3e4611fbb2ce Mon Sep 17 00:00:00 2001
+Message-Id: <a4ad875f4722196aeadc4065f6ec3e4611fbb2ce.1516189772.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+References: <ca5e9bd6560a188703123bcef6012ce2efa71aaf.1516189772.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Fri, 21 Jul 2017 02:23:02 +0200
+Subject: [PATCH 15/52] arm: tegra: dts: label I2C interfaces
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+---
+ arch/arm/boot/dts/tegra30-apalis-eval.dts     |  76 ++---
+ arch/arm/boot/dts/tegra30-apalis.dtsi         | 422 +++++++++++++-------------
+ arch/arm/boot/dts/tegra30-beaver.dts          | 304 +++++++++----------
+ arch/arm/boot/dts/tegra30-cardhu.dtsi         | 354 ++++++++++-----------
+ arch/arm/boot/dts/tegra30-colibri-eval-v3.dts |  44 +--
+ arch/arm/boot/dts/tegra30-colibri.dtsi        | 398 ++++++++++++------------
+ arch/arm/boot/dts/tegra30.dtsi                |  10 +-
+ 7 files changed, 804 insertions(+), 804 deletions(-)
+
+diff --git a/arch/arm/boot/dts/tegra30-apalis-eval.dts b/arch/arm/boot/dts/tegra30-apalis-eval.dts
+index 5e9c8528d1d2..9719da929aa8 100644
+--- a/arch/arm/boot/dts/tegra30-apalis-eval.dts
++++ b/arch/arm/boot/dts/tegra30-apalis-eval.dts
+@@ -8,8 +8,8 @@
+ 	compatible = "toradex,apalis_t30-eval", "toradex,apalis_t30", "nvidia,tegra30";
+ 
+ 	aliases {
+-		rtc0 = "/i2c@7000c000/rtc@68";
+-		rtc1 = "/i2c@7000d000/tps65911@2d";
++		rtc0 = &rtc0;
++		rtc1 = &pmic;
+ 		rtc2 = "/rtc@7000e000";
+ 		serial0 = &uarta;
+ 		serial1 = &uartb;
+@@ -72,42 +72,6 @@
+ 		status = "okay";
+ 	};
+ 
+-	/*
+-	 * GEN1_I2C: I2C1_SDA/SCL on MXM3 pin 209/211 (e.g. RTC on carrier
+-	 * board)
+-	 */
+-	i2c@7000c000 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-
+-		pcie-switch@58 {
+-			compatible = "plx,pex8605";
+-			reg = <0x58>;
+-		};
+-
+-		/* M41T0M6 real time clock on carrier board */
+-		rtc@68 {
+-			compatible = "st,m41t00";
+-			reg = <0x68>;
+-		};
+-	};
+-
+-	/* GEN2_I2C: unused */
+-
+-	/*
+-	 * CAM_I2C: I2C3_SDA/SCL on MXM3 pin 201/203 (e.g. camera sensor on
+-	 * carrier board)
+-	 */
+-	cami2c: i2c@7000c500 {
+-		status = "okay";
+-		clock-frequency = <400000>;
+-	};
+-
+-	/* DDC: I2C2_SDA/SCL on MXM3 pin 205/207 (e.g. display EDID) */
+-	hdmiddc: i2c@7000c700 {
+-		status = "okay";
+-	};
+-
+ 	/* SPI1: Apalis SPI1 */
+ 	spi@7000d400 {
+ 		status = "okay";
+@@ -256,6 +220,42 @@
+ 	};
+ };
+ 
++/*
++ * GEN1_I2C: I2C1_SDA/SCL on MXM3 pin 209/211 (e.g. RTC on carrier
++ * board)
++ */
++&i2c1 {
++	status = "okay";
++	clock-frequency = <100000>;
++
++	pcie-switch@58 {
++		compatible = "plx,pex8605";
++		reg = <0x58>;
++	};
++
++	/* M41T0M6 real time clock on carrier board */
++	rtc0: rtc@68 {
++		compatible = "st,m41t00";
++		reg = <0x68>;
++	};
++};
++
++/* GEN2_I2C: unused */
++
++/*
++ * CAM_I2C: I2C3_SDA/SCL on MXM3 pin 201/203 (e.g. camera sensor on
++ * carrier board)
++ */
++cami2c: &i2c3 {
++	status = "okay";
++	clock-frequency = <400000>;
++};
++
++/* DDC: I2C2_SDA/SCL on MXM3 pin 205/207 (e.g. display EDID) */
++hdmiddc: &i2c4 {
++	status = "okay";
++};
++
+ sd1: &sdmmc1 {
+ 	status = "okay";
+ 	bus-width = <4>;
+diff --git a/arch/arm/boot/dts/tegra30-apalis.dtsi b/arch/arm/boot/dts/tegra30-apalis.dtsi
+index 8c0d8bbc6eeb..056575433c5e 100644
+--- a/arch/arm/boot/dts/tegra30-apalis.dtsi
++++ b/arch/arm/boot/dts/tegra30-apalis.dtsi
+@@ -435,217 +435,6 @@
+ 		};
+ 	};
+ 
+-	hdmiddc: i2c@7000c700 {
+-		clock-frequency = <100000>;
+-	};
+-
+-	/*
+-	 * PWR_I2C: power I2C to audio codec, PMIC, temperature sensor and
+-	 * touch screen controller
+-	 */
+-	i2c@7000d000 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-
+-		/* SGTL5000 audio codec */
+-		sgtl5000: codec@a {
+-			compatible = "fsl,sgtl5000";
+-			reg = <0x0a>;
+-			VDDA-supply = <&sys_3v3_reg>;
+-			VDDIO-supply = <&sys_3v3_reg>;
+-			clocks = <&tegra_car TEGRA30_CLK_EXTERN1>;
+-		};
+-
+-		pmic: tps65911@2d {
+-			compatible = "ti,tps65911";
+-			reg = <0x2d>;
+-
+-			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+-			#interrupt-cells = <2>;
+-			interrupt-controller;
+-
+-			ti,system-power-controller;
+-
+-			#gpio-cells = <2>;
+-			gpio-controller;
+-
+-			vcc1-supply = <&sys_3v3_reg>;
+-			vcc2-supply = <&sys_3v3_reg>;
+-			vcc3-supply = <&vio_reg>;
+-			vcc4-supply = <&sys_3v3_reg>;
+-			vcc5-supply = <&sys_3v3_reg>;
+-			vcc6-supply = <&vio_reg>;
+-			vcc7-supply = <&charge_pump_5v0_reg>;
+-			vccio-supply = <&sys_3v3_reg>;
+-
+-			regulators {
+-				/* SW1: +V1.35_VDDIO_DDR */
+-				vdd1_reg: vdd1 {
+-					regulator-name = "vddio_ddr_1v35";
+-					regulator-min-microvolt = <1350000>;
+-					regulator-max-microvolt = <1350000>;
+-					regulator-always-on;
+-				};
+-
+-				/* SW2: +V1.05 */
+-				vdd2_reg: vdd2 {
+-					regulator-name =
+-						"vdd_pexa,vdd_pexb,vdd_sata";
+-					regulator-min-microvolt = <1050000>;
+-					regulator-max-microvolt = <1050000>;
+-				};
+-
+-				/* SW CTRL: +V1.0_VDD_CPU */
+-				vddctrl_reg: vddctrl {
+-					regulator-name = "vdd_cpu,vdd_sys";
+-					regulator-min-microvolt = <1150000>;
+-					regulator-max-microvolt = <1150000>;
+-					regulator-always-on;
+-				};
+-
+-				/* SWIO: +V1.8 */
+-				vio_reg: vio {
+-					regulator-name = "vdd_1v8_gen";
+-					regulator-min-microvolt = <1800000>;
+-					regulator-max-microvolt = <1800000>;
+-					regulator-always-on;
+-				};
+-
+-				/* LDO1: unused */
+-
+-				/*
+-				 * EN_+V3.3 switching via FET:
+-				 * +V3.3_AUDIO_AVDD_S, +V3.3 and +V1.8_VDD_LAN
+-				 * see also v3_3 fixed supply
+-				 */
+-				ldo2_reg: ldo2 {
+-					regulator-name = "en_3v3";
+-					regulator-min-microvolt = <3300000>;
+-					regulator-max-microvolt = <3300000>;
+-					regulator-always-on;
+-				};
+-
+-				/* +V1.2_CSI */
+-				ldo3_reg: ldo3 {
+-					regulator-name =
+-						"avdd_dsi_csi,pwrdet_mipi";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-				};
+-
+-				/* +V1.2_VDD_RTC */
+-				ldo4_reg: ldo4 {
+-					regulator-name = "vdd_rtc";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				/*
+-				 * +V2.8_AVDD_VDAC:
+-				 * only required for analog RGB
+-				 */
+-				ldo5_reg: ldo5 {
+-					regulator-name = "avdd_vdac";
+-					regulator-min-microvolt = <2800000>;
+-					regulator-max-microvolt = <2800000>;
+-					regulator-always-on;
+-				};
+-
+-				/*
+-				 * +V1.05_AVDD_PLLE: avdd_plle should be 1.05V
+-				 * but LDO6 can't set voltage in 50mV
+-				 * granularity
+-				 */
+-				ldo6_reg: ldo6 {
+-					regulator-name = "avdd_plle";
+-					regulator-min-microvolt = <1100000>;
+-					regulator-max-microvolt = <1100000>;
+-				};
+-
+-				/* +V1.2_AVDD_PLL */
+-				ldo7_reg: ldo7 {
+-					regulator-name = "avdd_pll";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				/* +V1.0_VDD_DDR_HS */
+-				ldo8_reg: ldo8 {
+-					regulator-name = "vdd_ddr_hs";
+-					regulator-min-microvolt = <1000000>;
+-					regulator-max-microvolt = <1000000>;
+-					regulator-always-on;
+-				};
+-			};
+-		};
+-
+-		/* STMPE811 touch screen controller */
+-		stmpe811@41 {
+-			compatible = "st,stmpe811";
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			reg = <0x41>;
+-			interrupts = <TEGRA_GPIO(V, 0) IRQ_TYPE_LEVEL_LOW>;
+-			interrupt-parent = <&gpio>;
+-			interrupt-controller;
+-			id = <0>;
+-			blocks = <0x5>;
+-			irq-trigger = <0x1>;
+-
+-			stmpe_touchscreen@0 {
+-				compatible = "st,stmpe-ts";
+-				reg = <0>;
+-				/* 3.25 MHz ADC clock speed */
+-				st,adc-freq = <1>;
+-				/* 8 sample average control */
+-				st,ave-ctrl = <3>;
+-				/* 7 length fractional part in z */
+-				st,fraction-z = <7>;
+-				/*
+-				 * 50 mA typical 80 mA max touchscreen drivers
+-				 * current limit value
+-				 */
+-				st,i-drive = <1>;
+-				/* 12-bit ADC */
+-				st,mod-12b = <1>;
+-				/* internal ADC reference */
+-				st,ref-sel = <0>;
+-				/* ADC converstion time: 80 clocks */
+-				st,sample-time = <4>;
+-				/* 1 ms panel driver settling time */
+-				st,settling = <3>;
+-				/* 5 ms touch detect interrupt delay */
+-				st,touch-det-delay = <5>;
+-			};
+-		};
+-
+-		/*
+-		 * LM95245 temperature sensor
+-		 * Note: OVERT_N directly connected to PMIC PWRDN
+-		 */
+-		temp-sensor@4c {
+-			compatible = "national,lm95245";
+-			reg = <0x4c>;
+-		};
+-
+-		/* SW: +V1.2_VDD_CORE */
+-		tps62362@60 {
+-			compatible = "ti,tps62362";
+-			reg = <0x60>;
+-
+-			regulator-name = "tps62362-vout";
+-			regulator-min-microvolt = <900000>;
+-			regulator-max-microvolt = <1400000>;
+-			regulator-boot-on;
+-			regulator-always-on;
+-			ti,vsel0-state-low;
+-			/* VSEL1: EN_CORE_DVFS_N low for DVFS */
+-			ti,vsel1-state-low;
+-		};
+-	};
+-
+ 	/* SPI4: CAN2 */
+ 	spi@7000da00 {
+ 		status = "okay";
+@@ -777,6 +566,217 @@
+ 	};
+ };
+ 
++hdmiddc: &i2c4 {
++	clock-frequency = <100000>;
++};
++
++/*
++ * PWR_I2C: power I2C to audio codec, PMIC, temperature sensor and
++ * touch screen controller
++ */
++&i2c5 {
++	status = "okay";
++	clock-frequency = <100000>;
++
++	/* SGTL5000 audio codec */
++	sgtl5000: codec@a {
++		compatible = "fsl,sgtl5000";
++		reg = <0x0a>;
++		VDDA-supply = <&sys_3v3_reg>;
++		VDDIO-supply = <&sys_3v3_reg>;
++		clocks = <&tegra_car TEGRA30_CLK_EXTERN1>;
++	};
++
++	pmic: tps65911@2d {
++		compatible = "ti,tps65911";
++		reg = <0x2d>;
++
++		interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
++		#interrupt-cells = <2>;
++		interrupt-controller;
++
++		ti,system-power-controller;
++
++		#gpio-cells = <2>;
++		gpio-controller;
++
++		vcc1-supply = <&sys_3v3_reg>;
++		vcc2-supply = <&sys_3v3_reg>;
++		vcc3-supply = <&vio_reg>;
++		vcc4-supply = <&sys_3v3_reg>;
++		vcc5-supply = <&sys_3v3_reg>;
++		vcc6-supply = <&vio_reg>;
++		vcc7-supply = <&charge_pump_5v0_reg>;
++		vccio-supply = <&sys_3v3_reg>;
++
++		regulators {
++			/* SW1: +V1.35_VDDIO_DDR */
++			vdd1_reg: vdd1 {
++				regulator-name = "vddio_ddr_1v35";
++				regulator-min-microvolt = <1350000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-always-on;
++			};
++
++			/* SW2: +V1.05 */
++			vdd2_reg: vdd2 {
++				regulator-name =
++					"vdd_pexa,vdd_pexb,vdd_sata";
++				regulator-min-microvolt = <1050000>;
++				regulator-max-microvolt = <1050000>;
++			};
++
++			/* SW CTRL: +V1.0_VDD_CPU */
++			vddctrl_reg: vddctrl {
++				regulator-name = "vdd_cpu,vdd_sys";
++				regulator-min-microvolt = <1150000>;
++				regulator-max-microvolt = <1150000>;
++				regulator-always-on;
++			};
++
++			/* SWIO: +V1.8 */
++			vio_reg: vio {
++				regulator-name = "vdd_1v8_gen";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++			};
++
++			/* LDO1: unused */
++
++			/*
++			 * EN_+V3.3 switching via FET:
++			 * +V3.3_AUDIO_AVDD_S, +V3.3 and +V1.8_VDD_LAN
++			 * see also v3_3 fixed supply
++			 */
++			ldo2_reg: ldo2 {
++				regulator-name = "en_3v3";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-always-on;
++			};
++
++			/* +V1.2_CSI */
++			ldo3_reg: ldo3 {
++				regulator-name =
++					"avdd_dsi_csi,pwrdet_mipi";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++			};
++
++			/* +V1.2_VDD_RTC */
++			ldo4_reg: ldo4 {
++				regulator-name = "vdd_rtc";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			/*
++			 * +V2.8_AVDD_VDAC:
++			 * only required for analog RGB
++			 */
++			ldo5_reg: ldo5 {
++				regulator-name = "avdd_vdac";
++				regulator-min-microvolt = <2800000>;
++				regulator-max-microvolt = <2800000>;
++				regulator-always-on;
++			};
++
++			/*
++			 * +V1.05_AVDD_PLLE: avdd_plle should be 1.05V
++			 * but LDO6 can't set voltage in 50mV
++			 * granularity
++			 */
++			ldo6_reg: ldo6 {
++				regulator-name = "avdd_plle";
++				regulator-min-microvolt = <1100000>;
++				regulator-max-microvolt = <1100000>;
++			};
++
++			/* +V1.2_AVDD_PLL */
++			ldo7_reg: ldo7 {
++				regulator-name = "avdd_pll";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			/* +V1.0_VDD_DDR_HS */
++			ldo8_reg: ldo8 {
++				regulator-name = "vdd_ddr_hs";
++				regulator-min-microvolt = <1000000>;
++				regulator-max-microvolt = <1000000>;
++				regulator-always-on;
++			};
++		};
++	};
++
++	/* STMPE811 touch screen controller */
++	stmpe811@41 {
++		compatible = "st,stmpe811";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x41>;
++		interrupts = <TEGRA_GPIO(V, 0) IRQ_TYPE_LEVEL_LOW>;
++		interrupt-parent = <&gpio>;
++		interrupt-controller;
++		id = <0>;
++		blocks = <0x5>;
++		irq-trigger = <0x1>;
++
++		stmpe_touchscreen@0 {
++			compatible = "st,stmpe-ts";
++			reg = <0>;
++			/* 3.25 MHz ADC clock speed */
++			st,adc-freq = <1>;
++			/* 8 sample average control */
++			st,ave-ctrl = <3>;
++			/* 7 length fractional part in z */
++			st,fraction-z = <7>;
++			/*
++			 * 50 mA typical 80 mA max touchscreen drivers
++			 * current limit value
++			 */
++			st,i-drive = <1>;
++			/* 12-bit ADC */
++			st,mod-12b = <1>;
++			/* internal ADC reference */
++			st,ref-sel = <0>;
++			/* ADC converstion time: 80 clocks */
++			st,sample-time = <4>;
++			/* 1 ms panel driver settling time */
++			st,settling = <3>;
++			/* 5 ms touch detect interrupt delay */
++			st,touch-det-delay = <5>;
++		};
++	};
++
++	/*
++	 * LM95245 temperature sensor
++	 * Note: OVERT_N directly connected to PMIC PWRDN
++	 */
++	temp-sensor@4c {
++		compatible = "national,lm95245";
++		reg = <0x4c>;
++	};
++
++	/* SW: +V1.2_VDD_CORE */
++	tps62362@60 {
++		compatible = "ti,tps62362";
++		reg = <0x60>;
++
++		regulator-name = "tps62362-vout";
++		regulator-min-microvolt = <900000>;
++		regulator-max-microvolt = <1400000>;
++		regulator-boot-on;
++		regulator-always-on;
++		ti,vsel0-state-low;
++		/* VSEL1: EN_CORE_DVFS_N low for DVFS */
++		ti,vsel1-state-low;
++	};
++};
++
+ /* eMMC */
+ &sdmmc4 {
+ 	status = "okay";
+diff --git a/arch/arm/boot/dts/tegra30-beaver.dts b/arch/arm/boot/dts/tegra30-beaver.dts
+index 573feedfee08..78302fe3de88 100644
+--- a/arch/arm/boot/dts/tegra30-beaver.dts
++++ b/arch/arm/boot/dts/tegra30-beaver.dts
+@@ -7,7 +7,7 @@
+ 	compatible = "nvidia,beaver", "nvidia,tegra30";
+ 
+ 	aliases {
+-		rtc0 = "/i2c@7000d000/tps65911@2d";
++		rtc0 = &pmic;
+ 		rtc1 = "/rtc@7000e000";
+ 		serial0 = &uarta;
+ 	};
+@@ -1733,157 +1733,6 @@
+ 		status = "okay";
+ 	};
+ 
+-	i2c@7000c000 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-	};
+-
+-	i2c@7000c400 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-	};
+-
+-	i2c@7000c500 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-	};
+-
+-	hdmiddc: i2c@7000c700 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-	};
+-
+-	i2c@7000d000 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-
+-		rt5640: rt5640@1c {
+-			compatible = "realtek,rt5640";
+-			reg = <0x1c>;
+-			interrupt-parent = <&gpio>;
+-			interrupts = <TEGRA_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
+-			realtek,ldo1-en-gpios =
+-				<&gpio TEGRA_GPIO(X, 2) GPIO_ACTIVE_HIGH>;
+-		};
+-
+-		pmic: tps65911@2d {
+-			compatible = "ti,tps65911";
+-			reg = <0x2d>;
+-
+-			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+-			#interrupt-cells = <2>;
+-			interrupt-controller;
+-
+-			ti,system-power-controller;
+-
+-			#gpio-cells = <2>;
+-			gpio-controller;
+-
+-			vcc1-supply = <&vdd_5v_in_reg>;
+-			vcc2-supply = <&vdd_5v_in_reg>;
+-			vcc3-supply = <&vio_reg>;
+-			vcc4-supply = <&vdd_5v_in_reg>;
+-			vcc5-supply = <&vdd_5v_in_reg>;
+-			vcc6-supply = <&vdd2_reg>;
+-			vcc7-supply = <&vdd_5v_in_reg>;
+-			vccio-supply = <&vdd_5v_in_reg>;
+-
+-			regulators {
+-				#address-cells = <1>;
+-				#size-cells = <0>;
+-
+-				vdd1_reg: vdd1 {
+-					regulator-name = "vddio_ddr_1v2";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				vdd2_reg: vdd2 {
+-					regulator-name = "vdd_1v5_gen";
+-					regulator-min-microvolt = <1500000>;
+-					regulator-max-microvolt = <1500000>;
+-					regulator-always-on;
+-				};
+-
+-				vddctrl_reg: vddctrl {
+-					regulator-name = "vdd_cpu,vdd_sys";
+-					regulator-min-microvolt = <1000000>;
+-					regulator-max-microvolt = <1000000>;
+-					regulator-always-on;
+-				};
+-
+-				vio_reg: vio {
+-					regulator-name = "vdd_1v8_gen";
+-					regulator-min-microvolt = <1800000>;
+-					regulator-max-microvolt = <1800000>;
+-					regulator-always-on;
+-				};
+-
+-				ldo1_reg: ldo1 {
+-					regulator-name = "vdd_pexa,vdd_pexb";
+-					regulator-min-microvolt = <1050000>;
+-					regulator-max-microvolt = <1050000>;
+-				};
+-
+-				ldo2_reg: ldo2 {
+-					regulator-name = "vdd_sata,avdd_plle";
+-					regulator-min-microvolt = <1050000>;
+-					regulator-max-microvolt = <1050000>;
+-				};
+-
+-				/* LDO3 is not connected to anything */
+-
+-				ldo4_reg: ldo4 {
+-					regulator-name = "vdd_rtc";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				ldo5_reg: ldo5 {
+-					regulator-name = "vddio_sdmmc,avdd_vdac";
+-					regulator-min-microvolt = <1800000>;
+-					regulator-max-microvolt = <3300000>;
+-					regulator-always-on;
+-				};
+-
+-				ldo6_reg: ldo6 {
+-					regulator-name = "avdd_dsi_csi,pwrdet_mipi";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-				};
+-
+-				ldo7_reg: ldo7 {
+-					regulator-name = "vdd_pllm,x,u,a_p_c_s";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				ldo8_reg: ldo8 {
+-					regulator-name = "vdd_ddr_hs";
+-					regulator-min-microvolt = <1000000>;
+-					regulator-max-microvolt = <1000000>;
+-					regulator-always-on;
+-				};
+-			};
+-		};
+-
+-		tps62361@60 {
+-			compatible = "ti,tps62361";
+-			reg = <0x60>;
+-
+-			regulator-name = "tps62361-vout";
+-			regulator-min-microvolt = <500000>;
+-			regulator-max-microvolt = <1500000>;
+-			regulator-boot-on;
+-			regulator-always-on;
+-			ti,vsel0-state-high;
+-			ti,vsel1-state-high;
+-		};
+-	};
+-
+ 	spi@7000da00 {
+ 		status = "okay";
+ 		spi-max-frequency = <25000000>;
+@@ -2103,6 +1952,157 @@
+ 	};
+ };
+ 
++&i2c1 {
++	status = "okay";
++	clock-frequency = <100000>;
++};
++
++&i2c2 {
++	status = "okay";
++	clock-frequency = <100000>;
++};
++
++&i2c3 {
++	status = "okay";
++	clock-frequency = <100000>;
++};
++
++hdmiddc: &i2c4 {
++	status = "okay";
++	clock-frequency = <100000>;
++};
++
++&i2c5 {
++	status = "okay";
++	clock-frequency = <100000>;
++
++	rt5640: rt5640@1c {
++		compatible = "realtek,rt5640";
++		reg = <0x1c>;
++		interrupt-parent = <&gpio>;
++		interrupts = <TEGRA_GPIO(X, 3) GPIO_ACTIVE_HIGH>;
++		realtek,ldo1-en-gpios =
++			<&gpio TEGRA_GPIO(X, 2) GPIO_ACTIVE_HIGH>;
++	};
++
++	pmic: tps65911@2d {
++		compatible = "ti,tps65911";
++		reg = <0x2d>;
++
++		interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
++		#interrupt-cells = <2>;
++		interrupt-controller;
++
++		ti,system-power-controller;
++
++		#gpio-cells = <2>;
++		gpio-controller;
++
++		vcc1-supply = <&vdd_5v_in_reg>;
++		vcc2-supply = <&vdd_5v_in_reg>;
++		vcc3-supply = <&vio_reg>;
++		vcc4-supply = <&vdd_5v_in_reg>;
++		vcc5-supply = <&vdd_5v_in_reg>;
++		vcc6-supply = <&vdd2_reg>;
++		vcc7-supply = <&vdd_5v_in_reg>;
++		vccio-supply = <&vdd_5v_in_reg>;
++
++		regulators {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			vdd1_reg: vdd1 {
++				regulator-name = "vddio_ddr_1v2";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			vdd2_reg: vdd2 {
++				regulator-name = "vdd_1v5_gen";
++				regulator-min-microvolt = <1500000>;
++				regulator-max-microvolt = <1500000>;
++				regulator-always-on;
++			};
++
++			vddctrl_reg: vddctrl {
++				regulator-name = "vdd_cpu,vdd_sys";
++				regulator-min-microvolt = <1000000>;
++				regulator-max-microvolt = <1000000>;
++				regulator-always-on;
++			};
++
++			vio_reg: vio {
++				regulator-name = "vdd_1v8_gen";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++			};
++
++			ldo1_reg: ldo1 {
++				regulator-name = "vdd_pexa,vdd_pexb";
++				regulator-min-microvolt = <1050000>;
++				regulator-max-microvolt = <1050000>;
++			};
++
++			ldo2_reg: ldo2 {
++				regulator-name = "vdd_sata,avdd_plle";
++				regulator-min-microvolt = <1050000>;
++				regulator-max-microvolt = <1050000>;
++			};
++
++			/* LDO3 is not connected to anything */
++
++			ldo4_reg: ldo4 {
++				regulator-name = "vdd_rtc";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			ldo5_reg: ldo5 {
++				regulator-name = "vddio_sdmmc,avdd_vdac";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-always-on;
++			};
++
++			ldo6_reg: ldo6 {
++				regulator-name = "avdd_dsi_csi,pwrdet_mipi";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++			};
++
++			ldo7_reg: ldo7 {
++				regulator-name = "vdd_pllm,x,u,a_p_c_s";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			ldo8_reg: ldo8 {
++				regulator-name = "vdd_ddr_hs";
++				regulator-min-microvolt = <1000000>;
++				regulator-max-microvolt = <1000000>;
++				regulator-always-on;
++			};
++		};
++	};
++
++	tps62361@60 {
++		compatible = "ti,tps62361";
++		reg = <0x60>;
++
++		regulator-name = "tps62361-vout";
++		regulator-min-microvolt = <500000>;
++		regulator-max-microvolt = <1500000>;
++		regulator-boot-on;
++		regulator-always-on;
++		ti,vsel0-state-high;
++		ti,vsel1-state-high;
++	};
++};
++
+ &sdmmc1 {
+ 	status = "okay";
+ 	vqmmc-supply = <&ldo5_reg>;
+diff --git a/arch/arm/boot/dts/tegra30-cardhu.dtsi b/arch/arm/boot/dts/tegra30-cardhu.dtsi
+index 44a883fceca0..a1f6fde7e77e 100644
+--- a/arch/arm/boot/dts/tegra30-cardhu.dtsi
++++ b/arch/arm/boot/dts/tegra30-cardhu.dtsi
+@@ -29,7 +29,7 @@
+ 	compatible = "nvidia,cardhu", "nvidia,tegra30";
+ 
+ 	aliases {
+-		rtc0 = "/i2c@7000d000/tps65911@2d";
++		rtc0 = &pmic;
+ 		rtc1 = "/rtc@7000e000";
+ 		serial0 = &uarta;
+ 		serial1 = &uartc;
+@@ -178,182 +178,6 @@
+ 		status = "okay";
+ 	};
+ 
+-	panelddc: i2c@7000c000 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-	};
+-
+-	i2c@7000c400 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-	};
+-
+-	i2c@7000c500 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-
+-		/* ALS and Proximity sensor */
+-		isl29028@44 {
+-			compatible = "isil,isl29028";
+-			reg = <0x44>;
+-			interrupt-parent = <&gpio>;
+-			interrupts = <TEGRA_GPIO(L, 0) IRQ_TYPE_LEVEL_HIGH>;
+-		};
+-
+-		i2cmux@70 {
+-			compatible = "nxp,pca9546";
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			reg = <0x70>;
+-		};
+-	};
+-
+-	i2c@7000c700 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-	};
+-
+-	i2c@7000d000 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-
+-		wm8903: wm8903@1a {
+-			compatible = "wlf,wm8903";
+-			reg = <0x1a>;
+-			interrupt-parent = <&gpio>;
+-			interrupts = <TEGRA_GPIO(W, 3) IRQ_TYPE_LEVEL_HIGH>;
+-
+-			gpio-controller;
+-			#gpio-cells = <2>;
+-
+-			micdet-cfg = <0>;
+-			micdet-delay = <100>;
+-			gpio-cfg = <0xffffffff 0xffffffff 0 0xffffffff 0xffffffff>;
+-		};
+-
+-		pmic: tps65911@2d {
+-			compatible = "ti,tps65911";
+-			reg = <0x2d>;
+-
+-			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+-			#interrupt-cells = <2>;
+-			interrupt-controller;
+-
+-			ti,system-power-controller;
+-
+-			#gpio-cells = <2>;
+-			gpio-controller;
+-
+-			vcc1-supply = <&vdd_ac_bat_reg>;
+-			vcc2-supply = <&vdd_ac_bat_reg>;
+-			vcc3-supply = <&vio_reg>;
+-			vcc4-supply = <&vdd_5v0_reg>;
+-			vcc5-supply = <&vdd_ac_bat_reg>;
+-			vcc6-supply = <&vdd2_reg>;
+-			vcc7-supply = <&vdd_ac_bat_reg>;
+-			vccio-supply = <&vdd_ac_bat_reg>;
+-
+-			regulators {
+-				vdd1_reg: vdd1 {
+-					regulator-name = "vddio_ddr_1v2";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				vdd2_reg: vdd2 {
+-					regulator-name = "vdd_1v5_gen";
+-					regulator-min-microvolt = <1500000>;
+-					regulator-max-microvolt = <1500000>;
+-					regulator-always-on;
+-				};
+-
+-				vddctrl_reg: vddctrl {
+-					regulator-name = "vdd_cpu,vdd_sys";
+-					regulator-min-microvolt = <1000000>;
+-					regulator-max-microvolt = <1000000>;
+-					regulator-always-on;
+-				};
+-
+-				vio_reg: vio {
+-					regulator-name = "vdd_1v8_gen";
+-					regulator-min-microvolt = <1800000>;
+-					regulator-max-microvolt = <1800000>;
+-					regulator-always-on;
+-				};
+-
+-				ldo1_reg: ldo1 {
+-					regulator-name = "vdd_pexa,vdd_pexb";
+-					regulator-min-microvolt = <1050000>;
+-					regulator-max-microvolt = <1050000>;
+-				};
+-
+-				ldo2_reg: ldo2 {
+-					regulator-name = "vdd_sata,avdd_plle";
+-					regulator-min-microvolt = <1050000>;
+-					regulator-max-microvolt = <1050000>;
+-				};
+-
+-				/* LDO3 is not connected to anything */
+-
+-				ldo4_reg: ldo4 {
+-					regulator-name = "vdd_rtc";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				ldo5_reg: ldo5 {
+-					regulator-name = "vddio_sdmmc,avdd_vdac";
+-					regulator-min-microvolt = <3300000>;
+-					regulator-max-microvolt = <3300000>;
+-					regulator-always-on;
+-				};
+-
+-				ldo6_reg: ldo6 {
+-					regulator-name = "avdd_dsi_csi,pwrdet_mipi";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-				};
+-
+-				ldo7_reg: ldo7 {
+-					regulator-name = "vdd_pllm,x,u,a_p_c_s";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				ldo8_reg: ldo8 {
+-					regulator-name = "vdd_ddr_hs";
+-					regulator-min-microvolt = <1000000>;
+-					regulator-max-microvolt = <1000000>;
+-					regulator-always-on;
+-				};
+-			};
+-		};
+-
+-		temperature-sensor@4c {
+-			compatible = "onnn,nct1008";
+-			reg = <0x4c>;
+-			vcc-supply = <&sys_3v3_reg>;
+-			interrupt-parent = <&gpio>;
+-			interrupts = <TEGRA_GPIO(CC, 2) IRQ_TYPE_LEVEL_LOW>;
+-		};
+-
+-		tps62361@60 {
+-			compatible = "ti,tps62361";
+-			reg = <0x60>;
+-
+-			regulator-name = "tps62361-vout";
+-			regulator-min-microvolt = <500000>;
+-			regulator-max-microvolt = <1500000>;
+-			regulator-boot-on;
+-			regulator-always-on;
+-			ti,vsel0-state-high;
+-			ti,vsel1-state-high;
+-		};
+-	};
+-
+ 	spi@7000da00 {
+ 		status = "okay";
+ 		spi-max-frequency = <25000000>;
+@@ -635,6 +459,182 @@
+ 	};
+ };
+ 
++panelddc: &i2c1 {
++	status = "okay";
++	clock-frequency = <100000>;
++};
++
++&i2c2 {
++	status = "okay";
++	clock-frequency = <100000>;
++};
++
++&i2c3 {
++	status = "okay";
++	clock-frequency = <100000>;
++
++	/* ALS and Proximity sensor */
++	isl29028@44 {
++		compatible = "isil,isl29028";
++		reg = <0x44>;
++		interrupt-parent = <&gpio>;
++		interrupts = <TEGRA_GPIO(L, 0) IRQ_TYPE_LEVEL_HIGH>;
++	};
++
++	i2cmux@70 {
++		compatible = "nxp,pca9546";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x70>;
++	};
++};
++
++&i2c4 {
++	status = "okay";
++	clock-frequency = <100000>;
++};
++
++&i2c5 {
++	status = "okay";
++	clock-frequency = <100000>;
++
++	wm8903: wm8903@1a {
++		compatible = "wlf,wm8903";
++		reg = <0x1a>;
++		interrupt-parent = <&gpio>;
++		interrupts = <TEGRA_GPIO(W, 3) IRQ_TYPE_LEVEL_HIGH>;
++
++		gpio-controller;
++		#gpio-cells = <2>;
++
++		micdet-cfg = <0>;
++		micdet-delay = <100>;
++		gpio-cfg = <0xffffffff 0xffffffff 0 0xffffffff 0xffffffff>;
++	};
++
++	pmic: tps65911@2d {
++		compatible = "ti,tps65911";
++		reg = <0x2d>;
++
++		interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
++		#interrupt-cells = <2>;
++		interrupt-controller;
++
++		ti,system-power-controller;
++
++		#gpio-cells = <2>;
++		gpio-controller;
++
++		vcc1-supply = <&vdd_ac_bat_reg>;
++		vcc2-supply = <&vdd_ac_bat_reg>;
++		vcc3-supply = <&vio_reg>;
++		vcc4-supply = <&vdd_5v0_reg>;
++		vcc5-supply = <&vdd_ac_bat_reg>;
++		vcc6-supply = <&vdd2_reg>;
++		vcc7-supply = <&vdd_ac_bat_reg>;
++		vccio-supply = <&vdd_ac_bat_reg>;
++
++		regulators {
++			vdd1_reg: vdd1 {
++				regulator-name = "vddio_ddr_1v2";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			vdd2_reg: vdd2 {
++				regulator-name = "vdd_1v5_gen";
++				regulator-min-microvolt = <1500000>;
++				regulator-max-microvolt = <1500000>;
++				regulator-always-on;
++			};
++
++			vddctrl_reg: vddctrl {
++				regulator-name = "vdd_cpu,vdd_sys";
++				regulator-min-microvolt = <1000000>;
++				regulator-max-microvolt = <1000000>;
++				regulator-always-on;
++			};
++
++			vio_reg: vio {
++				regulator-name = "vdd_1v8_gen";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++			};
++
++			ldo1_reg: ldo1 {
++				regulator-name = "vdd_pexa,vdd_pexb";
++				regulator-min-microvolt = <1050000>;
++				regulator-max-microvolt = <1050000>;
++			};
++
++			ldo2_reg: ldo2 {
++				regulator-name = "vdd_sata,avdd_plle";
++				regulator-min-microvolt = <1050000>;
++				regulator-max-microvolt = <1050000>;
++			};
++
++			/* LDO3 is not connected to anything */
++
++			ldo4_reg: ldo4 {
++				regulator-name = "vdd_rtc";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			ldo5_reg: ldo5 {
++				regulator-name = "vddio_sdmmc,avdd_vdac";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-always-on;
++			};
++
++			ldo6_reg: ldo6 {
++				regulator-name = "avdd_dsi_csi,pwrdet_mipi";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++			};
++
++			ldo7_reg: ldo7 {
++				regulator-name = "vdd_pllm,x,u,a_p_c_s";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			ldo8_reg: ldo8 {
++				regulator-name = "vdd_ddr_hs";
++				regulator-min-microvolt = <1000000>;
++				regulator-max-microvolt = <1000000>;
++				regulator-always-on;
++			};
++		};
++	};
++
++	temperature-sensor@4c {
++		compatible = "onnn,nct1008";
++		reg = <0x4c>;
++		vcc-supply = <&sys_3v3_reg>;
++		interrupt-parent = <&gpio>;
++		interrupts = <TEGRA_GPIO(CC, 2) IRQ_TYPE_LEVEL_LOW>;
++	};
++
++	tps62361@60 {
++		compatible = "ti,tps62361";
++		reg = <0x60>;
++
++		regulator-name = "tps62361-vout";
++		regulator-min-microvolt = <500000>;
++		regulator-max-microvolt = <1500000>;
++		regulator-boot-on;
++		regulator-always-on;
++		ti,vsel0-state-high;
++		ti,vsel1-state-high;
++	};
++};
++
+ &sdmmc1 {
+ 	status = "okay";
+ 	cd-gpios = <&gpio TEGRA_GPIO(I, 5) GPIO_ACTIVE_LOW>;
+diff --git a/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts b/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts
+index 4f03c1466f04..6dcdff340f6a 100644
+--- a/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts
++++ b/arch/arm/boot/dts/tegra30-colibri-eval-v3.dts
+@@ -7,8 +7,8 @@
+ 	compatible = "toradex,colibri_t30-eval-v3", "toradex,colibri_t30", "nvidia,tegra30";
+ 
+ 	aliases {
+-		rtc0 = "/i2c@7000c000/rtc@68";
+-		rtc1 = "/i2c@7000d000/tps65911@2d";
++		rtc0 = &rtc0;
++		rtc1 = &pmic;
+ 		rtc2 = "/rtc@7000e000";
+ 		serial0 = &uarta;
+ 		serial1 = &uartb;
+@@ -49,26 +49,6 @@
+ 		status = "okay";
+ 	};
+ 
+-	/*
+-	 * GEN1_I2C: I2C_SDA/SCL on SODIMM pin 194/196 (e.g. RTC on carrier
+-	 * board)
+-	 */
+-	i2c@7000c000 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-
+-		/* M41T0M6 real time clock on carrier board */
+-		rtc@68 {
+-			compatible = "st,m41t00";
+-			reg = <0x68>;
+-		};
+-	};
+-
+-	/* DDC_CLOCK/DATA on X3 pin 15/16 (e.g. display EDID) */
+-	hdmiddc: i2c@7000c700 {
+-		status = "okay";
+-	};
+-
+ 	/* SPI1: Colibri SSP */
+ 	spi@7000d400 {
+ 		status = "okay";
+@@ -204,6 +184,26 @@
+ 	};
+ };
+ 
++/*
++ * GEN1_I2C: I2C_SDA/SCL on SODIMM pin 194/196 (e.g. RTC on carrier
++ * board)
++ */
++&i2c1 {
++	status = "okay";
++	clock-frequency = <100000>;
++
++	/* M41T0M6 real time clock on carrier board */
++	rtc0: rtc@68 {
++		compatible = "st,m41t00";
++		reg = <0x68>;
++	};
++};
++
++/* DDC_CLOCK/DATA on X3 pin 15/16 (e.g. display EDID) */
++&i2c4 {
++	status = "okay";
++};
++
+ /* SD/MMC */
+ &sdmmc2 {
+ 	status = "okay";
+diff --git a/arch/arm/boot/dts/tegra30-colibri.dtsi b/arch/arm/boot/dts/tegra30-colibri.dtsi
+index 2b98f43ab742..117481964f12 100644
+--- a/arch/arm/boot/dts/tegra30-colibri.dtsi
++++ b/arch/arm/boot/dts/tegra30-colibri.dtsi
+@@ -213,205 +213,6 @@
+ 		};
+ 	};
+ 
+-	hdmiddc: i2c@7000c700 {
+-		clock-frequency = <100000>;
+-	};
+-
+-	/*
+-	 * PWR_I2C: power I2C to audio codec, PMIC, temperature sensor and
+-	 * touch screen controller
+-	 */
+-	i2c@7000d000 {
+-		status = "okay";
+-		clock-frequency = <100000>;
+-
+-		/* SGTL5000 audio codec */
+-		sgtl5000: codec@a {
+-			compatible = "fsl,sgtl5000";
+-			reg = <0x0a>;
+-			VDDA-supply = <&sys_3v3_reg>;
+-			VDDIO-supply = <&sys_3v3_reg>;
+-			clocks = <&tegra_car TEGRA30_CLK_EXTERN1>;
+-		};
+-
+-		pmic: tps65911@2d {
+-			compatible = "ti,tps65911";
+-			reg = <0x2d>;
+-
+-			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+-			#interrupt-cells = <2>;
+-			interrupt-controller;
+-
+-			ti,system-power-controller;
+-
+-			#gpio-cells = <2>;
+-			gpio-controller;
+-
+-			vcc1-supply = <&sys_3v3_reg>;
+-			vcc2-supply = <&sys_3v3_reg>;
+-			vcc3-supply = <&vio_reg>;
+-			vcc4-supply = <&sys_3v3_reg>;
+-			vcc5-supply = <&sys_3v3_reg>;
+-			vcc6-supply = <&vio_reg>;
+-			vcc7-supply = <&charge_pump_5v0_reg>;
+-			vccio-supply = <&sys_3v3_reg>;
+-
+-			regulators {
+-				/* SW1: +V1.35_VDDIO_DDR */
+-				vdd1_reg: vdd1 {
+-					regulator-name = "vddio_ddr_1v35";
+-					regulator-min-microvolt = <1350000>;
+-					regulator-max-microvolt = <1350000>;
+-					regulator-always-on;
+-				};
+-
+-				/* SW2: unused */
+-
+-				/* SW CTRL: +V1.0_VDD_CPU */
+-				vddctrl_reg: vddctrl {
+-					regulator-name = "vdd_cpu,vdd_sys";
+-					regulator-min-microvolt = <1150000>;
+-					regulator-max-microvolt = <1150000>;
+-					regulator-always-on;
+-				};
+-
+-				/* SWIO: +V1.8 */
+-				vio_reg: vio {
+-					regulator-name = "vdd_1v8_gen";
+-					regulator-min-microvolt = <1800000>;
+-					regulator-max-microvolt = <1800000>;
+-					regulator-always-on;
+-				};
+-
+-				/* LDO1: unused */
+-
+-				/*
+-				 * EN_+V3.3 switching via FET:
+-				 * +V3.3_AUDIO_AVDD_S, +V3.3 and +V1.8_VDD_LAN
+-				 * see also 3v3 fixed supply
+-				 */
+-				ldo2_reg: ldo2 {
+-					regulator-name = "en_3v3";
+-					regulator-min-microvolt = <3300000>;
+-					regulator-max-microvolt = <3300000>;
+-					regulator-always-on;
+-				};
+-
+-				/* LDO3: unused */
+-
+-				/* +V1.2_VDD_RTC */
+-				ldo4_reg: ldo4 {
+-					regulator-name = "vdd_rtc";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				/*
+-				 * +V2.8_AVDD_VDAC:
+-				 * only required for analog RGB
+-				 */
+-				ldo5_reg: ldo5 {
+-					regulator-name = "avdd_vdac";
+-					regulator-min-microvolt = <2800000>;
+-					regulator-max-microvolt = <2800000>;
+-					regulator-always-on;
+-				};
+-
+-				/*
+-				 * +V1.05_AVDD_PLLE: avdd_plle should be 1.05V
+-				 * but LDO6 can't set voltage in 50mV
+-				 * granularity
+-				 */
+-				ldo6_reg: ldo6 {
+-					regulator-name = "avdd_plle";
+-					regulator-min-microvolt = <1100000>;
+-					regulator-max-microvolt = <1100000>;
+-				};
+-
+-				/* +V1.2_AVDD_PLL */
+-				ldo7_reg: ldo7 {
+-					regulator-name = "avdd_pll";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
+-					regulator-always-on;
+-				};
+-
+-				/* +V1.0_VDD_DDR_HS */
+-				ldo8_reg: ldo8 {
+-					regulator-name = "vdd_ddr_hs";
+-					regulator-min-microvolt = <1000000>;
+-					regulator-max-microvolt = <1000000>;
+-					regulator-always-on;
+-				};
+-			};
+-		};
+-
+-		/* STMPE811 touch screen controller */
+-		stmpe811@41 {
+-			compatible = "st,stmpe811";
+-			#address-cells = <1>;
+-			#size-cells = <0>;
+-			reg = <0x41>;
+-			interrupts = <TEGRA_GPIO(V, 0) IRQ_TYPE_LEVEL_LOW>;
+-			interrupt-parent = <&gpio>;
+-			interrupt-controller;
+-			id = <0>;
+-			blocks = <0x5>;
+-			irq-trigger = <0x1>;
+-
+-			stmpe_touchscreen {
+-				compatible = "st,stmpe-ts";
+-				reg = <0>;
+-				/* 3.25 MHz ADC clock speed */
+-				st,adc-freq = <1>;
+-				/* 8 sample average control */
+-				st,ave-ctrl = <3>;
+-				/* 7 length fractional part in z */
+-				st,fraction-z = <7>;
+-				/*
+-				 * 50 mA typical 80 mA max touchscreen drivers
+-				 * current limit value
+-				 */
+-				st,i-drive = <1>;
+-				/* 12-bit ADC */
+-				st,mod-12b = <1>;
+-				/* internal ADC reference */
+-				st,ref-sel = <0>;
+-				/* ADC converstion time: 80 clocks */
+-				st,sample-time = <4>;
+-				/* 1 ms panel driver settling time */
+-				st,settling = <3>;
+-				/* 5 ms touch detect interrupt delay */
+-				st,touch-det-delay = <5>;
+-			};
+-		};
+-
+-		/*
+-		 * LM95245 temperature sensor
+-		 * Note: OVERT_N directly connected to PMIC PWRDN
+-		 */
+-		temp-sensor@4c {
+-			compatible = "national,lm95245";
+-			reg = <0x4c>;
+-		};
+-
+-		/* SW: +V1.2_VDD_CORE */
+-		tps62362@60 {
+-			compatible = "ti,tps62362";
+-			reg = <0x60>;
+-
+-			regulator-name = "tps62362-vout";
+-			regulator-min-microvolt = <900000>;
+-			regulator-max-microvolt = <1400000>;
+-			regulator-boot-on;
+-			regulator-always-on;
+-			ti,vsel0-state-low;
+-			/* VSEL1: EN_CORE_DVFS_N low for DVFS */
+-			ti,vsel1-state-low;
+-		};
+-	};
+-
+ 	pmc@7000e400 {
+ 		nvidia,invert-interrupt;
+ 		nvidia,suspend-mode = <1>;
+@@ -515,6 +316,205 @@
+ 	};
+ };
+ 
++hdmiddc: &i2c4 {
++	clock-frequency = <100000>;
++};
++
++/*
++ * PWR_I2C: power I2C to audio codec, PMIC, temperature sensor and
++ * touch screen controller
++ */
++&i2c5 {
++	status = "okay";
++	clock-frequency = <100000>;
++
++	/* SGTL5000 audio codec */
++	sgtl5000: codec@a {
++		compatible = "fsl,sgtl5000";
++		reg = <0x0a>;
++		VDDA-supply = <&sys_3v3_reg>;
++		VDDIO-supply = <&sys_3v3_reg>;
++		clocks = <&tegra_car TEGRA30_CLK_EXTERN1>;
++	};
++
++	pmic: tps65911@2d {
++		compatible = "ti,tps65911";
++		reg = <0x2d>;
++
++		interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
++		#interrupt-cells = <2>;
++		interrupt-controller;
++
++		ti,system-power-controller;
++
++		#gpio-cells = <2>;
++		gpio-controller;
++
++		vcc1-supply = <&sys_3v3_reg>;
++		vcc2-supply = <&sys_3v3_reg>;
++		vcc3-supply = <&vio_reg>;
++		vcc4-supply = <&sys_3v3_reg>;
++		vcc5-supply = <&sys_3v3_reg>;
++		vcc6-supply = <&vio_reg>;
++		vcc7-supply = <&charge_pump_5v0_reg>;
++		vccio-supply = <&sys_3v3_reg>;
++
++		regulators {
++			/* SW1: +V1.35_VDDIO_DDR */
++			vdd1_reg: vdd1 {
++				regulator-name = "vddio_ddr_1v35";
++				regulator-min-microvolt = <1350000>;
++				regulator-max-microvolt = <1350000>;
++				regulator-always-on;
++			};
++
++			/* SW2: unused */
++
++			/* SW CTRL: +V1.0_VDD_CPU */
++			vddctrl_reg: vddctrl {
++				regulator-name = "vdd_cpu,vdd_sys";
++				regulator-min-microvolt = <1150000>;
++				regulator-max-microvolt = <1150000>;
++				regulator-always-on;
++			};
++
++			/* SWIO: +V1.8 */
++			vio_reg: vio {
++				regulator-name = "vdd_1v8_gen";
++				regulator-min-microvolt = <1800000>;
++				regulator-max-microvolt = <1800000>;
++				regulator-always-on;
++			};
++
++			/* LDO1: unused */
++
++			/*
++			 * EN_+V3.3 switching via FET:
++			 * +V3.3_AUDIO_AVDD_S, +V3.3 and +V1.8_VDD_LAN
++			 * see also 3v3 fixed supply
++			 */
++			ldo2_reg: ldo2 {
++				regulator-name = "en_3v3";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <3300000>;
++				regulator-always-on;
++			};
++
++			/* LDO3: unused */
++
++			/* +V1.2_VDD_RTC */
++			ldo4_reg: ldo4 {
++				regulator-name = "vdd_rtc";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			/*
++			 * +V2.8_AVDD_VDAC:
++			 * only required for analog RGB
++			 */
++			ldo5_reg: ldo5 {
++				regulator-name = "avdd_vdac";
++				regulator-min-microvolt = <2800000>;
++				regulator-max-microvolt = <2800000>;
++				regulator-always-on;
++			};
++
++			/*
++			 * +V1.05_AVDD_PLLE: avdd_plle should be 1.05V
++			 * but LDO6 can't set voltage in 50mV
++			 * granularity
++			 */
++			ldo6_reg: ldo6 {
++				regulator-name = "avdd_plle";
++				regulator-min-microvolt = <1100000>;
++				regulator-max-microvolt = <1100000>;
++			};
++
++			/* +V1.2_AVDD_PLL */
++			ldo7_reg: ldo7 {
++				regulator-name = "avdd_pll";
++				regulator-min-microvolt = <1200000>;
++				regulator-max-microvolt = <1200000>;
++				regulator-always-on;
++			};
++
++			/* +V1.0_VDD_DDR_HS */
++			ldo8_reg: ldo8 {
++				regulator-name = "vdd_ddr_hs";
++				regulator-min-microvolt = <1000000>;
++				regulator-max-microvolt = <1000000>;
++				regulator-always-on;
++			};
++		};
++	};
++
++	/* STMPE811 touch screen controller */
++	stmpe811@41 {
++		compatible = "st,stmpe811";
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x41>;
++		interrupts = <TEGRA_GPIO(V, 0) IRQ_TYPE_LEVEL_LOW>;
++		interrupt-parent = <&gpio>;
++		interrupt-controller;
++		id = <0>;
++		blocks = <0x5>;
++		irq-trigger = <0x1>;
++
++		stmpe_touchscreen {
++			compatible = "st,stmpe-ts";
++			reg = <0>;
++			/* 3.25 MHz ADC clock speed */
++			st,adc-freq = <1>;
++			/* 8 sample average control */
++			st,ave-ctrl = <3>;
++			/* 7 length fractional part in z */
++			st,fraction-z = <7>;
++			/*
++			 * 50 mA typical 80 mA max touchscreen drivers
++			 * current limit value
++			 */
++			st,i-drive = <1>;
++			/* 12-bit ADC */
++			st,mod-12b = <1>;
++			/* internal ADC reference */
++			st,ref-sel = <0>;
++			/* ADC converstion time: 80 clocks */
++			st,sample-time = <4>;
++			/* 1 ms panel driver settling time */
++			st,settling = <3>;
++			/* 5 ms touch detect interrupt delay */
++			st,touch-det-delay = <5>;
++		};
++	};
++
++	/*
++	 * LM95245 temperature sensor
++	 * Note: OVERT_N directly connected to PMIC PWRDN
++	 */
++	temp-sensor@4c {
++		compatible = "national,lm95245";
++		reg = <0x4c>;
++	};
++
++	/* SW: +V1.2_VDD_CORE */
++	tps62362@60 {
++		compatible = "ti,tps62362";
++		reg = <0x60>;
++
++		regulator-name = "tps62362-vout";
++		regulator-min-microvolt = <900000>;
++		regulator-max-microvolt = <1400000>;
++		regulator-boot-on;
++		regulator-always-on;
++		ti,vsel0-state-low;
++		/* VSEL1: EN_CORE_DVFS_N low for DVFS */
++		ti,vsel1-state-low;
++	};
++};
++
+ /* eMMC */
+ &sdmmc4 {
+ 	status = "okay";
+diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
+index ba481b38cfd2..46e35ad050c7 100644
+--- a/arch/arm/boot/dts/tegra30.dtsi
++++ b/arch/arm/boot/dts/tegra30.dtsi
+@@ -472,7 +472,7 @@
+ 		clocks = <&tegra_car TEGRA30_CLK_RTC>;
+ 	};
+ 
+-	i2c@7000c000 {
++	i2c1: i2c@7000c000 {
+ 		compatible = "nvidia,tegra30-i2c", "nvidia,tegra20-i2c";
+ 		reg = <0x7000c000 0x100>;
+ 		interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
+@@ -488,7 +488,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	i2c@7000c400 {
++	i2c2: i2c@7000c400 {
+ 		compatible = "nvidia,tegra30-i2c", "nvidia,tegra20-i2c";
+ 		reg = <0x7000c400 0x100>;
+ 		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+@@ -504,7 +504,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	i2c@7000c500 {
++	i2c3: i2c@7000c500 {
+ 		compatible = "nvidia,tegra30-i2c", "nvidia,tegra20-i2c";
+ 		reg = <0x7000c500 0x100>;
+ 		interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH>;
+@@ -520,7 +520,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	i2c@7000c700 {
++	i2c4: i2c@7000c700 {
+ 		compatible = "nvidia,tegra30-i2c", "nvidia,tegra20-i2c";
+ 		reg = <0x7000c700 0x100>;
+ 		interrupts = <GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>;
+@@ -536,7 +536,7 @@
+ 		status = "disabled";
+ 	};
+ 
+-	i2c@7000d000 {
++	i2c5: i2c@7000d000 {
+ 		compatible = "nvidia,tegra30-i2c", "nvidia,tegra20-i2c";
+ 		reg = <0x7000d000 0x100>;
+ 		interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
+-- 
+2.14.2
+
