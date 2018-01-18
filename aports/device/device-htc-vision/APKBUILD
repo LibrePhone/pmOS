@@ -1,0 +1,23 @@
+pkgname=device-htc-vision
+pkgver=0.1
+pkgrel=0
+pkgdesc="HTC Desire Z"
+url="https://github.com/postmarketOS"
+arch="noarch"
+license="MIT"
+depends="linux-htc-vision mkbootimg"
+makedepends=""
+install=""
+subpackages=""
+source="deviceinfo 90-android.rules"
+options="!check"
+
+package() {
+	install -D -m644 "$srcdir/deviceinfo" \
+		"$pkgdir/etc/deviceinfo"
+	install -D -m644 "$srcdir"/90-android.rules \
+		"$pkgdir"/etc/udev/rules.d/90-android.rules
+}
+
+sha512sums="3560346c8395ba74217238ee4e053d2c40706c6595d11db20e56cfe6eeeca90f6774dedc89efb7761da81f4258c2785a11581621564c3ec5710d581b20cfcb22  deviceinfo
+f422025c72373ad792fa753bbeca4a5bbabd9db2aed8240b8f6efc0d270187c8b7d4ef3aa2d59d1b09c45b7fbed7bc5e6393a64af9202889f6445d40cb385553  90-android.rules"

@@ -1,0 +1,11 @@
+# FIXME (before merging into pmbootstrap/master):
+# The calibration line may not be necessary. Check if it works without it by
+# uncommenting the following lines, and deleting the three lines at the end of
+# the file.
+#
+# SUBSYSTEM=="input", ATTRS{name}=="sec_touchscreen", \
+# ENV{ID_INPUT}="1", ENV{ID_INPUT_TOUCHSCREEN}="1"
+
+SUBSYSTEM=="input", ATTRS{name}=="sec_touchscreen", \
+ENV{ID_INPUT}="1", ENV{ID_INPUT_TOUCHSCREEN}="1" \
+ENV{WL_CALIBRATION}="0.954174 0.016888 -2.626083 -0.006031 1.011271 14.175903"

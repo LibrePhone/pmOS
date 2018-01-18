@@ -1,0 +1,98 @@
+_vendor=htc
+_flavor=htc-vision
+_config="config-${_flavor}.armhf"
+_hash="4bc19919f805777947c243e6c2ed41ece530488b"
+
+pkgname=linux-${_flavor}
+pkgver=3.0.101
+case $pkgver in
+	*.*.*)  _kernver=${pkgver%.*};;
+	*.*) _kernver=$pkgver;;
+esac
+pkgrel=0
+arch="armhf"
+pkgdesc="HTC Desire Z kernel from milaq"
+url="https://github.com/milaq/android_kernel_htc_vision"
+depends="postmarketos-mkinitfs"
+makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev xz"
+options="!strip !check !tracedeps"
+install=
+source="
+	$pkgname-$_hash.zip::https://github.com/milaq/android_kernel_htc_vision/archive/cm-11.0.zip
+	$_config
+	compiler-gcc6.h
+"
+subpackages=""
+license="GPL2"
+
+_abi_release=${pkgver}
+_carch="arm"
+HOSTCC="${CC:-gcc}"
+HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
+
+ksrcdir="$srcdir/android_kernel_htc_vision-cm-11.0"
+
+prepare() {
+	local _patch_failed=
+	cd "$ksrcdir"
+
+	# first apply patches in specified order
+	for i in $source; do
+		case $i in
+		*.patch)
+			msg "Applying $i..."
+			if ! patch -s -p1 -N -i "$srcdir"/$i; then
+				echo $i >>failed
+				_patch_failed=1
+			fi
+			;;
+		esac
+	done
+
+	if ! [ -z "$_patch_failed" ]; then
+		error "The following patches failed:"
+		cat failed
+		return 1
+	fi
+
+	# gcc6 support
+	cp -v "$srcdir/compiler-gcc6.h" "$ksrcdir/include/linux/" || return 1
+
+	mkdir -p "$srcdir"/build
+	cp "$srcdir"/$_config "$srcdir"/build/.config || return 1
+	yes "" | make -C "$ksrcdir" O="$srcdir"/build ARCH="$_carch" HOSTCC="$HOSTCC" \
+		oldconfig
+}
+
+
+
+# this is so we can do: 'abuild menuconfig' to reconfigure kernel
+menuconfig() {
+	cd "$srcdir"/build || return 1
+	echo "--[ menuconfig ]--"
+	make ARCH="$_carch" menuconfig
+	cp .config "$startdir"/$_config
+}
+
+build() {
+	cd "$srcdir"/build
+	unset LDFLAGS
+
+	echo "--[ Build kernel + modules ]--"
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-Alpine" \
+		|| return 1
+}
+
+package() {
+	echo "--[ Installing kernel ]--"
+	install -Dm644 "$srcdir/build/arch/arm/boot/zImage" \
+		"$pkgdir/boot/vmlinuz-$_flavor"
+
+	install -D "$srcdir/build/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+}
+
+sha512sums="5020a534a0f8475666d4d036584ce7279eea3d59c0380dcd2d80367651a02f668aab2eb6177f0f030cc03933800ae1a1b8bcfc063c2f35b4f9cabec276a8c620  linux-htc-vision-4bc19919f805777947c243e6c2ed41ece530488b.zip
+f866e479f539bcd3c2adc06cb2747b86c8e92976763c340331ffc9e9089adf1e31d4d94e4c0900b729cc398173585da65271f8c27bab6d2da14bcebaa611d4dc  config-htc-vision.armhf
+d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h"
