@@ -13,6 +13,7 @@ setup_log
 # shellcheck disable=SC2154,SC2086
 [ -d /lib/modules ] && modprobe -a ${deviceinfo_modules_initfs} ext4
 setup_mdev
+mount_loopback_device
 mount_subpartitions
 
 # Start msm-fb-refresher workaround for qualcomm devices
@@ -35,14 +36,17 @@ show_splash /splash-loading.ppm.gz
 setup_usb_network
 start_udhcpd
 
-mount_boot_partition
-extract_initramfs_extra @INITRAMFS_EXTRA@
+mount_stowaways
+if ! [ -e /sysroot/usr ]; then
+    mount_boot_partition
+    extract_initramfs_extra @INITRAMFS_EXTRA@
 start_charging_mode
-wait_root_partition
-resize_root_partition
-unlock_root_partition
-resize_root_filesystem
-mount_root_partition
+    wait_root_partition
+    resize_root_partition
+    unlock_root_partition
+    resize_root_filesystem
+    mount_root_partition
+fi
 
 # Switch root
 killall telnetd mdev msm-fb-refresher 2>/dev/null

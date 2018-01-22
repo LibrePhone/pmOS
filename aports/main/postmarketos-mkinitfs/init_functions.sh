@@ -38,6 +38,39 @@ setup_mdev() {
 	mdev -s
 }
 
+mount_loopback_device() {
+	if [ ! -z "$deviceinfo_data_partition" ]; then
+		mkdir /data
+		mount $deviceinfo_data_partition /data
+
+		loopback_img=/data/postmarketOS.img
+
+		if [ -f "$loopback_img" ]; then
+			loopback_device=$(losetup -f)
+			losetup $loopback_device $loopback_img
+			kpartx -afs $loopback_device
+		fi
+	fi
+}
+
+mount_stowaways() {
+	if [ ! -z "$deviceinfo_data_partition" ]; then
+        echo "Mounting stowaways..."
+        default_os="pmOS"
+
+        mkdir /data
+        mount $deviceinfo_data_partition /data
+
+        if [ -e /data/.stowaways/${default_os}/usr ]; then
+            mount --bind /data/.stowaways/${default_os} /sysroot
+            mkdir -p /sysroot/data # in new fs
+            mount --bind /data/ /sysroot/data
+        else
+            echo "stowaways dir not found"
+        fi
+    fi
+}
+
 mount_subpartitions() {
 	# Do not create subpartition mappings if pmOS_boot
 	# already exists (e.g. installed on an sdcard)
