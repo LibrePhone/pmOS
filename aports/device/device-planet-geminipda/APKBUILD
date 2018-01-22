@@ -1,0 +1,22 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname="device-planet-geminipda"
+pkgdesc="Gemini PDA"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="noarch"
+options="!check"
+depends="linux-planet-geminipda mkbootimg mesa-dri-swrast"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="8973efd7eaa7aeb27f8e54fcc3a3b24f05d5af199df1ef00a9f98381620a92456a5836f7a5852dde064f3d2fe08268f98aa9e6c8f63d9c30a20fef03aa8bd8ef  deviceinfo"

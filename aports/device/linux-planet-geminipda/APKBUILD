@@ -1,0 +1,26 @@
+pkgname="linux-planet-geminipda"
+pkgver=3.18
+pkgrel=0
+pkgdesc="Gemini PDA kernel blob"
+arch="aarch64"
+_carch="arm64"
+_flavor="planet-geminipda"
+url="https://kernel.org"
+license="GPL2"
+options="!strip !check !tracedeps"
+# Source
+source="zImage"
+
+package() {
+	# kernel.release
+	install -d "$pkgdir/usr/share/kernel/$_flavor"
+	echo $pkgver > "$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+
+	_target="$pkgdir/boot/vmlinuz-$_flavor"
+	install -Dm644 "$srcdir/zImage" "$_target"
+
+	# cd "$pkgdir"
+    # rpmextract.sh "$srcdir/$_modules_rpm"
+}
+
+sha512sums="f50acad0a6e2a2a0b6519f52463cce970d1472bc5d2f0e01c8c3022267b6b07e78eb21b16c17ca8a831fb8f4a8593cb6e95b3500e683925e46f227a0cfeae676  zImage"
