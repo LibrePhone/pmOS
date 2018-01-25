@@ -1,5 +1,5 @@
 pkgname=libhybris
-pkgver=1263.013cf7e
+pkgver=1.0_git20171109
 pkgrel=1
 arch="all"
 url="https://github.com/libhybris/libhybris"
@@ -25,7 +25,7 @@ subpackages="$pkgname-dev $pkgname-egl $pkgname-gles $pkgname-libwayland-egl:_wa
 	$pkgname-7.1:_specific $pkgname-7.1-caf:_specific"
 fi
 
-options="!check !strip"
+options="!check !strip !tracedeps"
 
 builddir="$srcdir/$pkgname-$_rev"
 _tmppkgdir="$srcdir/tmpinstall"
