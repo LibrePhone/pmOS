@@ -1,0 +1,30 @@
+From 5d4b315f1bc5471fb2e3bf907f5a9bf52be602aa Mon Sep 17 00:00:00 2001
+From: Bhushan Shah <bhush94@gmail.com>
+Date: Thu, 2 Nov 2017 10:08:52 +0530
+Subject: [PATCH 2/2] [platforms/hwcomposer] Set value of
+ surfaceDamage.numRects to 0
+
+Newer hwcomposer implementation seem to require this. This additional
+fix is required in addition to 54565a94bd81f5 for newer hwcomposer
+interface.
+---
+ plugins/platforms/hwcomposer/hwcomposer_backend.cpp | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/plugins/platforms/hwcomposer/hwcomposer_backend.cpp b/plugins/platforms/hwcomposer/hwcomposer_backend.cpp
+index 8a75eb37e..c180ae0e6 100644
+--- a/plugins/platforms/hwcomposer/hwcomposer_backend.cpp
++++ b/plugins/platforms/hwcomposer/hwcomposer_backend.cpp
+@@ -418,6 +418,9 @@ static void initLayer(hwc_layer_1_t *layer, const hwc_rect_t &rect, int layerCom
+     layer->acquireFenceFd = -1;
+     layer->releaseFenceFd = -1;
+     layer->planeAlpha = 0xFF;
++#ifdef HWC_DEVICE_API_VERSION_1_5
++    layer->surfaceDamage.numRects = 0;
++#endif
+ }
+ 
+ HwcomposerWindow::HwcomposerWindow(HwcomposerBackend *backend)
+-- 
+2.15.1
+

@@ -17,9 +17,12 @@ depends_dev="kdecoration-dev kjobwidgets-dev kcmutils-dev kscreenlocker-dev bree
 			kbookmarks-dev kwayland-dev attica-qt-dev sonnet-dev kitemviews-dev solid-dev
 			kdeclarative-dev kactivities-dev qt5-qtsensors-dev"
 makedepends="$depends_dev extra-cmake-modules qt5-qttools-dev kdoctools-dev libxkbcommon-dev
-			libepoxy-dev libinput-dev xcb-util-cursor-dev libdrm-dev eudev-dev xcb-util-wm-dev android-headers-7.1 libhybris-dev"
+			libepoxy-dev libinput-dev xcb-util-cursor-dev libdrm-dev eudev-dev xcb-util-wm-dev android-headers-7.1
+			libhybris-dev libhybris-7.1"
 source="https://download.kde.org/stable/plasma/${pkgver}/${pkgname}-${pkgver}.tar.xz
-		0001-fbdev-support-RGB32-framebuffer-with-BGR-order.patch"
+		0001-fbdev-support-RGB32-framebuffer-with-BGR-order.patch
+		0002-platforms-hwcomposer-Few-fixes-for-hwcomposer-platfo.patch
+		0003-platforms-hwcomposer-Set-value-of-surfaceDamage.numR.patch"
 subpackages="$pkgname-dev $pkgname-doc $pkgname-lang"
 options="!check" # Fails due to requiring running X11
 
@@ -74,4 +77,6 @@ _hwcomposer() {
 			"${subpkgdir}/usr/lib/${_lib}"
 }
 sha512sums="5c5162152fb4bb9827e540be0f2cc9a93fd9b4c850d04e7237b1de253958c7dd15e440103a35d7ecd0fd157ae90a94a48286a803f7a3bfbad8d5670889357277  kwin-5.12.3.tar.xz
-5c35ff9526eb5a239e384025d20840ef159ad1f82922a49bb92ebd251c61410361495da9b03a5e185a26c6ad587ece68a20bd7973cad05cbb4f6cd490a4cbf37  0001-fbdev-support-RGB32-framebuffer-with-BGR-order.patch"
+5c35ff9526eb5a239e384025d20840ef159ad1f82922a49bb92ebd251c61410361495da9b03a5e185a26c6ad587ece68a20bd7973cad05cbb4f6cd490a4cbf37  0001-fbdev-support-RGB32-framebuffer-with-BGR-order.patch
+f019dac4a1fae496d34301cb79c279d9ae6ca2c9c2bb98c9b992293186e2deab7f6a8f9f524bd792b53a133a58e5db41e9a198e8bf44b7399df0c714c51c1b44  0002-platforms-hwcomposer-Few-fixes-for-hwcomposer-platfo.patch
+7e12c606ea4439cf1169e3c17a49d5182b59ae6a46f1691fab8c472caea40ff64a3bcabde2c587b17faefe106b6f14867346cd6e552413016c0e9edeb2bfb22e  0003-platforms-hwcomposer-Set-value-of-surfaceDamage.numR.patch"
