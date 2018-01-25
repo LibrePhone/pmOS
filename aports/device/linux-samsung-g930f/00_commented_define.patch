@@ -1,0 +1,21 @@
+This patch is needed in order to prevent gcc from complaining about
+undefined variables:
+- CONN_GADGET_IOCTL_MAGIC_SIG
+- CONN_GADGET_IOCTL_SUPPORT_LIST
+- CONN_GADGET_IOCTL_BIND_WAIT_NOTIFY
+- CONN_GADGET_IOCTL_MAX_NR
+- CONN_GADGET_IOCTL_BIND_GET_STATUS (?)
+
+I simply un-commented the line in drivers/usb/gadget/function/f_conn_gadget.c that
+defines __ANDROID__.
+--- a/drivers/usb/gadget/function/f_conn_gadget.c	2018-01-21 12:08:49.085461927 +0100
++++ b/drivers/usb/gadget/function/f_conn_gadget.c	2018-01-21 12:12:37.665470278 +0100
+@@ -58,7 +58,7 @@
+ #include <asm/uaccess.h>
+ 
+ /* platform specific definitions */
+-/* ex) #define __ANDROID__ */
++#define __ANDROID__
+ 
+ /* platform specific pre-processing */
+ #define CONN_GADGET_SHORTNAME "android_ssusbcon"

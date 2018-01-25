@@ -1,0 +1,81 @@
+# Kernel config based on: arch/arm64/configs/exynos8890-herolte_defconfig
+
+pkgname="linux-samsung-g930f"
+pkgver=3.18.14
+pkgrel=0
+pkgdesc="Samsung Galaxy S7 kernel fork"
+arch="aarch64"
+_carch="arm64"
+_flavor="samsung-g930f"
+url="https://kernel.org"
+license="GPL2"
+options="!strip !check !tracedeps"
+makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev"
+HOSTCC="${CC:-gcc}"
+HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
+
+# Source
+_repository="android_kernel_samsung_universal8890"
+_commit="adb2bc5b68911a31b6b7da09b17a89faad577860"
+_config="config-${_flavor}.${arch}"
+source="
+	$pkgname-$_commit.tar.gz::https://github.com/LineageOS/${_repository}/archive/${_commit}.tar.gz
+	$_config
+	compiler-gcc6.h
+	00_commented_define.patch
+"
+builddir="$srcdir/${_repository}-${_commit}"
+
+prepare() {
+	default_prepare
+
+	# gcc6 support
+	cp -v "$srcdir/compiler-gcc6.h" "$builddir/include/linux/"
+
+	# Remove -Werror from all makefiles
+	find . -type f -name Makefile -print0 | \
+		xargs -0 sed -i 's/-Werror-/-W/g'
+	find . -type f -name Makefile -print0 | \
+		xargs -0 sed -i 's/-Werror//g'
+
+	# Prepare kernel config ('yes ""' for kernels lacking olddefconfig)
+	cp "$srcdir"/$_config "$builddir"/.config
+	yes "" | make ARCH="$_carch" HOSTCC="$HOSTCC" oldconfig
+}
+
+menuconfig() {
+	cd "$builddir"
+	make ARCH="$_carch" menuconfig
+	cp .config "$startdir"/$_config
+}
+
+build() {
+	unset LDFLAGS
+	make ARCH="$_carch" CC="${CC:-gcc}" \
+		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+}
+
+package() {
+	# kernel.release
+	install -D "$builddir/include/config/kernel.release" \
+		"$pkgdir/usr/share/kernel/$_flavor/kernel.release"
+
+	# zImage (find the right one)
+	cd "$builddir/arch/$_carch/boot"
+	_target="$pkgdir/boot/vmlinuz-$_flavor"
+	for _zimg in zImage-dtb Image.gz-dtb *zImage Image; do
+		[ -e "$_zimg" ] || continue
+		msg "zImage found: $_zimg"
+		install -Dm644 "$_zimg" "$_target"
+		break
+	done
+	if ! [ -e "$_target" ]; then
+		error "Could not find zImage in $PWD!"
+		return 1
+	fi
+}
+
+sha512sums="9948d841cc65860fbec0a0c78e60465ec0e1d2250d193898c5fdf3c1fb01755c53e5bf3f2c5878c0e65b542f8a04cdf5f2aa6cb4f37431f359827661edc3506d  linux-samsung-g930f-adb2bc5b68911a31b6b7da09b17a89faad577860.tar.gz
+1f367b357888c532cf034fad3fcfc03d2c561b6457f4eb8d9533fe8da6e5d80542c5ac58fd98f29b94d20e387ade180b64a4c7b664116a5d8e8c669315dae5ef  config-samsung-g930f.aarch64
+d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h
+aeb07b4a20c4c302899c4216501a9309038e6302aecd8ff6eeb977ae9d2a30b781598e0353947d41f8ec7e176ec7242fc8e3f2dddd6e4b9872cb0c321799dc7a  00_commented_define.patch"

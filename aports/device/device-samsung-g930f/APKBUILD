@@ -1,0 +1,22 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname="device-samsung-g930f"
+pkgdesc="Samsung Galaxy S7"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="noarch"
+options="!check"
+depends="linux-samsung-g930f mkbootimg mesa-dri-swrast"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="4104769fae066096a7825a8f6570ed7cb69feb918781a6e54f1b5d8ba687e10259a596d8e60fd1c7c0a0590000b0df49562940415f94f7c9cd1d086ebe7599a5  deviceinfo"
