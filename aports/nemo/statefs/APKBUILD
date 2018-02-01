@@ -1,0 +1,40 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=statefs
+pkgver=0.3.35
+pkgrel=0
+pkgdesc="Syntetic filesystem to expose system state"
+arch="all"
+url="https://git.merproject.org/mer-core/statefs"
+license="GPL"
+depends=('fuse' 'boost-libs')
+makedepends="git cmake boost cor"
+
+
+source=(
+    'git+https://git.merproject.org/mer-core/statefs.git'
+    'example-statefspp-pthreads.patch'
+)
+md5sums=('SKIP'
+         'bd0fa2d64264cb80c82baccee28398ad')
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+	cd "$builddir"
+    patch -Np1 -i "${srcdir}/example-statefspp-pthreads.patch"
+}
+
+build() {
+	cd "$builddir"
+	cmake -DCMAKE_INSTALL_PREFIX=/usr -DVERSION=$pkgver CMakeLists.txt
+	make
+	make doc
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+}

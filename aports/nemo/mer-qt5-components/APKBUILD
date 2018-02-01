@@ -1,0 +1,31 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=mer-qt5-components
+pkgver=2.0.15
+pkgrel=0
+pkgdesc="Mer Qt Quick UX Components"
+arch="all"
+url="https://git.merproject.org/mer-core/qt-components"
+license="GPL"
+depends=('qt5-qtbase' 'qt5-declarative')
+makedepends="git libcontentaction"
+
+
+source=('git+https://git.merproject.org/mer-core/qt-components.git#branch=qtquick2')
+
+
+pkgver() {
+	cd "$srcdir/qt-components"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+	cd "$srcdir/qt-components"
+    export QT_SELECT=5
+    ./configure -meego -nomake tests
+	make
+}
+
+package() {
+	cd "$srcdir/qt-components"
+	make INSTALL_ROOT="$pkgdir/" install
+}

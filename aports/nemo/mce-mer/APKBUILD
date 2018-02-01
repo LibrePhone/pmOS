@@ -1,0 +1,42 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=mce-mer
+pkgver=1.80.1
+pkgrel=0
+pkgdesc="Mode Control Entity for Nokia mobile computers"
+arch="all"
+url="https://git.merproject.org/mer-core/mce"
+license="GPL"
+makedepends="git doxygen libngf libdsme libiphb libsystemd"
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/mce/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+	cd "$builddir"
+    sed -i "s|libsystemd-daemon|libsystemd|g" ./Makefile
+}
+
+build() {
+	cd "$builddir"
+	make
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+	
+	mv $pkgdir/usr/sbin $pkgdir/usr/bin
+
+	rm $pkgdir/lib/systemd/system/multi-user.target.wants/mce.service
+	rmdir $pkgdir/lib/systemd/system/multi-user.target.wants
+	mv $pkgdir/lib/systemd $pkgdir/usr/lib/systemd
+
+	rm -rf $pkgdir/lib
+	rm -rf $pkgdir/var/run
+}

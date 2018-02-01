@@ -1,0 +1,34 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=nemo-keepalive
+pkgver=1.4.0
+pkgrel=0
+pkgdesc="CPU and display keepalive and scheduling library"
+arch="all"
+url="https://git.merproject.org/mer-core/nemo-keepalive"
+license="GPL"
+depends=('qt5-qtbase' 'qt5-declarative')
+makedepends=""
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/nemo-keepalive/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+	cd "$builddir"
+	qmake
+	make
+	make -C lib-glib
+	make -C tools
+}
+
+package() {
+	cd "$builddir"
+	make INSTALL_ROOT="$pkgdir/" install
+    make -C lib-glib install ROOT="$pkgdir/"
+    make -C tools install ROOT="$pkgdir/"
+}

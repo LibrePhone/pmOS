@@ -1,0 +1,30 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=nemo-qml-plugin-dbus
+pkgver=2.1.9
+pkgrel=0
+pkgdesc="DBus plugin for Nemo Mobile"
+arch="all"
+url="https://git.merproject.org/mer-core/nemo-qml-plugin-dbus"
+license="GPL"
+depends=('qt5-qtbase' 'nemo-keepalive')
+makedepends=""
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/nemo-qml-plugin-dbus/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+	cd "$builddir"
+	qmake
+	make
+}
+
+package() {
+	cd "$builddir"
+	make INSTALL_ROOT="$pkgdir/" install
+}

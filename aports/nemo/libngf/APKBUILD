@@ -1,0 +1,24 @@
+pkgname=libngf
+pkgver=0.26
+pkgrel=0
+pkgdesc="Non-graphic feedback C-based client library"
+arch="all"
+url="https://git.merproject.org/mer-core/libngf"
+license="GPL"
+makedepends="autoconf automake libtool dbus-glib-dev check-dev"
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libngf/repository/archive.tar.bz2?ref=$pkgver"
+_rev=06be88da245bf5eed6880e871f65d35115d05674
+
+builddir="$srcdir/$pkgname-$pkgver-$_rev"
+
+build() {
+	cd "$builddir"
+	./autogen.sh --prefix=/usr
+	make
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+}
+sha512sums="60b02ac754630172cd910c9ad1fd85d9daf8197f78b00d3dc0049dd934c4f5d0d2a727630ad80bdc0b8e810e33e7d9c54d1e9d9b839662e4e36009319a46e579  libngf-0.26.tar.bz2"

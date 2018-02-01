@@ -1,0 +1,30 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=ssu-sysinfo
+pkgver=1.0.0
+pkgrel=0
+pkgdesc="Tools and libraries for getting ssu information without D-Bus IPC"
+arch="all"
+url="https://git.merproject.org/mer-core/ssu-sysinfo"
+license="GPL"
+makedepends="git check"
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/ssu-sysinfo/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+	cd "$builddir"
+    util/verify_version.sh
+    unset LD_AS_NEEDED
+	make
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+}

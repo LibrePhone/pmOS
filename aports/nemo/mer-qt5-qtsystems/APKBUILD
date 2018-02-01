@@ -1,0 +1,30 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=mer-qt5-qtsystems
+pkgver=5.1.0
+pkgrel=0
+pkgdesc="Mer Qt System modules"
+arch="all"
+url="https://git.merproject.org/mer-core/qtsystems"
+license="GPL"
+depends=('qt5-qtbase')
+makedepends="git cor tut"
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/qtsystems/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+	cd "$srcdir/${pkgname%-git}/${pkgname%-git}"
+	qmake PREFIX=/usr
+	make
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+}

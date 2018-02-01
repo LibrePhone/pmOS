@@ -1,0 +1,34 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=libcontentaction
+pkgver=0.2.8
+pkgrel=0
+pkgdesc="Statefs Qt bindings"
+arch="all"
+url="https://git.merproject.org/mer-core/libcontentaction"
+license="GPL"
+depends=('qt5-qtbase' 'qt5-systems')
+makedepends=""
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libcontentaction/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+	cd "$builddir"
+}
+
+build() {
+	cd "$builddir"
+	qmake PREFIX=/usr
+	make
+}
+
+package() {
+	cd "$builddir"
+	make INSTALL_ROOT="$pkgdir/" install
+}

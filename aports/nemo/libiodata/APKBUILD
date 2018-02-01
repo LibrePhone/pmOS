@@ -1,0 +1,38 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+_pkgname=libiodata
+pkgname=libiodata
+pkgver=0.19.9
+pkgrel=0
+pkgdesc="Mer library for input/output data"
+arch="all"
+url="https://git.merproject.org/mer-core/libiodata"
+license="GPL"
+depends=('dbus')
+makedepends="git bison flex"
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libiodata/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$srcdir/$_pkgname"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+	cd "$srcdir/$_pkgname"
+	# Logging macro cause compilation to fail otherwise
+    sed -i "s@define LOG_LEVEL LOG_WARNING@define LOG_LEVEL LOG_NONE@" src/log.h
+}
+
+build() {
+	cd "$srcdir/$_pkgname"
+    export IODATA_VERSION=0.19.9
+    qmake
+    make
+}
+
+package() {
+	cd "$builddir"
+	make INSTALL_ROOT="$pkgdir/" install
+}

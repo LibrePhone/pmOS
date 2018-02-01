@@ -1,0 +1,36 @@
+pkgname=qt5-wayland-mer
+pkgver=5.8.0
+pkgrel=0
+pkgdesc="A cross-platform application and UI framework (QtWayland) - Mer version"
+arch=("i686" "x86_64" "aarch64")
+url="https://git.merproject.org/mer-core/qtwayland"
+license="GPL3 LGPL"
+depends="qt5-declarative libxcomposite wayland"
+
+# Definition with userside version of Qt5
+_qt5_userversion=`pkg-config --modversion Qt5Core`
+
+source=("$_pkgname::git+https://git.merproject.org/mer-core/qtwayland.git#branch=mer-5.4")
+
+pkgver() {
+  cd "$srcdir/$_pkgname"
+  echo "${_qt5_userversion}.$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd "$srcdir/$_pkgname"
+}
+
+build() {
+  cd "$srcdir/$_pkgname"
+  qmake "QT_BUILD_PARTS += examples" "CONFIG += wayland-compositor"
+  make
+}
+
+package() {
+  cd "${srcdir}/${_pkgname}"
+  make INSTALL_ROOT="${pkgdir}" install
+  
+  # Install generated private headers (that's its not longer needed)
+  # cp ./include/QtCompositor/${_qt5_userversion}/QtCompositor/private/{qwayland-server-*,*protocol*}.h ${pkgdir}/usr/include/qt/QtCompositor/${_qt5_userversion}/QtCompositor/private/
+}

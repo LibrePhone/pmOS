@@ -1,0 +1,31 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=libresource
+pkgver=0.23.0
+pkgrel=0
+pkgdesc="MeeGo resource management low level C API libraries"
+arch="all"
+url="https://git.merproject.org/mer-core/libresource"
+license="GPL"
+depends=('qt5-qtbase')
+makedepends=""
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libresource/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+	cd "$builddir"
+    ./autogen.sh --disable-static
+    ./configure --prefix=/usr --disable-static
+    make
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+}

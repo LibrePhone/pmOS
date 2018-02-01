@@ -1,0 +1,36 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=qtaround
+pkgver=0.2.8
+pkgrel=0
+pkgdesc="QtAround library used to port the-vault to C++"
+arch="all"
+url="https://git.merproject.org/mer-core/qtaround"
+license="GPL"
+depends=('qt5-qtbase')
+makedepends="git cor tut"
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/qtaround/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+	cd "$builddir"
+    sed -i "s|tut>=0.0.3|tut>=0.0.0|g" ./tests/CMakeLists.txt
+    sed -i "s|#include <QMap>|#include <QMap>\n#include <cmath>|g" ./src/util.cpp
+}
+
+build() {
+	cd "$builddir"
+	cmake -DCMAKE_INSTALL_PREFIX=/usr -DVERSION=$pkgver
+	make
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+}

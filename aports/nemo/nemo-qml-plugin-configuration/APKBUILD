@@ -1,0 +1,37 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=nemo-qml-plugin-configuration
+pkgver=0.2.0
+pkgrel=0
+pkgdesc="Configuration plugin for Nemo Mobile"
+arch="all"
+url="https://git.merproject.org/mer-core/nemo-qml-plugin-configuration"
+license="GPL"
+depends=('qt5-qtbase' 'nemo-keepalive')
+makedepends=""
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/nemo-qml-plugin-configuration/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+	cd "$builddir"
+    #sed -i "s|libsystemd-daemon|libsystemd|g" ./src/nemo-configuration/host/host.pro
+    #sed -i "s|libsystemd-daemon|libsystemd|g" ./src/daemon/daemon.pro
+}
+
+build() {
+	cd "$builddir"
+	qmake
+	make
+}
+
+package() {
+	cd "$builddir"
+	make INSTALL_ROOT="$pkgdir/" install
+	cd "$pkgdir/usr/lib/qt/qml"
+}

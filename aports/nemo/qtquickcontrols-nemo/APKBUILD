@@ -1,0 +1,30 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=qtquickcontrols-nemo
+pkgver=5.2.0
+pkgrel=0
+pkgdesc="QML components for Nemo Mobile"
+arch="all"
+url="https://github/nemomobile/qtquickcontrols-nemo"
+license="GPL"
+depends=('qt5-qtbase' 'qt5-quickcontrols')
+makedepends=""
+
+
+source=('git+https://github.com/nemomobile/qtquickcontrols-nemo.git')
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+	cd "$builddir"
+	qmake
+	make
+}
+
+package() {
+	cd "$builddir"
+	make INSTALL_ROOT="$pkgdir/" install
+}

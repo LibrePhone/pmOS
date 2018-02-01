@@ -1,0 +1,23 @@
+pkgname=mce-headers-mer
+pkgver=1.24.0
+pkgrel=0
+pkgdesc="Development files for mce"
+arch="noarch"
+url="https://git.merproject.org/mer-core/mce-dev"
+license="LGPL-2.1"
+makedepends="coreutils doxygen"
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/mce-dev/repository/archive.tar.bz2?ref=$pkgver"
+_rev=27897482278236ad3d7bd227823b78e43a409569
+
+builddir="$srcdir/mce-dev-$pkgver-$_rev"
+
+build() {
+	cd "$builddir"
+	mkdir -p doc/html
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+}
+sha512sums="15332488d9e2a50a1947cc030bc6f9e13aa16c68d50bcd9a81102642c745d6b22e8c7fefbaac01bb9fa5f5a1f939f023f155eed5bcb6a0a828b02ecb383cef44  mce-headers-mer-1.24.0.tar.bz2"

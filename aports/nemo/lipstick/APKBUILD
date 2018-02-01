@@ -1,0 +1,50 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=lipstick
+pkgver=0.27.91
+pkgrel=0
+pkgdesc="CPU and display keepalive and scheduling library"
+arch="all"
+url="https://git.merproject.org/mer-core/lipstick"
+license="GPL"
+depends=(
+    'qt5-qtbase'
+    'qt5-declarative'
+    'qt5-sensors'
+    'qt5-wayland'
+    'statefs-qt'
+    'libresourceqt'
+    'libusb-moded-qt'
+    'nemo-keepalive'
+    'qtquickcontrols-nemo'
+    'nemo-qml-plugin-dbus'
+    'nemo-qml-plugin-devicelock'
+    
+)
+makedepends="git libcontentaction libsystemd qt5-tools"
+
+
+#source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/lipstick/repository/archive.tar.bz2?ref=$pkgver"
+source=('git+https://github.com/AsteroidOS/lipstick.git')
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+	cd "$builddir"
+    sed -i "s|libsystemd-daemon|libsystemd|g" ./src/src.pro
+    sed -i "s|#include <EGL/eglext.h>|#include <EGL/eglext.h>\n\n#include <cmath>|g" ./src/compositor/hwcimage.cpp
+}
+
+build() {
+	cd "$builddir"
+	qmake
+	make
+}
+
+package() {
+	cd "$builddir"
+	make INSTALL_ROOT="$pkgdir/" install
+}

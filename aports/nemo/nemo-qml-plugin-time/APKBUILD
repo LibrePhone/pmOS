@@ -1,0 +1,36 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=nemo-qml-plugin-time
+pkgver=0.1.0
+pkgrel=0
+pkgdesc="Wall clock plugin for Nemo Mobile"
+arch="all"
+url="https://git.merproject.org/mer-core/nemo-qml-plugin-time"
+license="GPL"
+depends=('qt5-qtbase' 'qt5-quickcontrols' 'timed-qt5')
+makedepends=""
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/nemo-qml-plugin-time/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+	cd "$builddir"
+    #sed -i "s|libsystemd-daemon|libsystemd|g" ./src/nemo-time/host/host.pro
+    #sed -i "s|libsystemd-daemon|libsystemd|g" ./src/daemon/daemon.pro
+}
+
+build() {
+	cd "$builddir"
+	qmake
+	make
+}
+
+package() {
+	cd "$builddir"
+	make INSTALL_ROOT="$pkgdir/" install
+}

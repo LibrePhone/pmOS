@@ -1,0 +1,36 @@
+# Maintainer: TheKit <nekit1000 at gmail.com>
+pkgname=libngf-qt
+pkgver=0.4.0
+pkgrel=0
+pkgdesc="Mer Qt-based client library for Non-Graphic Feedback daemon"
+arch="all"
+url="https://git.merproject.org/mer-core/libngf-qt"
+license="GPL"
+depends=('qt5-qtbase' 'libngf')
+makedepends=""
+
+
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libngf-qt/repository/archive.tar.bz2?ref=$pkgver"
+
+
+pkgver() {
+	cd "$builddir"
+	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+	cd "$builddir"
+	qmake PREFIX=/usr
+	
+	# Hack for PREFIX path not being passed to src subproject for some reason
+	cd src
+	qmake PREFIX=/usr
+	cd ..
+
+	make
+}
+
+package() {
+	cd "$builddir"
+	make INSTALL_ROOT="$pkgdir/" install
+}
