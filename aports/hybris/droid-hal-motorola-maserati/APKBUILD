@@ -1,12 +1,13 @@
 pkgname=droid-hal-motorola-maserati
-pkgver=0.0.6_201709301630
-pkgrel=1
+pkgver=0.0.6_git20171226
+_fulldate="201712261302"
+pkgrel=0
 arch="armhf"
 license="Apache"
 makedepends="rpmextract"
 depends=""
 url="https://github.com/mer-hybris"
-_filename="droid-hal-maserati-0.0.6-201709301630.armv7hl.rpm"
+_filename="droid-hal-maserati-0.0.6-${_fulldate}.armv7hl.rpm"
 install="$pkgname.post-install"
 source="http://repo.merproject.org/obs/nemo:/devel:/hw:/motorola:/maserati/sailfishos_2.1.0.11/armv7hl/$_filename
 	udev/998-droid-system.rules
@@ -36,6 +37,6 @@ package() {
 	rm -rf "$pkgdir"/lib
 }
 
-sha512sums="855b0c4d5656de7648b4e50fe02adc96cf55e09920b1f007740d52e7f1647477317c631d06b84ec60808957896b54b49ea9dddc606ede93b622d64049f5e991a  droid-hal-maserati-0.0.6-201709301630.armv7hl.rpm
+sha512sums="93929ed9e6cd48d72476a2af513dc41e6236dc8cc2c1222c9462ec84629783223e64aab59e87f51f386c53f238139db8bf6da20a0bc46900e58a7f8a1b4e75b1  droid-hal-maserati-0.0.6-201712261302.armv7hl.rpm
 865822222d7e47f362c887d4048ea4f598f6e4423e4c768f699e1dd0e4ec4518854e4c5a4cc6aa9a361b0b3a247066d2234805628c14f4e9acf8b9d53f3d5bea  998-droid-system.rules
 9057234a6d762d38a83cfe3000d73d2fab25cb1ad5eb122ba17d1e39cf1de379709097fba7a68f84ae2753abd1f623f2aee80a35ffbb977f130d6599f4bc6d54  droid-hal-init.init"
