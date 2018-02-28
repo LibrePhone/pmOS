@@ -68,3 +68,17 @@ def test_aports_device(args):
                                    " depends of " + path + ". These go into"
                                    " subpackages now, see"
                                    " <https://postmarketos.org/devicepkg>.")
+
+
+def test_old_firmware_folder(args):
+    # Get all aports in the old folder
+    aports = []
+    for path in glob.glob(args.aports + "/firmware/*/APKBUILD"):
+        aports.append(os.path.basename(os.path.dirname(path)))
+
+    # Raise error
+    if aports:
+        raise RuntimeError("The 'aports/firmware' folder has been renamed to"
+                           " 'aports/nonfree-firmware'. Please move '" +
+                           "', '".join(aports) + "' to the 'aports/"
+                           "nonfree-firmware' folder.")
