@@ -1,0 +1,17 @@
+pkgname=postmarketos-ui-phosh
+pkgver=1
+pkgrel=0
+pkgdesc="(Wayland) Mobile UI developed for the Librem 5"
+url="https://puri.sm"
+arch="noarch"
+license="GPL3+"
+depends="phosh"
+install="$pkgname.post-install"
+source="start_phosh.sh"
+options="!check"
+
+package() {
+	install -D -m644 "$srcdir"/start_phosh.sh \
+		"$pkgdir"/etc/profile.d/start_phosh.sh
+}
+sha512sums="0eac3855a8b2cf90b624ad0082038878a04968ffbb09a30e531b03e25b18a5a04db7019ca1334be2725b59fdab26b25047574809d7fcb227018133078a48b304  start_phosh.sh"
