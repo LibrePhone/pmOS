@@ -82,13 +82,13 @@ def copy_to_buildpath(args, package, suffix="native"):
     # Clean up folder
     build = args.work + "/chroot_" + suffix + "/home/pmos/build"
     if os.path.exists(build):
-        pmb.chroot.root(args, ["rm", "-rf", "/home/pmos/build"],
-                        suffix=suffix)
+        pmb.chroot.root(args, ["rm", "-rf", "/home/pmos/build"], suffix)
 
-    # Copy aport contents
+    # Copy aport and set permissions (#1298)
     pmb.helpers.run.root(args, ["cp", "-r", aport + "/", build])
-    pmb.chroot.root(args, ["chown", "-R", "pmos:pmos",
-                           "/home/pmos/build"], suffix=suffix)
+    pmb.chroot.root(args, ["chown", "-R", "pmos:pmos", "/home/pmos/build"],
+                    suffix)
+    pmb.chroot.user(args, ["chmod", "-R", "a+rX", "/home/pmos/build"], suffix)
 
 
 def is_necessary(args, arch, apkbuild, indexes=None):
