@@ -347,12 +347,13 @@ def arguments():
     for action in [checksum, build, aportgen]:
         action.add_argument("packages", nargs="+")
 
-    # Action: kconfig_check / apkbuild_parse
+    # Action: kconfig_check / deviceinfo_parse / apkbuild_parse
     kconfig_check = sub.add_parser("kconfig_check", help="check, whether all"
                                    " the necessary options are"
                                    " enabled/disabled in the kernel config")
     apkbuild_parse = sub.add_parser("apkbuild_parse")
-    for action in [kconfig_check, apkbuild_parse]:
+    deviceinfo_parse = sub.add_parser("deviceinfo_parse")
+    for action in [kconfig_check, apkbuild_parse, deviceinfo_parse]:
         action.add_argument("packages", nargs="*")
 
     # Action: apkindex_parse

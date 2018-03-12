@@ -257,6 +257,22 @@ def kconfig_check(args):
         raise RuntimeError("kconfig_check failed!")
 
 
+def deviceinfo_parse(args):
+    # Default to all packages
+    packages = args.packages
+    if not packages:
+        for deviceinfo in glob.glob(args.aports + "/device/device-*/deviceinfo"):
+            packages.append(os.path.basename(os.path.dirname(deviceinfo)))
+
+    # Iterate over all packages
+    packages.sort()
+    for package in packages:
+        print(package + ":")
+        device = package[len("device-"):]
+        print(json.dumps(pmb.parse.deviceinfo(args, device), indent=4,
+                         sort_keys=True))
+
+
 def apkbuild_parse(args):
     # Default to all packages
     packages = args.packages
