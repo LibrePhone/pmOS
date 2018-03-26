@@ -1,30 +1,30 @@
-# Kernel config based on: arch/arm64/configs/lineageos_bullhead_defconfig
+# Kernel config based on: arch/arm/configs/P024_defconfig
 
-pkgname="linux-lg-bullhead"
-pkgver=3.10.108
+pkgname="linux-asus-p024"
+pkgver=3.10.49
 pkgrel=0
-pkgdesc="Google Nexus 5X kernel fork"
-arch="aarch64"
-_carch="arm64"
-_flavor="lg-bullhead"
+pkgdesc="ZenPad 8.0 kernel fork"
+arch="armhf"
+_carch="arm"
+_flavor="asus-p024"
 url="https://kernel.org"
 license="GPL2"
 options="!strip !check !tracedeps"
-makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev xz"
+makedepends="perl sed installkernel bash gmp-dev bc linux-headers elfutils-dev dtbtool"
 HOSTCC="${CC:-gcc}"
 HOSTCC="${HOSTCC#${CROSS_COMPILE}}"
 
 # Source
-_repository="bullhead"
-_commit="57351a6494f82cda87c697e10afb98b7f3bd28a2"
+_repository="android_kernel_asus_P024"
+_commit="99aa3ac76ea33164d500c8fa53125298680aec5e"
 _config="config-${_flavor}.${arch}"
 source="
-	$pkgname-$_commit.tar.gz::https://github.com/franciscofranco/${_repository}/archive/${_commit}.tar.gz
+	$pkgname-$_commit.tar.gz::https://github.com/LineageOS/${_repository}/archive/${_commit}.tar.gz
 	$_config
 	compiler-gcc6.h
+	fix-multiple-definition-ftrace.patch
 	static-inline.patch
 	undefined-reference-sys-session-init.patch
-	undefined-screen_info.patch
 "
 builddir="$srcdir/${_repository}-${_commit}"
 
@@ -58,6 +58,9 @@ build() {
 	unset LDFLAGS
 	make ARCH="$_carch" CC="${CC:-gcc}" \
 		KBUILD_BUILD_VERSION="$((pkgrel + 1 ))-postmarketOS"
+
+	# Generate master DTB (deviceinfo_bootimg_qcdt)
+	dtbTool -s 2048 -p "scripts/dtc/" -o "arch/arm/boot/dt.img" "arch/arm/boot/"
 }
 
 package() {
@@ -78,11 +81,15 @@ package() {
 		error "Could not find zImage in $PWD!"
 		return 1
 	fi
+
+	# Master DTB (deviceinfo_bootimg_qcdt)
+	install -Dm644 "$builddir/arch/arm/boot/dt.img" \
+		"$pkgdir/boot/dt.img"
 }
 
-sha512sums="f34e79b5c80e6dcb2de4a85ec5a59b837338b55c4fef5ac5c6dfaf0d78220a016397442032fbf340eeead1201dd01feeff660adfe3406fdddf66832e59416898  linux-lg-bullhead-57351a6494f82cda87c697e10afb98b7f3bd28a2.tar.gz
-7e49fa92edfe2057f3454909ad2bc7e643c8372fbb64003ec66581896e6497cedd506a721df436f10f741d30cceee7c1e8a9fbe215755deae575bb2e2b5bb757  config-lg-bullhead.aarch64
+sha512sums="8534e6830defe27e75aa1b8c7a64e9aa78d8f331f914bd36d34123daeece28845228319c25f11f3527195b89281fe6474e44ffb123ce6d5158eeaaeff4d1f061  linux-asus-p024-99aa3ac76ea33164d500c8fa53125298680aec5e.tar.gz
+bc887964265f32304a5e47fef38ac49c9b84dafeba1448a966356173d86bda6c74d758566f90bcf252fbc78c3edaf20633af00e70493e1545bc40489b955f4cd  config-asus-p024.armhf
 d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h
+c1a7cb8967591aa1905ef71568612f2374ef2e0c9427b96aa816616bc8f0c239f0756900f083377afc3da32e03e0eaf0428d38bec0666ab5df9d90e5858fe9a8  fix-multiple-definition-ftrace.patch
 ad77ff2bea83e603bfdbd6bdae7a15f8e8d4a4a005a6ad26b6d8872767bb80b41cc2c0df228d6978ad0bd9e84486bea98a178478b93948e3e37794755e136bd6  static-inline.patch
-64060a1b42743b398feb7b9b05259ff5bc8a3607c9e357d9c1f57c9c0994b433a2fc0c2697a34c71b78ca4096f06ef18e1f5575c4a6a3e93d3c39066ee88d418  undefined-reference-sys-session-init.patch
-f05386bd27c61e579e69b6ece42b99438ae6da67b8321eec3e4b408a06ff9bdc35cb354fe6dd66751c9118263463f91eb8c250e82532ec4698ea61ac3371c558  undefined-screen_info.patch"
+64060a1b42743b398feb7b9b05259ff5bc8a3607c9e357d9c1f57c9c0994b433a2fc0c2697a34c71b78ca4096f06ef18e1f5575c4a6a3e93d3c39066ee88d418  undefined-reference-sys-session-init.patch"

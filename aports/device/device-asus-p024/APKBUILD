@@ -1,0 +1,22 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname="device-asus-p024"
+pkgdesc="ZenPad 8.0"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="noarch"
+options="!check"
+depends="postmarketos-base linux-asus-p024 mkbootimg mesa-dri-swrast"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="5664375eea7f5e243a607dece555e10e8b9289fb5b834fff84beca1534da12edaee8ac6160c1055937dc1bd82363e250347ca27e67fa2edcea714c56503605b8  deviceinfo"
