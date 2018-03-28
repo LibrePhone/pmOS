@@ -1,0 +1,22 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname="device-xiaomi-rolex"
+pkgdesc="Redmi 4A"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="noarch"
+options="!check"
+depends="postmarketos-base linux-xiaomi-rolex mkbootimg mesa-dri-swrast"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="a9d717d050c4a19d47b7052212394305e805466f576d77d60304702557d92775d1f317218c023ff3b10f89d33c3cd46937a8f8b5ffa370aa67c964993287a23e  deviceinfo"
