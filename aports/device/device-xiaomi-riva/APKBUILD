@@ -1,0 +1,22 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname="device-xiaomi-riva"
+pkgdesc="Redmi 5A"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="noarch"
+options="!check"
+depends="postmarketos-base linux-xiaomi-riva mkbootimg mesa-dri-swrast"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="dca9985f8c91c962ca02c31d0b75c379132ae72ddc02e530d8aab428d9d9c7d156c7217e810e14cbd5cd1067d343d1f3c315cdf2ac6a92cdea0044bd72933348  deviceinfo"

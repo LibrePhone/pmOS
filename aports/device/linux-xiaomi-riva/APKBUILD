@@ -1,12 +1,12 @@
 # Kernel config based on: arch/arm64/configs/{rosy-perf_defconfig,S88505AA1-perf_defconfig,S88503AC1-perf_defconfig}
 
-pkgname="linux-xiaomi-rosy"
+pkgname="linux-xiaomi-riva"
 pkgver=3.18.31
 pkgrel=0
 pkgdesc="Redmi 5 kernel fork"
 arch="aarch64"
 _carch="arm64"
-_flavor="xiaomi-rosy"
+_flavor="xiaomi-riva"
 url="https://kernel.org"
 license="GPL2"
 options="!strip !check !tracedeps"
@@ -79,8 +79,8 @@ package() {
 	fi
 }
 
-sha512sums="4c4e441fd1eed9ddc0fd392a7079815a71e0a69766ff06ee9ee699d4c539a6ca83241ca9a50f5f77c3b5188fa4bfe55bcfaaa1d17e49f17ed4e12776df9c9525  linux-xiaomi-rosy-2dd7cd829e165917bfe384febf21d9727b05fba4.tar.gz
-02207d188b95df115f0f11055488cc0d17dc77ecce98965f7b80fe9c64de610ab3d44f45a826fcdec1f3829b9816140bcd53f44de3cd7c11b55511d3e3acd3ec  config-xiaomi-rosy.aarch64
+sha512sums="4c4e441fd1eed9ddc0fd392a7079815a71e0a69766ff06ee9ee699d4c539a6ca83241ca9a50f5f77c3b5188fa4bfe55bcfaaa1d17e49f17ed4e12776df9c9525  linux-xiaomi-riva-2dd7cd829e165917bfe384febf21d9727b05fba4.tar.gz
+1986c4087184e30c7efda131acf2ae696fe6711d9259f3337a4be720ead74f973b7aceef5fb5cb3b1caf943b83425d224229fd662f4c6b23b1eb3709d3ea1386  config-xiaomi-riva.aarch64
 d80980e9474c82ba0ef1a6903b434d8bd1b092c40367ba543e72d2c119301c8b2d05265740e4104ca1ac5d15f6c4aa49e8776cb44264a9a28dc551e0d1850dcc  compiler-gcc6.h
 7e765cb696fa8c3dfbc305b05cbf1fad85fb9572613d5391e945341dae5974a745f4906c795dc841e5562b19ab77d5257f9741e514af2c2573aa4bb8b262ce51  02_fix_msm_dba.patch
 9c549714f03c7a7666e8aa7508a48cfdccab7cf3e97fb59c4df8fa97f75492365926f82c4a677c50780d68d4905504dcccbdd6de6344bd8d4b88b2331933ed46  03_fix_rndis_ipa_trace_header_not_found.patch"
