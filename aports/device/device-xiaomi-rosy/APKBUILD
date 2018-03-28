@@ -1,0 +1,22 @@
+# Reference: <https://postmarketos.org/devicepkg>
+pkgname="device-xiaomi-rosy"
+pkgdesc="Redmi 5"
+pkgver=0.1
+pkgrel=0
+url="https://postmarketos.org"
+license="MIT"
+arch="noarch"
+options="!check"
+depends="postmarketos-base linux-xiaomi-rosy mkbootimg mesa-dri-swrast"
+makedepends="devicepkg-dev"
+source="deviceinfo"
+
+build() {
+	devicepkg_build $startdir $pkgname
+}
+
+package() {
+	devicepkg_package $startdir $pkgname
+}
+
+sha512sums="5e731de8471479cc76d284d84ec754f04f58b9e8b0bc85c9f7d5b1a75a1b144e861160921a7ab0e99c34747cb94528718ce913496ab76b82ff12525cff56bd6b  deviceinfo"
