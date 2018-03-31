@@ -40,6 +40,7 @@ extract_initramfs_extra @INITRAMFS_EXTRA@
 start_charging_mode
 resize_and_activate_lvm
 wait_root_partition
+resize_root_partition
 unlock_root_partition
 resize_root_filesystem
 mount_root_partition
