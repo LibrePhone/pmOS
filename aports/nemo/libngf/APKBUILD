@@ -4,9 +4,10 @@ pkgrel=0
 pkgdesc="Non-graphic feedback C-based client library"
 arch="all"
 url="https://git.merproject.org/mer-core/libngf"
-license="GPL"
+license="LGPL-2.1"
 makedepends="autoconf automake libtool dbus-glib-dev check-dev"
 source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libngf/repository/archive.tar.bz2?ref=$pkgver"
+subpackages="$pkgname-dev"
 _rev=06be88da245bf5eed6880e871f65d35115d05674
 
 builddir="$srcdir/$pkgname-$pkgver-$_rev"

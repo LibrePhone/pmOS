@@ -1,20 +1,21 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=libdsme-mer
 pkgver=0.64.2
 pkgrel=0
 pkgdesc="CPU and display keepalive and scheduling library"
 arch="all"
 url="https://git.merproject.org/mer-core/libdsme"
-license="GPL"
-makedepends="git check"
-
-
+license="LGPL-2.1"
+depends_dev="glib-dev"
+makedepends="check-dev dbus-glib-dev"
 source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libdsme/repository/archive.tar.bz2?ref=$pkgver"
+subpackages="$pkgname-dev"
+_rev=28d3fea293eea73d961a25b44adbdd00c8b8ad4f
 
+builddir="$srcdir/libdsme-$pkgver-$_rev"
 
-pkgver() {
+prepare() {
 	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+	sed -i -e "s|<sys/un.h>|<sys/uio.h>\n#include <sys/un.h>|g" ./protocol.c
 }
 
 build() {
@@ -25,4 +26,6 @@ build() {
 package() {
 	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
+	rm -rf "$pkgdir/opt"
 }
+sha512sums="7519ac118ba65a01de1a08385cc638275a7035af2144fd22ebc79619be0ce77d0cc8153829c29d83e939ab994633fef7b99812ce8f9b78072a9494d709399698  libdsme-mer-0.64.2.tar.bz2"

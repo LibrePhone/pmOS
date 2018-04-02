@@ -5,8 +5,8 @@ pkgrel=0
 pkgdesc="Mode Control Entity for Nokia mobile computers"
 arch="all"
 url="https://git.merproject.org/mer-core/mce"
-license="GPL"
-makedepends="git doxygen libngf libdsme libiphb libsystemd"
+license="LGPL-2.1"
+makedepends="git doxygen libngf libdsme-mer libiphb-mer libsystemd"
 
 
 source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/mce/repository/archive.tar.bz2?ref=$pkgver"

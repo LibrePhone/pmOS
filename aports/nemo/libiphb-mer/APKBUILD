@@ -1,17 +1,16 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=libiphb-mer
+_pkgname=libiphb
 pkgver=1.2.4
 pkgrel=0
 pkgdesc="C API for using IP Heartbeat service"
 arch="all"
 url="https://git.merproject.org/mer-core/libiphb"
-license="GPL"
-depends=('dbus-glib' 'libdsme')
-makedepends="git mce-headers-git"
+license="LGPL-2.1"
+makedepends="autoconf automake libtool mce-headers-mer libdsme-mer-dev dbus-glib-dev"
+source="$_pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/$_pkgname/repository/archive.tar.bz2?ref=$pkgver"
+_rev=5db3ab70268933369fbfc90e8ca3fd00b774c66b
 
-
-source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libiphb/repository/archive.tar.bz2?ref=$pkgver"
-
+builddir="$srcdir/$_pkgname-$pkgver-$_rev"
 
 pkgver() {
 	cd "$builddir"
@@ -29,3 +28,4 @@ package() {
 	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
 }
+sha512sums="25eccdcc7a2559c64cf9a716ad22eb25a1af3a8b4b3259d100819317b0c09c5fe022521fd7faf40f5bff874b562062b5d84b97628747694e671b222fd83d0785  libiphb-1.2.4.tar.bz2"
