@@ -1,0 +1,25 @@
+# Contributor: drebrez <drebrez@gmail.com>
+# Maintainer: drebrez <drebrez@gmail.com>
+pkgname=yamui
+pkgver=1.0.6
+pkgrel=0
+pkgdesc="Minimal UI tool for displaying simple graphical indicators"
+url="https://github.com/sailfishos/yamui"
+arch="all"
+license="ASL 2.0"
+makedepends="linux-headers libpng-dev bsd-compat-headers"
+source="yamui-$pkgver.tar.gz::https://github.com/sailfishos/yamui/archive/$pkgver.tar.gz"
+options="!check"
+builddir="$srcdir/$pkgname-$pkgver"
+
+build() {
+	cd "$builddir"
+	make
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+}
+
+sha512sums="e91141127d64497e70a7a106eefece5ffa40776bda62dcfb1b6b3c11d6f5b2b2e22a1d0efaf335153b2dac43e5e0847e652f48cc75094395991100bf620baccf  yamui-1.0.6.tar.gz"
