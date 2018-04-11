@@ -1,0 +1,25 @@
+pkgname=wlroots
+pkgver=0.0.1
+pkgrel=0
+_commit="d71deca39aaede9b8da4e531400315116b138002"
+pkgdesc="Pluggable, composable modules for building a Wayland compositor, with Purism hacks to support Phosh"
+arch="all"
+url="https://code.puri.sm/Librem5/wlroots-hacks"
+license="GPL2"
+depends="wayland wayland-protocols"
+makedepends="meson ninja wayland-dev wayland-libs-server wayland-libs-client"
+source="$pkgname-$pkgver.tar.gz::https://code.puri.sm/Librem5/wlroots-hacks/archive/$_commit.tar.gz"
+
+builddir="$srcdir/$pkgname-hacks"
+
+build() {
+	cd "$builddir"
+	meson . _build --prefix=/usr
+	ninja -C _build
+}
+
+package() {
+	cd "$builddir"
+	DESTDIR="$pkgdir/" ninja -C _build install
+}
+sha512sums="0a2aca18fb40e8b5fb4bf00f9c22b6f71cdca78428b3c647a4177954ec10d5a359e16d3f969797055022bd9ff61f8a32a241d1e57700fc814c82a683b2171723  wlroots-0.0.1.tar.gz"
