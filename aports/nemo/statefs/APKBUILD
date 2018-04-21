@@ -1,31 +1,18 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=statefs
 pkgver=0.3.35
 pkgrel=0
 pkgdesc="Syntetic filesystem to expose system state"
 arch="all"
 url="https://git.merproject.org/mer-core/statefs"
-license="GPL"
-depends=('fuse' 'boost-libs')
-makedepends="git cmake boost cor"
+license="LGPLv2.1+"
+depends="fuse"
+makedepends="cmake boost-dev cor-dev fuse-dev doxygen"
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/$pkgname/repository/archive.tar.bz2?ref=$pkgver
+    example-statefspp-pthreads.patch"
+_rev=ef73da6fc0721eebedc25c5a7d09ee4b5dc3ba85
+subpackages="$pkgname-dev $pkgname-doc"
 
-
-source=(
-    'git+https://git.merproject.org/mer-core/statefs.git'
-    'example-statefspp-pthreads.patch'
-)
-md5sums=('SKIP'
-         'bd0fa2d64264cb80c82baccee28398ad')
-
-pkgver() {
-	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-}
-
-prepare() {
-	cd "$builddir"
-    patch -Np1 -i "${srcdir}/example-statefspp-pthreads.patch"
-}
+builddir="$srcdir/$pkgname-$pkgver-$_rev"
 
 build() {
 	cd "$builddir"
@@ -37,4 +24,9 @@ build() {
 package() {
 	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
+
+	# Remove tests
+	rm -rf "$pkgdir/opt"
 }
+sha512sums="75fcaeb9793a4a07fc0a979fa6b6ae25a2fb50f4addc155fc961f2ce011a6e1c92bdfe81f3eba61daff67c06de1c52f3ea9358384157ec913951009da3285093  statefs-0.3.35.tar.bz2
+50f87c4e632b5ff9df3e22389580966f4c4376d7a442c2257fc03ce167810faa472bde888a2b95f0c8c3de6e1e000f26ba53f9429d44a084a6884bd74493eb28  example-statefspp-pthreads.patch"

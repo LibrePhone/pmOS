@@ -6,10 +6,10 @@ pkgdesc="Mode Control Entity for Nokia mobile computers"
 arch="all"
 url="https://git.merproject.org/mer-core/mce"
 license="LGPL-2.1"
-makedepends="glib-dev pkgconfig doxygen
+makedepends="glib-dev pkgconfig doxygen coreutils
 	libngf-dev libdsme-mer-dev libiphb-mer-dev mce-headers-mer linux-headers
 	dbus-dev dbus-glib-dev check-dev"
-source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/mce/repository/archive.tar.bz2?ref=$pkgver
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/$_pkgname/repository/archive.tar.bz2?ref=$pkgver
     0001-make-libsystemd-optional.patch
     0002-fix-compilation-with-musl.patch"
 _rev=06d8df1d7de2e911132678868a805aaea6ba3af1

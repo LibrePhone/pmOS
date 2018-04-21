@@ -1,4 +1,3 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=qtaround
 pkgver=0.2.8
 pkgrel=0
@@ -6,22 +5,22 @@ pkgdesc="QtAround library used to port the-vault to C++"
 arch="all"
 url="https://git.merproject.org/mer-core/qtaround"
 license="GPL"
-depends=('qt5-qtbase')
-makedepends="git cor tut"
+makedepends="qt5-qtbase-dev cor-dev"
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/qtaround/repository/archive.tar.bz2?ref=$pkgver
+	0001-musl-compilation-fixes.patch"
+_rev=468b9683308fd98c8ae449ee73f0044ac1e7a0e1
+subpackages="$pkgname-dev"
 
-
-source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/qtaround/repository/archive.tar.bz2?ref=$pkgver"
-
-
-pkgver() {
-	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-}
+builddir="$srcdir/$pkgname-$pkgver-$_rev"
 
 prepare() {
+	default_prepare
+
 	cd "$builddir"
-    sed -i "s|tut>=0.0.3|tut>=0.0.0|g" ./tests/CMakeLists.txt
-    sed -i "s|#include <QMap>|#include <QMap>\n#include <cmath>|g" ./src/util.cpp
+	sed -i "s|#include <QMap>|#include <QMap>\n#include <cmath>|g" ./src/util.cpp
+
+	# Don't build tests, as we need tut for them
+	sed -i -e "s|add_subdirectory(tests)||g" ./CMakeLists.txt
 }
 
 build() {
@@ -34,3 +33,5 @@ package() {
 	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
 }
+sha512sums="64e29b217de1a84870ae5bb73214c3b3dc13091e6552314a83c3bcec345c1343216662cc9876c1e99f3868fa29445aa1bb301e0e0fe186bf9186b1477c35bb68  qtaround-0.2.8.tar.bz2
+7fd1b5a68e4f84578ffe8907809b3c033db8b1697196d5a73ecc74a097b9319e96be558bfbe15ec8eb9924c095445010d60dba2f7cb13f28c4b376c9d42d4813  0001-musl-compilation-fixes.patch"

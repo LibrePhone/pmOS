@@ -1,31 +1,27 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=statefs-qt
 pkgver=0.3.3
 pkgrel=0
 pkgdesc="Statefs Qt bindings"
 arch="all"
 url="https://git.merproject.org/mer-core/statefs-qt"
-license="GPL"
-depends=('qt5-qtbase' 'statefs' 'qtaround')
-makedepends=""
-
-
+license="LGPLv2.1"
+depends="qt5-qtbase statefs qtaround"
+makedepends="qt5-qtbase-dev qt5-qtdeclarative-dev qtaround-dev"
 source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/statefs-qt/repository/archive.tar.bz2?ref=$pkgver"
+subpackages="$pkgname-dev $pkgname-doc"
+_rev=6d91f87a8887b46c1e6883d72a32f49af6171919
 
-
-pkgver() {
-	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-}
+builddir="$srcdir/$pkgname-$pkgver-$_rev"
 
 prepare() {
 	cd "$builddir"
-    sed -i "s|tut>=0.0.3|tut>=0.0.0|g" ./tests/CMakeLists.txt
+	# Don't build tests, as we need tut for them
+	sed -i -e "s|add_subdirectory(tests)||g" ./CMakeLists.txt
 }
 
 build() {
 	cd "$builddir"
-	cmake -DCMAKE_INSTALL_PREFIX=/usr -DVERSION=$pkgver
+	cmake -DCMAKE_INSTALL_PREFIX=/usr -DVERSION=$pkgver CMakeLists.txt
 	make
 	make doc
 }
@@ -34,3 +30,4 @@ package() {
 	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
 }
+sha512sums="70c38086ecfdb1ec0ab7b75bf8678b47a6f5f5c50230521b9241dea5587f3ed50a8cb1520276566033a3b76ae658ec885d811a30ec93589fc8d082d84f213127  statefs-qt-0.3.3.tar.bz2"

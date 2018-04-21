@@ -1,0 +1,43 @@
+diff --git a/include/cor/error.hpp b/include/cor/error.hpp
+index 72fe5d4..fe05a25 100644
+--- a/include/cor/error.hpp
++++ b/include/cor/error.hpp
+@@ -25,7 +25,9 @@
+  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+  */
+ 
++#ifdef __GLIBC__
+ #include <execinfo.h>
++#endif
+ #include <cxxabi.h>
+ #include <dlfcn.h>
+ 
+@@ -81,7 +83,11 @@ class Backtrace : private Backtrace_
+ {
+ public:
+     Backtrace()
++#ifdef __GLIBC__
+         : count_(::backtrace(&frames[0], frames.size()))
++#else
++        : count_(0)
++#endif
+         , symbols(mk_cmem_handle<char const*>())
+     { }
+ 
+diff --git a/src/error.cpp b/src/error.cpp
+index 3608d9c..3814bee 100644
+--- a/src/error.cpp
++++ b/src/error.cpp
+@@ -19,8 +19,12 @@ bool is_address_valid(void *p)
+ Backtrace_::symbols_type
+ Backtrace_::get_symbols(void *const *frames, size_t count)
+ {
++#ifdef __GLIBC__
+     auto symbols = mk_cmem_handle<char const*>
+         (const_cast<char const**>(backtrace_symbols(frames, count)));
++#else
++    auto symbols = mk_cmem_handle<char const*> ((char const**)nullptr);
++#endif
+ 
+     if (!symbols) {
+         symbols.reset(static_cast<char const**>(::calloc(1, sizeof(*symbols))));

@@ -1,0 +1,19 @@
+diff --git a/include/qtaround/subprocess.hpp b/include/qtaround/subprocess.hpp
+index 8358c2b..c7b2d64 100644
+--- a/include/qtaround/subprocess.hpp
++++ b/include/qtaround/subprocess.hpp
+@@ -13,6 +13,14 @@
+ #include <QProcess>
+ #include <QVariant>
+ 
++/* Fix compilation with musl */
++#ifdef stdout
++#undef stdout
++#endif
++#ifdef stderr
++#undef stderr
++#endif
++
+ namespace qtaround { namespace subprocess {
+ 
+ class Process : public QObject

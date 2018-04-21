@@ -1,0 +1,33 @@
+pkgname=cor
+pkgver=0.1.18
+pkgrel=0
+pkgdesc="Just another C++/C library"
+arch="all"
+url="https://git.merproject.org/mer-core/cor"
+license="LGPL"
+makedepends="cmake eudev-dev"
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/$pkgname/repository/archive.tar.bz2?ref=$pkgver
+	0001-musl-compilation-fixes.patch"
+_rev=bac728b8a7a9faa9b25afb2985c254fc69709b2a
+subpackages="cor-dev"
+
+builddir="$srcdir/$pkgname-$pkgver-$_rev"
+
+build() {
+	cd "$builddir"
+
+	# Don't build tests, as we need tut for them
+	sed -i -e "s|add_subdirectory(tests)||g" ./CMakeLists.txt
+
+	cmake -DVERSION=$pkgver \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	make
+}
+
+package() {
+	cd "$builddir"
+
+	make DESTDIR="${pkgdir}" install
+}
+sha512sums="9f220b7173b8be720d27abfc59be622f8c290bf00c79cc1a9ab818c626ca77556a377427a28a475a83795382730e9e2b1580993e378923a2ffa1137f6dc5b2be  cor-0.1.18.tar.bz2
+fdc0e9f3af911ef03f26934537fde45fdbb2e207b6db5018427bd346f7b6b96b1f409ecb6c7be7f5820b33aa8d62573491f77ba5c5df4e1c67a0b52bdffa6879  0001-musl-compilation-fixes.patch"
