@@ -1,26 +1,21 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=mce-mer
-pkgver=1.80.1
+_pkgname=mce
+pkgver=1.93.4
 pkgrel=0
 pkgdesc="Mode Control Entity for Nokia mobile computers"
 arch="all"
 url="https://git.merproject.org/mer-core/mce"
 license="LGPL-2.1"
-makedepends="git doxygen libngf libdsme-mer libiphb-mer libsystemd"
+makedepends="glib-dev pkgconfig doxygen
+	libngf-dev libdsme-mer-dev libiphb-mer-dev mce-headers-mer linux-headers
+	dbus-dev dbus-glib-dev check-dev"
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/mce/repository/archive.tar.bz2?ref=$pkgver
+    0001-make-libsystemd-optional.patch
+    0002-fix-compilation-with-musl.patch"
+_rev=06d8df1d7de2e911132678868a805aaea6ba3af1
+subpackages="$pkgname-doc"
 
-
-source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/mce/repository/archive.tar.bz2?ref=$pkgver"
-
-
-pkgver() {
-	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-}
-
-prepare() {
-	cd "$builddir"
-    sed -i "s|libsystemd-daemon|libsystemd|g" ./Makefile
-}
+builddir="$srcdir/$_pkgname-$pkgver-$_rev"
 
 build() {
 	cd "$builddir"
@@ -32,11 +27,9 @@ package() {
 	make DESTDIR="$pkgdir/" install
 	
 	mv $pkgdir/usr/sbin $pkgdir/usr/bin
-
-	rm $pkgdir/lib/systemd/system/multi-user.target.wants/mce.service
-	rmdir $pkgdir/lib/systemd/system/multi-user.target.wants
-	mv $pkgdir/lib/systemd $pkgdir/usr/lib/systemd
-
-	rm -rf $pkgdir/lib
+	# Arch mounts tmpfs on /var/run, need to be checked for pmOS
 	rm -rf $pkgdir/var/run
 }
+sha512sums="7f233ba475a15debe13862eec69981915f5ebd63fc86f722db16ebb28bdd3bda38e96088915a7d0680bacd7bf927c3f8ed8dac3ae2d9439b25710f4f930e0f73  mce-mer-1.93.4.tar.bz2
+8b941de8c9a6361ae81c4fde61eb08c6e8646bcaf7bf4e1df13add53e8b160b130145f9d7f27f3c961934d9ae463bc38b952a4581477b6e3c59e1161dc419cf0  0001-make-libsystemd-optional.patch
+0379e6dcaa96c73cb7badb7c3f5a996351ed4c68f6bd5a1b7d2e6161d271845ed86c39cac3ba565f96b1aa153c46d13060a275a1965c10eee59c17d16a9f97ea  0002-fix-compilation-with-musl.patch"

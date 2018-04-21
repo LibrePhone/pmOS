@@ -8,24 +8,22 @@ url="https://git.merproject.org/mer-core/libiphb"
 license="LGPL-2.1"
 makedepends="autoconf automake libtool mce-headers-mer libdsme-mer-dev dbus-glib-dev"
 source="$_pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/$_pkgname/repository/archive.tar.bz2?ref=$pkgver"
+subpackages="$pkgname-dev"
 _rev=5db3ab70268933369fbfc90e8ca3fd00b774c66b
 
 builddir="$srcdir/$_pkgname-$pkgver-$_rev"
 
-pkgver() {
-	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-}
-
 build() {
 	cd "$builddir"
-    ./autogen.sh
-    ./configure --prefix=/usr
-    make
+	./autogen.sh
+	./configure --prefix=/usr
+	make
 }
 
 package() {
 	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
+	# Don't package tests
+	rm -rf "$pkgdir/opt"
 }
 sha512sums="25eccdcc7a2559c64cf9a716ad22eb25a1af3a8b4b3259d100819317b0c09c5fe022521fd7faf40f5bff874b562062b5d84b97628747694e671b222fd83d0785  libiphb-1.2.4.tar.bz2"

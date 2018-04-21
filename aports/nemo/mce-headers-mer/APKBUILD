@@ -1,5 +1,5 @@
 pkgname=mce-headers-mer
-pkgver=1.24.0
+pkgver=1.25.0
 pkgrel=0
 pkgdesc="Development files for mce"
 arch="noarch"
@@ -7,7 +7,7 @@ url="https://git.merproject.org/mer-core/mce-dev"
 license="LGPL-2.1"
 makedepends="coreutils doxygen"
 source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/mce-dev/repository/archive.tar.bz2?ref=$pkgver"
-_rev=27897482278236ad3d7bd227823b78e43a409569
+_rev=e8f71174c90e66b4103146c3cd425d8bd35e41e4
 
 builddir="$srcdir/mce-dev-$pkgver-$_rev"
 
@@ -20,4 +20,4 @@ package() {
 	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
 }
-sha512sums="15332488d9e2a50a1947cc030bc6f9e13aa16c68d50bcd9a81102642c745d6b22e8c7fefbaac01bb9fa5f5a1f939f023f155eed5bcb6a0a828b02ecb383cef44  mce-headers-mer-1.24.0.tar.bz2"
+sha512sums="451d76d5c7cf11473020811be79729b454b6e680eb10fa1e7ca327b5174a1d2bdd780a3b3c768e29192d7aab3fae701e5d43568a6c7209b065902cd87dff9fd1  mce-headers-mer-1.25.0.tar.bz2"

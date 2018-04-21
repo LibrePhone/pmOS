@@ -1,0 +1,128 @@
+From 75bba17f8defa60fe67356944b5e202d5ee78c5e Mon Sep 17 00:00:00 2001
+From: NeKit <nekit1000@gmail.com>
+Date: Sat, 21 Apr 2018 12:48:48 +0300
+Subject: [PATCH 1/2] Make libsystemd optional
+
+---
+ Makefile | 10 ++++++++--
+ mce.c    | 12 ++++++++++++
+ 2 files changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 49eee38..bdda553 100644
+--- a/Makefile
++++ b/Makefile
+@@ -96,8 +96,8 @@ ENABLE_WAKELOCKS ?= y
+ # Whether to enable cpu scaling governor policy
+ ENABLE_CPU_GOVERNOR ?= y
+ 
+-# Whether to install systemd control files
+-ENABLE_SYSTEMD_SUPPORT ?= y
++# Whether to enable support for systemd and install systemd control files
++ENABLE_SYSTEMD_SUPPORT ?= n
+ 
+ # Whether to install man pages
+ ENABLE_MANPAGE_INSTALL ?= y
+@@ -221,6 +221,10 @@ ifeq ($(ENABLE_DEVEL_LOGGING),y)
+ CPPFLAGS += -DENABLE_DEVEL_LOGGING
+ endif
+ 
++ifeq ($(ENABLE_SYSTEMD_SUPPORT),y)
++CPPFLAGS += -DENABLE_SYSTEMD_SUPPORT
++endif
++
+ # C Compiler
+ CFLAGS += -std=c99
+ 
+@@ -277,7 +281,9 @@ MCE_PKG_NAMES += dbus-1
+ MCE_PKG_NAMES += dbus-glib-1
+ MCE_PKG_NAMES += dsme
+ MCE_PKG_NAMES += libiphb
++ifeq ($(ENABLE_SYSTEMD_SUPPORT),y)
+ MCE_PKG_NAMES += libsystemd-daemon
++endif
+ MCE_PKG_NAMES += libngf0
+ 
+ MCE_PKG_CFLAGS := $(shell $(PKG_CONFIG) --cflags $(MCE_PKG_NAMES))
+diff --git a/mce.c b/mce.c
+index 0aa7d3a..7c47499 100644
+--- a/mce.c
++++ b/mce.c
+@@ -56,7 +56,9 @@
+ #include <errno.h>
+ #include <fcntl.h>
+ 
++#ifdef ENABLE_SYSTEMD_SUPPORT
+ #include <systemd/sd-daemon.h>
++#endif
+ 
+ /** Path to the lockfile */
+ #define MCE_LOCKFILE			"/var/run/mce.pid"
+@@ -656,7 +658,9 @@ static struct
+ 	int  verbosity;
+ 	bool systembus;
+ 	bool show_module_info;
++#ifdef ENABLE_SYSTEMD_SUPPORT
+ 	bool systemd_notify;
++#endif
+ 	bool valgrind_mode;
+ 	int  auto_exit;
+ } mce_args =
+@@ -666,7 +670,9 @@ static struct
+ 	.verbosity        = LL_DEFAULT,
+ 	.systembus        = true,
+ 	.show_module_info = false,
++#ifdef ENABLE_SYSTEMD_SUPPORT
+ 	.systemd_notify   = false,
++#endif
+ 	.valgrind_mode    = false,
+ 	.auto_exit        = -1,
+ };
+@@ -747,12 +753,14 @@ static bool mce_do_show_module_info(const char *arg)
+ 	return true;
+ }
+ 
++#ifdef ENABLE_SYSTEMD_SUPPORT
+ static bool mce_do_systemd(const char *arg)
+ {
+ 	(void)arg;
+ 	mce_args.systemd_notify = true;
+ 	return true;
+ }
++#endif
+ 
+ static bool mce_do_trace(const char *arg)
+ {
+@@ -799,6 +807,7 @@ static const mce_opt_t options[] =
+ 			"Decrease debug message verbosity\n"
+ 
+ 	},
++#ifdef ENABLE_SYSTEMD_SUPPORT
+ 	{
+ 		.name        = "systemd",
+ 		.flag        = 'n',
+@@ -807,6 +816,7 @@ static const mce_opt_t options[] =
+ 			"Notify systemd when started up\n"
+ 
+ 	},
++#endif
+ 	{
+ 		.name        = "daemonflag",
+ 		.flag        = 'd',
+@@ -1098,11 +1108,13 @@ int main(int argc, char **argv)
+ 	/* MCE startup succeeded */
+ 	status = EXIT_SUCCESS;
+ 
++#ifdef ENABLE_SYSTEMD_SUPPORT
+ 	/* Tell systemd that we have started up */
+ 	if( mce_args.systemd_notify ) {
+ 		mce_log(LL_NOTICE, "notifying systemd");
+ 		sd_notify(0, "READY=1");
+ 	}
++#endif
+ 	/* Debug feature: exit after startup is finished */
+ 	if( mce_args.auto_exit >= 0 ) {
+ 		mce_log(LL_WARN, "auto-exit scheduled");
+-- 
+2.15.1
+

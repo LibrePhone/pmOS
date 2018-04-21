@@ -1,0 +1,61 @@
+From d2bfaa54657bc41dad6e3ffa3501135fac663ca5 Mon Sep 17 00:00:00 2001
+From: NeKit <nekit1000@gmail.com>
+Date: Sat, 21 Apr 2018 12:49:05 +0300
+Subject: [PATCH 2/2] Fix compilation with musl
+
+---
+ libwakelock.c |  1 +
+ mce-hybris.c  |  5 +++++
+ mce.h         | 10 ++++++++++
+ 3 files changed, 16 insertions(+)
+
+diff --git a/libwakelock.c b/libwakelock.c
+index d4dc7a4..2e5266b 100644
+--- a/libwakelock.c
++++ b/libwakelock.c
+@@ -10,6 +10,7 @@
+  */
+ 
+ #include "libwakelock.h"
++#include "mce.h"
+ 
+ #include <stdarg.h>
+ #include <stdbool.h>
+diff --git a/mce-hybris.c b/mce-hybris.c
+index 10f9117..828fd04 100644
+--- a/mce-hybris.c
++++ b/mce-hybris.c
+@@ -76,6 +76,11 @@ static int               evepipe_fd[2]  = { -1, -1 };
+ /** I/O watch id for the sensor data pipe */
+ static guint             evepipe_id     = 0;
+ 
++/** musl compilation fix */
++#ifndef RTLD_DEEPBIND
++#define RTLD_DEEPBIND 0
++#endif
++
+ /** I/O watch callback for handling pipe input
+  *
+  * @param channel    (not used)
+diff --git a/mce.h b/mce.h
+index 273ccaa..e8059a7 100644
+--- a/mce.h
++++ b/mce.h
+@@ -508,4 +508,14 @@ mce_xlat_int(int src_lo, int src_hi, int dst_lo, int dst_hi, int val)
+ 	return mce_clip_int(dst_lo, dst_hi, val);
+ }
+ 
++/* taken from glibc unistd.h and fixes musl */
++#ifndef TEMP_FAILURE_RETRY
++#define TEMP_FAILURE_RETRY(expression) \
++  (__extension__                                                              \
++    ({ long int __result;                                                     \
++       do __result = (long int) (expression);                                 \
++       while (__result == -1L && errno == EINTR);                             \
++       __result; }))
++#endif
++
+ #endif /* _MCE_H_ */
+-- 
+2.15.1
+
