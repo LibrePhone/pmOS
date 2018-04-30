@@ -4,7 +4,7 @@ This is a temporary file that should not end up in master!
 We don't have working service files yet (and I don't think it makes sense to
 look into them until the services work). Start the services manually:
 
-1. Start container-manager
+1. Start container-manager (this now happens automatically using a service file)
 
 sudo su -
 modprobe loop
