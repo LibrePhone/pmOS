@@ -1,31 +1,27 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=libresource
 pkgver=0.23.0
 pkgrel=0
 pkgdesc="MeeGo resource management low level C API libraries"
 arch="all"
 url="https://git.merproject.org/mer-core/libresource"
-license="GPL"
-depends=('qt5-qtbase')
-makedepends=""
-
-
+license="LGPLv2.1"
+makedepends="autoconf automake m4"
+_rev="0af1cea2bf457a911baa7cd65ee1e32747df3011"
 source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libresource/repository/archive.tar.bz2?ref=$pkgver"
+subpackages="$pkgname-dev"
 
-
-pkgver() {
-	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-}
+builddir="$srcdir/$pkgname-$pkgver-$_rev"
 
 build() {
 	cd "$builddir"
     ./autogen.sh --disable-static
     ./configure --prefix=/usr --disable-static
-    make
+    # Build seems to fail when using multiple threads
+    make -j1
 }
 
 package() {
 	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
 }
+sha512sums="63340c2686063502d5b1a84b972c43028cda0ed925fa30566992a56a17d9cdd8b5dc54a8867547e48b29f81530400fbc346f0b6bede2aeaf53aeb6b335f10b8c  libresource-0.23.0.tar.bz2"

@@ -1,26 +1,20 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=libresourceqt
-pkgver=1.29.0
+pkgver=1.30.2
 pkgrel=0
 pkgdesc="Mer Resource Policy Qt API"
 arch="all"
 url="https://git.merproject.org/mer-core/libresourceqt"
-license="GPL"
-depends=('qt5-qtbase' 'libresource')
-makedepends=""
+license="LGPLv2.1"
+makedepends="qt5-qtbase-dev libresource-dev"
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/$pkgname/repository/archive.tar.bz2?ref=$pkgver"
+subpackages="$pkgname-dev $pkgname-doc"
+_rev=092a573e835a4f8224e6af54b6b30486f3612ea4
 
-
-source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/libresourceqt/repository/archive.tar.bz2?ref=$pkgver"
-
-
-pkgver() {
-	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-}
+builddir="$srcdir/$pkgname-$pkgver-$_rev"
 
 build() {
 	cd "$builddir"
-	qmake
+	qmake-qt5
 	make
 }
 
@@ -28,3 +22,4 @@ package() {
 	cd "$builddir"
 	make INSTALL_ROOT="$pkgdir/" install
 }
+sha512sums="486a4c3aba0151b947c342b453c090168639c40f335e63486b939a56698008dc02e70a002f8ca757c4517d1fbf32671028d57c0d4ce51530766df2a214b73260  libresourceqt-1.30.2.tar.bz2"

@@ -7,7 +7,7 @@ url="https://git.merproject.org/mer-core/statefs-qt"
 license="LGPLv2.1"
 depends="qt5-qtbase statefs qtaround"
 makedepends="qt5-qtbase-dev qt5-qtdeclarative-dev qtaround-dev"
-source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/statefs-qt/repository/archive.tar.bz2?ref=$pkgver"
+source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/$pkgname/repository/archive.tar.bz2?ref=$pkgver"
 subpackages="$pkgname-dev $pkgname-doc"
 _rev=6d91f87a8887b46c1e6883d72a32f49af6171919
 
