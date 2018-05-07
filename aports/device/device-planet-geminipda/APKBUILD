@@ -7,9 +7,9 @@ url="https://postmarketos.org"
 license="MIT"
 arch="noarch"
 options="!check"
-depends="linux-planet-geminipda mkbootimg mesa-dri-swrast"
+depends="linux-planet-geminipda mkbootimg"
 makedepends="devicepkg-dev"
-source="deviceinfo"
+source="deviceinfo 10-geminipda-loopback-device.sh"
 
 build() {
 	devicepkg_build $startdir $pkgname
@@ -17,6 +17,10 @@ build() {
 
 package() {
 	devicepkg_package $startdir $pkgname
+
+	install -Dm644 "$srcdir"/10-geminipda-loopback-device.sh \
+		"$pkgdir"/etc/postmarketos-mkinitfs/hooks/10-geminipda-loopback-device.sh
 }
 
-sha512sums="3458c0de53b2aa23c1d2f6e6a405fe7a85a8ea30d3b6c50fda0d71cc8c028730927736df0bacdcd373f71d5a30ca2d767b684cda6197dbdcf00247bfd8085fb9  deviceinfo"
+sha512sums="1cd0ea93098186d4fb5c8edfb52892021a9915aa3a30021fa526089ed3b2eeb0cfc29cb64f90ebd569e10b4b75fbef771084a982eed852036c1eb31828276ab4  deviceinfo
+a8b6623a0a8bea1ab3e28582f203426e42aed477be9ca1d6147d090f9f9d080a69c262a47f9dd5cd8ce99a9bf64912d902dc881f97967873466ebe73d9bba587  10-geminipda-loopback-device.sh"
