@@ -7,7 +7,7 @@ url="https://postmarketos.org"
 license="MIT"
 arch="noarch"
 options="!check"
-depends="linux-planet-geminipda mkbootimg"
+depends="postmarketos-base linux-planet-geminipda mkbootimg"
 makedepends="devicepkg-dev"
 source="deviceinfo 10-geminipda-loopback-device.sh"
 
