@@ -1,0 +1,96 @@
+diff --git a/configure.ac b/configure.ac
+index 97dd366..59684e7 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -98,10 +98,14 @@ PKG_CHECK_MODULES([USB_MODED], [
+  libudev
+  libkmod
+  ssu-sysinfo
+- libsystemd
+  dsme
+ ])
+ 
++AS_IF([test "x$systemd" = "xtrue"], [
++    PKG_CHECK_MODULES([SYSTEMD], [libsystemd])
++])
++
++
+ AC_SUBST(USB_MODED_LIBS)
+ AC_SUBST(USB_MODED_CFLAGS)
+ 
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 440ed09..8599622 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -68,13 +68,13 @@ usb_moded_SOURCES += \
+ endif
+ 
+ usb_moded_util_CPPFLAGS = \
+-        $(USB_MODED_CFLAGS)
++        $(USB_MODED_CFLAGS) $(SYSTEMD_CFLAGS)
+ 
+ usb_moded_util_LDFLAGS = \
+ 	-Wl,--as-needed
+ 
+ usb_moded_util_LDADD = \
+-        $(USB_MODED_LIBS)
++        $(USB_MODED_LIBS) $(SYSTEMD_LIBS)
+ 	
+ usb_moded_util_SOURCES = \
+ 	usb_moded-util.c
+diff --git a/src/usb_moded-modesetting.c b/src/usb_moded-modesetting.c
+index ee53a63..f0c5d45 100644
+--- a/src/usb_moded-modesetting.c
++++ b/src/usb_moded-modesetting.c
+@@ -562,6 +562,7 @@ int set_dynamic_mode(void)
+   if(data->nat || data->dhcp_server)
+ 	usb_network_set_up_dhcpd(data);
+ 
++#ifdef APP_SYNC
+   /* no need to execute the post sync if there was an error setting the mode */
+   if(data->appsync && !ret)
+   {
+@@ -569,6 +570,7 @@ int set_dynamic_mode(void)
+ 	usb_moded_msleep(350);
+ 	activate_sync_post(data->mode_name);
+   }
++#endif
+ 
+ #ifdef CONNMAN
+   if(data->connman_tethering)
+diff --git a/src/usb_moded.c b/src/usb_moded.c
+index 2064d95..083831a 100644
+--- a/src/usb_moded.c
++++ b/src/usb_moded.c
+@@ -1442,6 +1442,7 @@ int main(int argc, char* argv[])
+ 	usb_moded_mode_init();
+ 	usb_moded_init();
+ 
++#ifdef APP_SYNC
+ 	/* Allos making systemd control ipc */
+ 	if( !systemd_control_start() ) {
+ 		log_crit("systemd control could not be started");
+@@ -1456,7 +1457,6 @@ int main(int argc, char* argv[])
+ 	 * we can be relatively sure that usb-moded has not been running yet
+ 	 * and therefore no appsync processes have been started and we can
+ 	 * skip the blocking ipc required to stop the appsync systemd units. */
+-#ifdef APP_SYNC
+ 	if( init_done_p() )
+ 	{
+ 		log_warning("usb-moded started after init-done; "
+@@ -1532,13 +1532,13 @@ EXIT:
+ 	 * processing no longer occurs. */
+ 	usb_moded_dbus_cleanup();
+ 
+-	/* Stop appsync processes that have been started by usb-moded */
+ #ifdef APP_SYNC
++	/* Stop appsync processes that have been started by usb-moded */
+ 	appsync_stop(FALSE);
+-#endif
+ 
+ 	/* Deny making systemd control ipc */
+ 	systemd_control_stop();
++#endif
+ 
+ 	/* Stop tracking devicelock status */
+ #ifdef MEEGOLOCK

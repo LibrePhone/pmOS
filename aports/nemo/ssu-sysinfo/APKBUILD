@@ -1,30 +1,25 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=ssu-sysinfo
-pkgver=1.0.0
+pkgver=1.1.3
 pkgrel=0
 pkgdesc="Tools and libraries for getting ssu information without D-Bus IPC"
 arch="all"
 url="https://git.merproject.org/mer-core/ssu-sysinfo"
-license="GPL"
-makedepends="git check"
-
-
-source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/ssu-sysinfo/repository/archive.tar.bz2?ref=$pkgver"
-
-
-pkgver() {
-	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-}
+license="LGPL-2.1"
+makedepends="check"
+subpackages="$pkgname-dev"
+source="https://git.merproject.org/mer-core/$pkgname/-/archive/$pkgver/$pkgname-$pkgver.tar.bz2"
 
 build() {
 	cd "$builddir"
-    util/verify_version.sh
-    unset LD_AS_NEEDED
+	util/verify_version.sh
+	unset LD_AS_NEEDED
 	make
 }
 
 package() {
 	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
+	cd "$pkgdir/usr/lib"
+	ln -sf libssusysinfo.so.1.0.0 libssusysinfo.so.1
 }
+sha512sums="40257f413e8b2dc1e5e3cfd64ec53b9fd79e1e9313d45aed3d3086271394c1544b9cc23df0c1e05f7542ad6ecc76fc9dcc276c4a3c9a8f97cdb5dec4bdbd7d31  ssu-sysinfo-1.1.3.tar.bz2"

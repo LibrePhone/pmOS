@@ -1,0 +1,19 @@
+diff --git a/src/usb_moded.h b/src/usb_moded.h
+index f16df5f..baa95e2 100644
+--- a/src/usb_moded.h
++++ b/src/usb_moded.h
+@@ -103,4 +103,14 @@ void usb_moded_usleep_(const char *file, int line, const char *func, useconds_t
+ #define usb_moded_msleep(msec)    usb_moded_usleep_(__FILE__,__LINE__,__FUNCTION__,(msec)*1000)
+ #define usb_moded_sleep(sec)      usb_moded_usleep_(__FILE__,__LINE__,__FUNCTION__,(sec)*1000000)
+ 
++/* taken from glibc unistd.h and fixes musl */
++#ifndef TEMP_FAILURE_RETRY
++#define TEMP_FAILURE_RETRY(expression) \
++  (__extension__                                                              \
++    ({ long int __result;                                                     \
++       do __result = (long int) (expression);                                 \
++       while (__result == -1L && errno == EINTR);                             \
++       __result; }))
++#endif
++
+ #endif /* USB_MODED_H */

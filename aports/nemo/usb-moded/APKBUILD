@@ -1,5 +1,3 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
-_pkgname=usb-moded
 pkgname=usb-moded
 pkgver=0.86.0
 pkgrel=0
@@ -7,34 +5,39 @@ pkgdesc="Mer USB mode controller"
 arch="all"
 url="https://git.merproject.org/mer-core/usb-moded"
 license="GPL"
-depends=('dbus')
-makedepends=""
+makedepends="autoconf automake libtool
+	dbus-dev eudev-dev kmod-dev ssu-sysinfo-dev"
+_tag="0.86.0+mer23"
+source="https://git.merproject.org/mer-core/$pkgname/-/archive/mer/$_tag/usb-moded-mer-$_tag.tar.bz2
+	0001-fix-compilation-without-systemd.patch
+	0002-musl-add-temp-failure-retry.patch"
+subpackages="$pkgname-dev"
 
-
-source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/usb-moded/repository/archive.tar.bz2?ref=$pkgver"
-
-
-pkgver() {
-	cd "$srcdir/$_pkgname"
-	git describe --long --tags | sed 's/^mer\///;s/\([^-]*-g\)/r\1/;s/-/./g'
-}
+builddir="$srcdir/$pkgname-mer-$_tag"
 
 build() {
-	cd "$srcdir/$_pkgname"
-    ./autogen.sh
-    ./configure --prefix=/usr
-    make
+	cd "$builddir"
+	./autogen.sh
+	./configure --prefix=/usr \
+		--enable-app-sync=no \
+		--enable-mer-ssu \
+		--enable-connman \
+		--enable-ofono
+	make
 }
 
 package() {
-	cd "$srcdir/$_pkgname"
+	cd "$builddir"
 	make DESTDIR="$pkgdir/" install
 	mv "$pkgdir/usr/sbin" "$pkgdir/usr/bin"
 
-    install -m 644 -D src/usb_moded-dbus.h "$pkgdir/usr/include/$_pkgname/usb_moded-dbus.h"
-    install -m 644 -D src/usb_moded-modes.h "$pkgdir/usr/include/$_pkgname/usb_moded-modes.h"
-    install -m 644 -D src/usb_moded-appsync-dbus.h "$pkgdir/usr/include/$_pkgname/usb_moded-appsync-dbus.h"
-    install -m 644 -D src/com.meego.usb_moded.xml "$pkgdir/usr/include/$_pkgname/com.meego.usb_moded.xml"
-    install -m 644 -D usb_moded.pc "$pkgdir/usr/lib/pkgconfig/usb_moded.pc"
+	install -m 644 -D src/usb_moded-dbus.h "$pkgdir/usr/include/$pkgname/usb_moded-dbus.h"
+	install -m 644 -D src/usb_moded-modes.h "$pkgdir/usr/include/$pkgname/usb_moded-modes.h"
+	install -m 644 -D src/usb_moded-appsync-dbus.h "$pkgdir/usr/include/$pkgname/usb_moded-appsync-dbus.h"
+	install -m 644 -D src/com.meego.usb_moded.xml "$pkgdir/usr/include/$pkgname/com.meego.usb_moded.xml"
+	install -m 644 -D usb_moded.pc "$pkgdir/usr/lib/pkgconfig/usb_moded.pc"
 	
 }
+sha512sums="95a8095fe862793b7bb4ace36b0e90cfec0d0e8f919201ab30a7e93b7a43ba1b0ac3b1ae51be802f4cebb8be158da3c5754089c8d0e85997782ee4ae1f43db06  usb-moded-mer-0.86.0+mer23.tar.bz2
+adb1f47c9be4bf55c3b3023431b89da92c34fab1b0e0bff517ae9b92b8e00a16230c18722322bf214d6adf4df6ecc5c1deb780513ddf20572cb615767dab0d97  0001-fix-compilation-without-systemd.patch
+1a669db5207ec57e16d8643f99d1c2889ee39f0aa39fc6ab32c0411ea9f8b5fa449a51c49e19c472e3472a6739d7f6284d819a10438ef9c681fdac64c226df92  0002-musl-add-temp-failure-retry.patch"
