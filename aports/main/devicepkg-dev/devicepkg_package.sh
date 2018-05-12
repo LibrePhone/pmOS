@@ -4,7 +4,7 @@ pkgname=$2
 
 if [ -z "$startdir" ] || [ -z "$pkgname" ]; then
 	echo "ERROR: missing argument!"
-	echo "Please call devicepkg_default_package() with \$startdir and \$pkgname as arguments."
+	echo "Please use $0 with \$startdir and \$pkgname as arguments."
 	exit 1
 fi
 
@@ -18,8 +18,11 @@ if [ ! -f "$srcdir/deviceinfo" ]; then
 	exit 1
 fi
 
-install -Dm644 "$srcdir/deviceinfo" \
-	"$pkgdir/etc/deviceinfo"
+if ( grep -qE "^deviceinfo_kernel_cmdline=" "$srcdir/deviceinfo" ) || \
+	( ! grep -qE "^deviceinfo_kernel_cmdline" "$srcdir/deviceinfo" ); then
+	install -Dm644 "$srcdir/deviceinfo" \
+		"$pkgdir/etc/deviceinfo"
+fi
 
 if [ -f "$srcdir/90-$pkgname.rules" ]; then
 	install -Dm644 "$srcdir/90-$pkgname.rules" \
