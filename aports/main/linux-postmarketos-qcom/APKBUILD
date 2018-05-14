@@ -4,7 +4,7 @@ _config="config-${_flavor}.${CARCH}"
 pkgname=linux-${_flavor}
 
 pkgver=4.17_rc3
-pkgrel=3
+pkgrel=4
 
 arch="armhf"
 pkgdesc="Kernel close to mainline with extra patches for Qualcomm devices"
@@ -184,4 +184,4 @@ dev() {
 	fi
 }
 sha512sums="02fd136d24914e30decd207c3b2e0168cc9d6e4a0fc981abf8d537cd95c70583f5239d0dc7f2ae94a2ddd2ba82d822933159167801a035731a24aa1300c5ceec  linux-09efb4857f1a4119eced855912043817bd96e064.tar.gz
-7a57f8599be1cb99b4107e02747e21959cd6ba2bb81e5c0ce7554d642b7242bfd696674c13016a22383b80ccb8b96e00556d89cdab2341e2ae4734e5db4f15b8  config-postmarketos-qcom.armhf"
+9c7c21e87cdf90e3043ffead9d13adc205da4e2d7d9e626b76e7566acda698e0b145c34bef49bb3da2cf67f81342443de373f51d37f1b18209917c5fe45fd8d2  config-postmarketos-qcom.armhf"

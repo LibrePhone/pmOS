@@ -1,7 +1,7 @@
 pkgname="device-samsung-klte"
 pkgdesc="Samsung Galaxy S5"
 pkgver=0.2
-pkgrel=0
+pkgrel=1
 url="https://postmarketos.org"
 license="MIT"
 arch="noarch"
@@ -25,13 +25,13 @@ package() {
 kernel_downstream() {
 	pkgdesc="Display and touchscreen works (see device table for details)"
 	depends="linux-samsung-klte"
-	mkdir "$subpkgdir"
+	devicepkg_subpackage $startdir $subpkgname
 }
 
 kernel_mainline() {
 	pkgdesc="For kernel development only (most features aren't working)"
 	depends="linux-postmarketos-qcom"
-	mkdir "$subpkgdir"
+	devicepkg_subpackage $startdir $subpkgname
 }
 
-sha512sums="fc39550299d6ffee33c1b984671a91a5da9a4f24db5994cfd8650a75f96416bc30c3b169353ea3939c765df6a5801ee9647808c82d46a00190a0c1db44708b73  deviceinfo"
+sha512sums="7e301a2c428ad9624db03ee88db43640cc27cbdcf05d19990ae4d0ab8ea61cd84a81100852816b7ef65a5ae5f1a23a7bd17e56d00fc11dd05d3ca9dee6a1452e  deviceinfo"

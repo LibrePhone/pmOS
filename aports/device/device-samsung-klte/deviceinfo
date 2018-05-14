@@ -19,7 +19,8 @@ deviceinfo_dev_keyboard=""
 
 # Bootloader related
 deviceinfo_flash_method="heimdall-bootimg"
-deviceinfo_kernel_cmdline="androidboot.boot_recovery=1"
+deviceinfo_kernel_cmdline_downstream="androidboot.boot_recovery=1"
+deviceinfo_kernel_cmdline_mainline="console=ttyMSM0,115200,n8 PMOS_NO_OUTPUT_REDIRECT"
 deviceinfo_generate_bootimg="true"
 deviceinfo_bootimg_qcdt="true"
 deviceinfo_flash_offset_base="0x00000000"
