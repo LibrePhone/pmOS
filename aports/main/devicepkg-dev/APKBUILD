@@ -8,7 +8,7 @@ license="MIT"
 source="
 	devicepkg_build.sh
 	devicepkg_package.sh
-	devicepkg_subpackage.sh
+	devicepkg_subpackage_kernel.sh
 "
 
 package() {
@@ -16,9 +16,9 @@ package() {
 		"$pkgdir/usr/bin/devicepkg_build"
 	install -Dm755 "$srcdir/devicepkg_package.sh" \
 		"$pkgdir/usr/bin/devicepkg_package"
-	install -Dm755 "$srcdir/devicepkg_subpackage.sh" \
-		"$pkgdir/usr/bin/devicepkg_subpackage"
+	install -Dm755 "$srcdir/devicepkg_subpackage_kernel.sh" \
+		"$pkgdir/usr/bin/devicepkg_subpackage_kernel"
 }
-sha512sums="a2348db1d0a017664fc27d7c3a8766df309ad31092510193e88c5d63f7fd7d1de02c09c33af0a16267307593ab6fa44d9b8691b0d601157ab6d116783072e9f6  devicepkg_build.sh
-7173babf7beefce69085848a03477781ea183f7aaead04de5e85574f206b6a304873a92de0a5b563f7613dc6bfa04b30a05c7728373cd22774bcd7bd12c559a0  devicepkg_package.sh
-aa677624d24490a2ca4a61d25f56a6ad06ec9a24aeb32e65a75d5a579285c88c6b0e4657fb70f57ce4022d9aaa3a5998b96f0143ce928c93499ea8e680034a09  devicepkg_subpackage.sh"
+sha512sums="55943344e6c6192642f20246566c8468dba33d4ec4223c4e930f723fdb0fa248001c65a9bbaa5f15c18e9a42811c9b9decedfd5586f481aa762b6423b55d55bb  devicepkg_build.sh
+cc35989539781da2bc847fe68448863174a79db3853f836c61da064030cb729a16681cb6ffa16add558a7dba8563cb7fab495a6db811dcc3a1af5123dc0e6f72  devicepkg_package.sh
+99cb795b8d0e636a5587ac83409fe7d8780b78dcfb8ba594d3cdfd0944a653c2a3895c4d583b384d05e59e36adfa652aeeacacc9e48e9b3b2b8cee607fa9459f  devicepkg_subpackage_kernel.sh"

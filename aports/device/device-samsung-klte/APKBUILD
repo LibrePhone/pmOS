@@ -25,13 +25,13 @@ package() {
 kernel_downstream() {
 	pkgdesc="Display and touchscreen works (see device table for details)"
 	depends="linux-samsung-klte"
-	devicepkg_subpackage $startdir $subpkgname
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
 }
 
 kernel_mainline() {
 	pkgdesc="For kernel development only (most features aren't working)"
 	depends="linux-postmarketos-qcom"
-	devicepkg_subpackage $startdir $subpkgname
+	devicepkg_subpackage_kernel $startdir $pkgname $subpkgname
 }
 
 sha512sums="7e301a2c428ad9624db03ee88db43640cc27cbdcf05d19990ae4d0ab8ea61cd84a81100852816b7ef65a5ae5f1a23a7bd17e56d00fc11dd05d3ca9dee6a1452e  deviceinfo"
