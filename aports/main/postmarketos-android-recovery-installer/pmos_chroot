@@ -4,6 +4,9 @@ set -ex
 
 export CHROOT='/tmp/postmarketos/chroot'
 
+# Use Alpine's busybox for mounting
+alias mount="$CHROOT/lib/libc.musl-*.so.1 $CHROOT/bin/busybox mount"
+
 # Extract chroot
 unzip -o "$ZIP" chroot/* -d /tmp/postmarketos
 
