@@ -1,13 +1,14 @@
 pkgname=phosh
-pkgver=0.0.1
+pkgver=0_git20180522
 pkgrel=0
-_commit="a75c85ec72ce3ca19d628172b8b5870ba93b0fc0"
+_commit="11ed85926fe9448e965186b6448242f0be0f3a64"
 pkgdesc=" A shell PoC for the Librem5"
 arch="all"
 url="https://code.puri.sm/Librem5/phosh"
 license="GPL2"
-depends="gtk+3.0 wayland-protocols"
-makedepends="gtk+3.0-dev meson ninja gnome-desktop-dev"
+depends="gtk+3.0 wayland-protocols wlroots"
+makedepends="gtk+3.0-dev meson ninja gnome-desktop-dev libhandy-dev"
+subpackages="$pkgname-lang"
 source="$pkgname-$pkgver.tar.gz::https://code.puri.sm/Librem5/phosh/archive/$_commit.tar.gz"
 
 builddir="$srcdir/$pkgname"
@@ -22,4 +23,4 @@ package() {
 	cd "$builddir"
 	DESTDIR="$pkgdir/" ninja -C _build install
 }
-sha512sums="65385f55ec2d4060f5b21e5925fdec9dea4bb4072d6380be42b8059642494bb747030f33bc6de2b200cd175a78d609ff900d51457407d76b0cd4b0a4dddf2924  phosh-0.0.1.tar.gz"
+sha512sums="95fd9413071e348e089fe25eb297003c941d1c4437fec503fe73c97806fe6bc4d689a26908bf5585dd7d5e43b85e98135ca042add37dcc0c63013dd6c0c3dfdd  phosh-0_git20180522.tar.gz"
