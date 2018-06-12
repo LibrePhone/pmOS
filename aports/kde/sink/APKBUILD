@@ -1,0 +1,38 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=sink
+pkgver=0.6.0
+pkgrel=0
+pkgdesc='An offline-cache, synchronizaqtion and indexing system for PIM data'
+arch="all"
+url='https://community.kde.org/KDE_PIM'
+license="LGPL-2.0"
+depends=""
+depends_dev="qt5-qtbase-dev kmime-dev kcontacts-dev kasync-dev kimap2-dev kdav2-dev lmdb-dev
+	xapian-core-dev curl-dev readline-dev flatbuffers-dev libexecinfo-dev"
+makedepends="$depends_dev extra-cmake-modules"
+source="$pkgname-$pkgver.tar.gz::https://github.com/KDE/$pkgname/archive/v$pkgver.tar.gz
+	musl-lacks-backtrace-fix.patch"
+subpackages="$pkgname-dev"
+options="!check" # Completely fail
+
+build() {
+	cmake \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DKDE_INSTALL_LIBDIR=lib \
+		-DBUILD_QCH=ON
+		make
+}
+
+check() {
+	cd "$builddir"
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+}
+sha512sums="ac7d63dd03e0e7e575fa1399a127b03d81ac873e059307f8f1676c0d734064b1bbe941b5cc3790e515d50baa4757d255588b3737301287caa35ce0688e2aa8c6  sink-0.6.0.tar.gz
+95907880f1319fd96483ef4d1058b64236cfaa7dcfec765bb992964567a9134e1cbf5949915ba80a9bbaa47c0e54f6f7a05b7ac7883f6e2118c3b2995628ec26  musl-lacks-backtrace-fix.patch"

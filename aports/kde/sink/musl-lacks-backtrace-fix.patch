@@ -1,0 +1,20 @@
+diff --git a/synchronizer/main.cpp b/synchronizer/main.cpp
+index 3f79207..3c4db82 100644
+--- a/synchronizer/main.cpp
++++ b/synchronizer/main.cpp
+@@ -44,6 +44,7 @@ static Listener *listener = nullptr;
+ //Print a demangled stacktrace
+ void printStacktrace()
+ {
++#if defined(__GNU_LIBRARY__)
+     int skip = 1;
+ 	void *callstack[128];
+ 	const int nMaxFrames = sizeof(callstack) / sizeof(callstack[0]);
+@@ -78,6 +79,7 @@ void printStacktrace()
+ 		trace_buf << "[truncated]\n";
+     }
+     std::cerr << trace_buf.str();
++#endif
+ }
+ 
+ static int sCounter = 0;

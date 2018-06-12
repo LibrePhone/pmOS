@@ -1,0 +1,20 @@
+diff --git a/applications/kube/main.cpp b/applications/kube/main.cpp
+index ef88500..002405c 100644
+--- a/applications/kube/main.cpp
++++ b/applications/kube/main.cpp
+@@ -50,6 +50,7 @@
+ //Print a demangled stacktrace
+ void printStacktrace()
+ {
++#if defined(__GNU_LIBRARY__)
+     int skip = 1;
+     void *callstack[128];
+     const int nMaxFrames = sizeof(callstack) / sizeof(callstack[0]);
+@@ -84,6 +85,7 @@ void printStacktrace()
+         trace_buf << "[truncated]\n";
+     }
+     std::cerr << trace_buf.str();
++#endif
+ }
+ 
+ static int sCounter = 0;
