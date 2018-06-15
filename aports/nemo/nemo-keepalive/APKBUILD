@@ -1,26 +1,21 @@
-# Maintainer: TheKit <nekit1000 at gmail.com>
 pkgname=nemo-keepalive
-pkgver=1.4.0
+pkgver=1.6.2
 pkgrel=0
 pkgdesc="CPU and display keepalive and scheduling library"
 arch="all"
 url="https://git.merproject.org/mer-core/nemo-keepalive"
 license="GPL"
-depends=('qt5-qtbase' 'qt5-declarative')
-makedepends=""
+makedepends="qt5-qtbase-dev qt5-qtdeclarative-dev"
+source="https://git.merproject.org/mer-core/$pkgname/-/archive/$pkgver/$pkgname-$pkgver.tar.bz2"
 
-
-source="$pkgname-$pkgver.tar.bz2::https://git.merproject.org/mer-core/nemo-keepalive/repository/archive.tar.bz2?ref=$pkgver"
-
-
-pkgver() {
-	cd "$builddir"
-	git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+prepare() {
+    default_prepare
+    sed -i -e "s/qdbusxml2cpp/qdbusxml2cpp-qt5/" "$builddir"/lib/lib.pro
 }
 
 build() {
 	cd "$builddir"
-	qmake
+	qmake-qt5
 	make
 	make -C lib-glib
 	make -C tools
@@ -32,3 +27,4 @@ package() {
     make -C lib-glib install ROOT="$pkgdir/"
     make -C tools install ROOT="$pkgdir/"
 }
+sha512sums="578203cfce679fa5db0d9497582514e995e3fc552ba8984c29bad216dd4ebed46abe8027e3d0f971bef3eba98b4fabfda1eeca01d104b09e5583bf4a709b944c  nemo-keepalive-1.6.2.tar.bz2"
