@@ -129,7 +129,7 @@ def ssh_run(args, command):
     ret = pmb.chroot.user(args, ["SSH_ASKPASS=/tmp/y.sh", "DISPLAY=", "ssh",
                                  "-o", "UserKnownHostsFile=/dev/null",
                                  "-o", "StrictHostKeyChecking=no",
-                                 "-p", "2222", "testuser@localhost", "--",
+                                 "-p", "2222", "testuser@127.0.0.1", "--",
                                  command],
                           check=False, return_stdout=True)
     return ret
