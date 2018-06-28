@@ -1,0 +1,38 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=konversation
+pkgver=1.7.5_git20180628
+pkgrel=0
+_commit="b164ed14758eebbb680d0c1a216b0d8a074b2baa"
+pkgdesc="A user-friendly and fully-featured IRC client"
+arch="all"
+url='https://konversation.kde.org/'
+license="GPL-2.0"
+depends="kirigami2 qt5-qtquickcontrols kdeclarative"
+makedepends="$depends_dev extra-cmake-modules qt5-qtbase-dev qt5-qtdeclarative-dev karchive-dev kbookmarks-dev kconfig-dev kconfigwidgets-dev kcoreaddons-dev kcrash-dev kemoticons-dev ki18n-dev kidletime-dev knotifyconfig-dev kio-dev kparts-dev solid-dev kwidgetsaddons-dev kglobalaccel-dev kdbusaddons-dev knotifications-dev kwindowsystem-dev kiconthemes-dev kitemviews-dev kitemmodels-dev kpackage-dev kwallet-dev kdoctools-dev qca-qt5-dev"
+source="$pkgname-$_commit.tar.gz::https://github.com/kde/$pkgname/archive/$_commit.tar.gz"
+subpackages=""
+# options="!check" # Fails due to requiring running X11
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	cmake \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DKDE_INSTALL_LIBDIR=lib \
+		-DKDE_INSTALL_LIBEXECDIR=lib \
+		-DLIBC_IS_GLIBC=0
+	
+	make
+}
+
+check() {
+	cd "$builddir"
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+}
+sha512sums="5430264d1c4073d87168331caab7c6070387ce82a7ffd704b44ed04a7245cc86775a7f1ed1e17f449409c24d13d43e79b752383b592165a4d9f80e9425465bd6  konversation-b164ed14758eebbb680d0c1a216b0d8a074b2baa.tar.gz"
