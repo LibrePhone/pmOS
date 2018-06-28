@@ -1,5 +1,5 @@
-# Contributor:
-# Maintainer:
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
 pkgname=kdeconnect
 pkgver=1.3.1_git20180621
 pkgrel=0
