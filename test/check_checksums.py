@@ -6,7 +6,10 @@ import sys
 
 def get_changed_files():
     try:
-        branch = os.environ['CI_COMMIT_REF_NAME']
+        branch = os.environ['CI_COMMIT_SHA']
+        if not branch:
+            branch = subprocess.check_output(['git', 'rev-parse',
+                                             '--abbrev-ref HEAD'])
         raw = subprocess.check_output(['git', 'diff', '--name-only',
                                        'master...{}'.format(branch)])
     except (KeyError, subprocess.CalledProcessError):
