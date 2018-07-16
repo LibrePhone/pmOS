@@ -5,17 +5,25 @@ import sys
 
 
 def get_changed_files():
-    try:
-        branch = os.environ['CI_COMMIT_SHA']
-        if not branch:
-            branch = subprocess.check_output(['git', 'rev-parse',
-                                             '--abbrev-ref HEAD'])
-        raw = subprocess.check_output(['git', 'diff', '--name-only',
-                                       'master...{}'.format(branch)])
-    except (KeyError, subprocess.CalledProcessError):
-            raw = subprocess.check_output(['git', 'diff', '--name-only',
-                                           'HEAD~1'])
-    return raw.decode().splitlines()
+    # Current branch
+    branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref",
+                                      "HEAD"]).decode()[:-1]
+    print("branch: " + branch)
+
+    # Commit to diff against
+    commit = "HEAD~1"
+    if branch != "master":
+        commit = subprocess.check_output(["git", "merge-base", "master",
+                                          "HEAD"]).decode()[:-1]
+    print("comparing HEAD with: " + commit)
+
+    # Changed files
+    ret = subprocess.check_output(["git", "diff", "--name-only", commit,
+                                   "HEAD"]).decode().splitlines()
+    print("changed file(s):")
+    for file in ret:
+        print("  " + file)
+    return ret
 
 
 def get_changed_packages():
@@ -31,6 +39,16 @@ def get_changed_packages():
             print("No APKBUILD found at {}".format(package_path))
             continue
         packages.add(name)
+
+    if len(packages) > 10:
+        print("ERROR: Too many packages have changed!")
+        print("This is a sanity check, so we don't end up building packages"
+              " that have not been modified. CI won't run for more than one"
+              " hour anyway.")
+        print("If you see this message on your personal fork of the"
+              " pmbootstrap repository, try to update your fork's master"
+              " branch to the upstream master branch.")
+        sys.exit(1)
     return packages
 
 
