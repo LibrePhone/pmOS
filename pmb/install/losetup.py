@@ -43,8 +43,7 @@ def mount(args, img_path):
     logging.debug("(native) mount " + img_path + " (loop)")
 
     # Try to mount multiple times (let the kernel module initialize #1594)
-    max = 5
-    for i in range(0, max):
+    for i in range(0, 5):
         # Retry
         if i > 0:
             logging.debug("loop module might not be initialized yet, retry in"
