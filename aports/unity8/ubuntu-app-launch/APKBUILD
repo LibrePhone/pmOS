@@ -1,0 +1,37 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=ubuntu-app-launch
+pkgver=0_git20180604
+pkgrel=0
+_commit="bde4305307fff160180bb487eae9f2948023e433"
+pkgdesc='ubuntu-app-launch'
+arch="all"
+url='https://unity8.io'
+license="GPL-3.0"
+depends=""
+depends_dev="glib-dev gobject-introspection-dev lttng-ust-dev json-glib-dev zeitgeist-dev mir-dev"
+makedepends="$depends_dev cmake dbus-test-runner"
+source="$pkgname-$_commit.tar.gz::https://github.com/ubports/$pkgname/archive/$_commit.tar.gz"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-lang"
+options="!check"
+builddir="$srcdir/$pkgname-$_commit" # Requires an out of source tree build
+
+build() {
+	cmake \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBUILD_QCH=ON
+	make
+}
+
+check() {
+	cd "$builddir"
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="f93ddf137b6753f09542b3e398763cab9d338477253d6db268b3d09cb8db7510e6a9cdd5e8d91038f43d486b38640e7fc8a5c1f907f5b567d30650a6ff7d994d  ubuntu-app-launch-bde4305307fff160180bb487eae9f2948023e433.tar.gz"

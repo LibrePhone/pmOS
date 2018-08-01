@@ -1,0 +1,40 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=umockdev
+pkgver=0.11.3
+pkgrel=0
+pkgdesc="Record/mock hardware devices for bug reports and regression tests"
+arch="all"
+url="https://github.com/martinpitt/umockdev/"
+license="LGPL-2.1"
+depends=""
+depends_dev="eudev-dev libgudev-dev"
+makedepends="$depends_dev autoconf automake libtool gtk-doc vala linux-headers"
+source="$pkgname-$pkgver.tar.gz::https://github.com/martinpitt/$pkgname/archive/$pkgver.tar.gz
+	fix-failing-tests.patch
+	fix-ioctl.patch
+	fix-64bit-errors.patch"
+subpackages="$pkgname-dev $pkgname-doc"
+options="!check" # Assertion fails
+
+build() {
+	cd "$builddir"
+
+	./autogen.sh --prefix=/usr --enable-gtk-doc --enable-introspection
+	make
+}
+
+check() {
+	cd "$builddir"
+	make check
+}
+
+package() {
+	cd "$builddir"
+
+	make DESTDIR="$pkgdir" install
+}
+sha512sums="3278b5546327c76f196c0fdfce4c14a06ca7f7be8bba69a7b425ab6d26de36b2699f980bac476a731304a504b80a362bb0ac7b3940f8bec34908ac7699fbe10a  umockdev-0.11.3.tar.gz
+0b9bdaa43d5aa9e12e790723ff0b08a93b847ac5652b76b1bc9a7ea2ee8a3f5fc0b880a7937a0139124051889232a4d4496c0cb27dd4d0581bf820969a834d1a  fix-failing-tests.patch
+4a32dda111914178b1d9aba675f3ccf1907cabe64ca0cd88c50de886494f385662858f0aedf0ede0fbd57663e0eb69afbf0104d5bc85997aa215a92b2e94cd8a  fix-ioctl.patch
+f9af1a10a05b62d52ec8f5d427fd8da4605e699e44205d1ef27a6cb375e76af84e275deb52903c917203444d0bc1a1b4bd8e5d9e4a74cc88422a861e8cfe9153  fix-64bit-errors.patch"

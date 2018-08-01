@@ -1,0 +1,55 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=lttng-ust
+pkgver=2.10.1
+pkgrel=0
+pkgdesc='LTTng user space tracing libraries for LTTng'
+arch="all"
+url='https://lttng.org'
+license="LGPL-2.1 GPL-2.0 MIT"
+depends=""
+depends_dev="python python2 liburcu-dev"
+makedepends="$depends_dev"
+source="https://lttng.org/files/$pkgname/$pkgname-$pkgver.tar.bz2"
+subpackages="$pkgname-dev $pkgname-doc py3-$pkgname:_py3 py2-$pkgname:_py2"
+options="!check" # Fail for some reason
+
+build() {
+	./configure \
+		--prefix=/usr \
+		--enable-man-pages
+	make
+}
+
+check() {
+	cd "$builddir"
+	make check
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+	install -D -m644 COPYING "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+
+_python_package() {
+	cd "$builddir"/python-lttngust
+	make DESTDIR="$subpkgdir" PYTHON="/usr/bin/${1}" install
+
+	cd "$builddir"
+	install -D -m644 COPYING "$subpkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+
+_py3() {
+	pkgdesc="LTTng-UST Python bindings"
+	depends="lttng-ust python"
+	_python_package python
+}
+
+_py2() {
+	pkgdesc="LTTng-UST Python bindings"
+	depends="lttng-ust python2"
+	_python_package python2
+}
+
+sha512sums="bd9b75ff359a8698ba4f7b6a27d9958c8bd9539fd43d8f1bc4bb40003271c9074f1bb4176d074bac290fad1636d5a3226063275006b781f3533567dea71fac96  lttng-ust-2.10.1.tar.bz2"

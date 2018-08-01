@@ -1,0 +1,45 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=unity-api
+pkgver=0_git20180612
+pkgrel=0
+_commit="31cad5ad58c9d0dab7752a71bc560deffe7c4667"
+pkgdesc='Unity shell API'
+arch="all"
+url='https://unity8.io'
+license="LGPL-3.0"
+depends=""
+depends_dev="gtk+2.0-dev"
+makedepends="$depends_dev cmake"
+source="$pkgname-$_commit.tar.gz::https://github.com/ubports/$pkgname/archive/$_commit.tar.gz"
+subpackages="$pkgname-dev"
+options="!check" # Requires as of yet unpackagable dependencies
+builddir="$srcdir/$pkgname-$_commit/build" # Requires an out of source tree build
+
+prepare() {
+	mkdir "$builddir"
+
+	default_prepare
+}
+
+build() {
+	cd "$builddir"
+	cmake \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DNO_TESTS=True \
+		-DBUILD_QCH=ON ..
+	make
+}
+
+check() {
+	cd "$builddir"
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="d44611917c37082bf7f209bc3ad109858622baff897b5d5efc07a33394b7b4c9252d481c475d9a8a9eb21c1c7fb882cd2dc0f7e614491de6536f636b64eaa6ae  unity-api-31cad5ad58c9d0dab7752a71bc560deffe7c4667.tar.gz"

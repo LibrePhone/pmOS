@@ -1,0 +1,42 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=unity8
+pkgver=0_git20180729
+pkgrel=0
+_commit="24d39b31f7f67b9c80eda42590d92d75440b5ef5"
+pkgdesc='A convergent desktop environment'
+arch="all"
+url='https://unity8.io'
+license="GPL-3.0 LGPL-2.1"
+depends=""
+depends_dev="qt5-qtbase-dev qt5-qtdeclarative-dev unity-api-dev geonames-dev qmenumodel-dev qmenumodel gnome-desktop-dev"
+makedepends="$depends_dev cmake"
+source="$pkgname-$_commit.tar.gz::https://github.com/ubports/$pkgname/archive/$_commit.tar.gz"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-lang"
+options="!check" # Fails due to requiring installed Plasma, which causes a circular dependency
+builddir="$srcdir/$pkgname-$_commit/build" # Requires an out of source tree build
+
+prepare() {
+	mkdir "$builddir"
+}
+
+build() {
+	cd "$builddir"
+	cmake \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DBUILD_QCH=ON ..
+	make
+}
+
+check() {
+	cd "$builddir"
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="${pkgdir}" install
+}
+
+sha512sums="d13cb7ccfe29f6ba321cb938559a136a0c49bd9293cdac33ec0d24dfbea93b35640cbaffd36b44b67cf5475b7b5343097a0f9a409bcceda0e008a2cb093d207e  unity8-24d39b31f7f67b9c80eda42590d92d75440b5ef5.tar.gz"

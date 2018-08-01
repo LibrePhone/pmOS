@@ -1,0 +1,137 @@
+diff --git a/src/libumockdev-preload.c b/src/libumockdev-preload.c
+index 0265ae0..54758a9 100644
+--- a/src/libumockdev-preload.c
++++ b/src/libumockdev-preload.c
+@@ -1172,32 +1172,32 @@ int prefix ## open ## suffix (const char *path, int flags)	    \
+ WRAP_1ARG(DIR *, NULL, opendir);
+ 
+ WRAP_2ARGS(FILE *, NULL, fopen, const char *);
+-WRAP_2ARGS(FILE *, NULL, fopen64, const char *);
++// WRAP_2ARGS(FILE *, NULL, fopen64, const char *);
+ WRAP_2ARGS(int, -1, mkdir, mode_t);
+ WRAP_2ARGS(int, -1, chmod, mode_t);
+ WRAP_2ARGS(int, -1, access, int);
+ WRAP_2ARGS(int, -1, stat, struct stat *);
+-WRAP_2ARGS(int, -1, stat64, struct stat64 *);
++// WRAP_2ARGS(int, -1, stat64, struct stat64 *);
+ WRAP_2ARGS(int, -1, lstat, struct stat *);
+-WRAP_2ARGS(int, -1, lstat64, struct stat64 *);
++// WRAP_2ARGS(int, -1, lstat64, struct stat64 *);
+ 
+ WRAP_3ARGS(ssize_t, -1, readlink, char *, size_t);
+ 
+ WRAP_4ARGS(ssize_t, -1, getxattr, const char*, void*, size_t);
+ WRAP_4ARGS(ssize_t, -1, lgetxattr, const char*, void*, size_t);
+ 
+-WRAP_VERSTAT(__x,);
+-WRAP_VERSTAT(__x, 64);
+-WRAP_VERSTAT(__lx,);
+-WRAP_VERSTAT(__lx, 64);
++// WRAP_VERSTAT(__x,);
++// WRAP_VERSTAT(__x, 64);
++// WRAP_VERSTAT(__lx,);
++// WRAP_VERSTAT(__lx, 64);
+ 
+ int __open_2(const char *path, int flags);
+ int __open64_2(const char *path, int flags);
+ 
+ WRAP_OPEN(,);
+-WRAP_OPEN(, 64);
++// WRAP_OPEN(, 64);
+ WRAP_OPEN2(__,_2);
+-WRAP_OPEN2(__,64_2);
++// WRAP_OPEN2(__,64_2);
+ 
+ /* wrapper template for openat family; intercept opening /sys from the root dir */
+ #define WRAP_OPENAT(prefix, suffix) \
+@@ -1238,7 +1238,7 @@ int prefix ## openat ## suffix (int dirfd, const char *pathname, int flags, ...)
+ }
+ 
+ WRAP_OPENAT(,);
+-WRAP_OPENAT(, 64);
++// WRAP_OPENAT(, 64);
+ 
+ int
+ inotify_add_watch(int fd, const char *path, uint32_t mask)
+@@ -1274,31 +1274,31 @@ ssize_t readlinkat(int dirfd, const char *pathname, char *buf, size_t bufsiz)
+     return r;
+ }
+ 
+-char *canonicalize_file_name(const char *path)
+-{
+-    const char *p;
+-    libc_func(canonicalize_file_name, char*, const char*);
+-    char *r, *oldr;
+-
+-    TRAP_PATH_LOCK;
+-    p = trap_path(path);
+-    if (p == NULL)
+-	r = NULL;
+-    else {
+-	r = _canonicalize_file_name(p);
+-        if (p == path) {
+-	    DBG(DBG_PATH, "testbed wrapped canonicalize_file_name(%s) -> %s (not wrapped)\n", path, r);
+-	} else if (r != NULL) {
+-	    /* cut off the prefix again */
+-	    oldr = r;
+-	    r = strdup(r + trap_path_prefix_len);
+-	    free (oldr);
+-	    DBG(DBG_PATH, "testbed wrapped canonicalize_file_name(%s -> %s) -> %s (wrapped)\n", path, p, r);
+-	}
+-    }
+-    TRAP_PATH_UNLOCK;
+-    return r;
+-}
++// char *canonicalize_file_name(const char *path)
++// {
++//     const char *p;
++//     libc_func(canonicalize_file_name, char*, const char*);
++//     char *r, *oldr;
++// 
++//     TRAP_PATH_LOCK;
++//     p = trap_path(path);
++//     if (p == NULL)
++// 	r = NULL;
++//     else {
++// 	r = _canonicalize_file_name(p);
++//         if (p == path) {
++// 	    DBG(DBG_PATH, "testbed wrapped canonicalize_file_name(%s) -> %s (not wrapped)\n", path, r);
++// 	} else if (r != NULL) {
++// 	    /* cut off the prefix again */
++// 	    oldr = r;
++// 	    r = strdup(r + trap_path_prefix_len);
++// 	    free (oldr);
++// 	    DBG(DBG_PATH, "testbed wrapped canonicalize_file_name(%s -> %s) -> %s (wrapped)\n", path, p, r);
++// 	}
++//     }
++//     TRAP_PATH_UNLOCK;
++//     return r;
++// }
+ 
+ ssize_t
+ read(int fd, void *buf, size_t count)
+@@ -1476,7 +1476,7 @@ fclose(FILE * stream)
+ }
+ 
+ int
+-ioctl(int d, unsigned long request, ...)
++ioctl(int d, int request, ...)
+ {
+     libc_func(ioctl, int, int, unsigned long, ...);
+     int result;
+@@ -1494,13 +1494,13 @@ ioctl(int d, unsigned long request, ...)
+ 
+     result = ioctl_emulate(d, request, arg);
+     if (result != UNHANDLED) {
+-	DBG(DBG_IOCTL, "ioctl fd %i request %lX: emulated, result %i\n", d, request, result);
++	DBG(DBG_IOCTL, "ioctl fd %i request %i: emulated, result %i\n", d, request, result);
+ 	return result;
+     }
+ 
+     /* call original ioctl */
+     result = _ioctl(d, request, arg);
+-    DBG(DBG_IOCTL, "ioctl fd %i request %lX: original, result %i\n", d, request, result);
++    DBG(DBG_IOCTL, "ioctl fd %i request %i: original, result %i\n", d, request, result);
+ 
+     if (result != -1 && ioctl_record_fd == d)
+ 	record_ioctl(request, arg, result);

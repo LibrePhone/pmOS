@@ -1,0 +1,93 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 641d00d..682c3b4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -61,8 +61,8 @@ set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "${build_types}" FORCE)
+ # Enable cmake-gui to display a drop down list for CMAKE_BUILD_TYPE
+ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${build_types}")
+ 
+-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -g -Werror -Wall -pedantic -Wextra -fPIC")
+-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -g -std=c++14 -Werror -Wall -fno-strict-aliasing -pedantic -Wnon-virtual-dtor -Wextra -fPIC")
++set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -g -Wall -pedantic -Wextra -fPIC")
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -g -std=c++14 -Wall -fno-strict-aliasing -pedantic -Wnon-virtual-dtor -Wextra -fPIC")
+ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--as-needed")
+ set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,--as-needed")
+ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
+diff --git a/src/common/sharedlibrary/shared_library.cpp b/src/common/sharedlibrary/shared_library.cpp
+index c97e26b..545e1a8 100644
+--- a/src/common/sharedlibrary/shared_library.cpp
++++ b/src/common/sharedlibrary/shared_library.cpp
+@@ -56,7 +56,7 @@ void* mir::SharedLibrary::load_symbol(char const* function_name) const
+ 
+ void* mir::SharedLibrary::load_symbol(char const* function_name, char const* version) const
+ {
+-    if (void* result = dlvsym(so, function_name, version))
++    if (void* result = dlsym(so, function_name))
+     {
+         return result;
+     }
+diff --git a/src/common/posix_rw_mutex.cpp b/src/common/posix_rw_mutex.cpp
+index e3c3a6b..28b135d 100644
+--- a/src/common/posix_rw_mutex.cpp
++++ b/src/common/posix_rw_mutex.cpp
+@@ -52,6 +52,18 @@ mir::PosixRWMutex::PosixRWMutex()
+ 
+ mir::PosixRWMutex::PosixRWMutex(Type type)
+ {
++    pthread_rwlockattr_t attr;
++    int err;
++
++    err = pthread_rwlockattr_init(&attr);
++    if (err != 0)
++    {
++        BOOST_THROW_EXCEPTION((std::system_error{
++            err,
++            std::system_category(),
++            "Failed to init pthread attrs"}));
++    }
++#ifdef __GLIBC__
+     int pthread_type;
+     switch(type)
+     {
+@@ -77,18 +89,6 @@ mir::PosixRWMutex::PosixRWMutex(Type type)
+             break;
+ #endif
+     }
+-
+-    pthread_rwlockattr_t attr;
+-    int err;
+-
+-    err = pthread_rwlockattr_init(&attr);
+-    if (err != 0)
+-    {
+-        BOOST_THROW_EXCEPTION((std::system_error{
+-            err,
+-            std::system_category(),
+-            "Failed to init pthread attrs"}));
+-    }
+     err = pthread_rwlockattr_setkind_np(&attr, pthread_type);
+     if (err != 0)
+     {
+@@ -97,6 +97,7 @@ mir::PosixRWMutex::PosixRWMutex(Type type)
+             std::system_category(),
+             "Failed to set preferred rw-lock mode"}));
+     }
++#endif
+     err = pthread_rwlock_init(&mutex, &attr);
+     if (err != 0)
+     {
+diff --git a/src/platforms/evdev/platform.h b/src/platforms/evdev/platform.h
+index 8c12ced..b2e2fb1 100644
+--- a/src/platforms/evdev/platform.h
++++ b/src/platforms/evdev/platform.h
+@@ -30,6 +30,11 @@
+ #include <unordered_map>
+ #include <future>
+ 
++#ifndef __dev_t_defined
++#define __NEED_dev_t
++#include <bits/alltypes.h>
++#endif
++
+ struct libinput_device_group;
+ struct libinput_device;

@@ -1,0 +1,50 @@
+diff --git a/examples/miral-shell/miral-app.sh b/examples/miral-shell/miral-app.sh
+index c7c0b6c..29358d3 100755
+--- a/examples/miral-shell/miral-app.sh
++++ b/examples/miral-shell/miral-app.sh
+@@ -1,4 +1,4 @@
+-#! /bin/bash
++#!/usr/bin/env sh
+ 
+ miral_server=miral-shell
+ launcher=qterminal
+diff --git a/examples/miral-shell/miral-desktop.sh b/examples/miral-shell/miral-desktop.sh
+index e38ee28..f6a7312 100755
+--- a/examples/miral-shell/miral-desktop.sh
++++ b/examples/miral-shell/miral-desktop.sh
+@@ -1,4 +1,4 @@
+-#! /bin/bash
++#!/usr/bin/env sh
+ 
+ socket=${XDG_RUNTIME_DIR}/miral_socket
+ wayland_display=miral_wayland
+diff --git a/examples/miral-shell/miral-run.sh b/examples/miral-shell/miral-run.sh
+index 171afd5..cac7559 100755
+--- a/examples/miral-shell/miral-run.sh
++++ b/examples/miral-shell/miral-run.sh
+@@ -1,4 +1,4 @@
+-#! /bin/bash
++#!/usr/bin/env sh
+ 
+ qt_qpa=wayland
+ gdk_backend=wayland,mir
+diff --git a/examples/miral-shell/miral-screencast.sh b/examples/miral-shell/miral-screencast.sh
+index 5739e8a..57da4bd 100755
+--- a/examples/miral-shell/miral-screencast.sh
++++ b/examples/miral-shell/miral-screencast.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env sh
+ width=1920
+ height=1080
+ output=screencast.mp4
+diff --git a/examples/miral-shell/miral-xrun.sh b/examples/miral-shell/miral-xrun.sh
+index c3bfaca..f401300 100755
+--- a/examples/miral-shell/miral-xrun.sh
++++ b/examples/miral-shell/miral-xrun.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env sh
+ 
+ x11_server=Xwayland
+ 

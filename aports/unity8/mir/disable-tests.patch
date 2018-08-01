@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 641d00d..e5c5188 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -197,7 +197,7 @@ set(
+ 
+ list(GET MIR_PLATFORM 0 MIR_TEST_PLATFORM)
+ 
+-option(MIR_ENABLE_TESTS "Build tests" ON)
++option(MIR_ENABLE_TESTS "Build tests" OFF)
+ 
+ foreach(platform IN LISTS MIR_PLATFORM)
+   if (platform STREQUAL "mesa-kms")

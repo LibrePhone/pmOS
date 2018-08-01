@@ -1,0 +1,35 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgbase=urcu
+pkgname=liburcu
+pkgver=0.10.1
+pkgrel=0
+pkgdesc="Userspace RCU (read-copy-update) library"
+arch="all"
+url="http://lttng.org/urcu"
+license="LGPL-2.1"
+depends=""
+depends_dev=""
+makedepends="$depends_dev"
+source="$pkgname-$pkgver.tar.bz2::https://lttng.org/files/$pkgbase/userspace-rcu-$pkgver.tar.bz2"
+subpackages="$pkgname-dev"
+options="!check" # "./run.sh: not found"
+builddir="$srcdir/userspace-rcu-$pkgver"
+
+build() {
+	./configure \
+		--prefix=/usr
+	make
+}
+
+check() {
+	cd "$builddir"
+	make check
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="2bb042e1cf8888eab664ea6e88b94646c995bea61c89d49dcf4e844d144329303c600d73e29e0f05c935ad8278857cc08fb5b4b9f7f0c2f120c46b458b51a211  liburcu-0.10.1.tar.bz2"

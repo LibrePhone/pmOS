@@ -1,0 +1,50 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=mir
+pkgver=0.32.1
+pkgrel=0
+pkgdesc="Canonical's display server"
+url="https://mir-server.io"
+arch="all"
+license="GPL-2.0 GPL-3.0 LGPL-2.1 LGPL-3.0"
+depends=""
+depends_dev="boost-dev mesa-dev glm-dev protobuf-dev glog-dev gflags-dev eudev-dev glib-dev wayland-dev libepoxy-dev nettle-dev libinput-dev
+	capnproto-dev libxml++-2.6-dev py3-pillow freetype-dev libevdev-dev umockdev-dev lttng-ust-dev"
+makedepends="$depends_dev cmake libxkbcommon-dev"
+source="https://github.com/MirServer/mir/releases/download/v$pkgver/mir-$pkgver.tar.xz
+	https://raw.githubusercontent.com/capnproto/capnproto/04fd66e2992a3ed38d686642a3c479a7f3e131c9/c%2B%2B/cmake/FindCapnProto.cmake
+	disable-tests.patch
+	fix-musl-errors.patch
+	replace-bash-for-env.patch"
+subpackages="$pkgname-dev"
+options="!check" # Requires gtest which we haven't managed to package yet
+
+prepare() {
+	default_prepare
+	
+	cp "$srcdir"/FindCapnProto.cmake "$builddir"/cmake/
+}
+
+build() {
+	cd "$builddir"
+	cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr -DCMAKE_INSTALL_LIBDIR="lib/"
+	cmake --build ./
+}
+
+check() {
+	cd "$builddir"
+	GTEST_OUTPUT=xml:./
+	bin/mir_acceptance_tests
+	bin/mir_integration_tests
+	bin/mir_unit_tests
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir/" install
+} 
+sha512sums="326fc754548aca92c4a73df13de84294d7447f0abce0ca84f7b8ce9fc54c76e87b6d35935d8b41f2370e41d125ac1462acf78bc5d5197587511abe4a8145b9c4  mir-0.32.1.tar.xz
+6b74c3584d535d3e36afda8b128cc829da6a5518663d12cb57b70f1cb685e97999b6398f21698c9d87cf5481a05d05a387e94191ca7f82c919e557fadf520b27  FindCapnProto.cmake
+cf03b213352102e65ca4ab8815dc1eee00e003d8b88c308ac54e5cda27acf768dd499b6316c21d90ccbecf463fb544235fca0ff03fb3921602303beef5f96eb6  disable-tests.patch
+3b763de0e466f5ddd1985c89144fc03fa00606bf616ef1333064c526594109b74f48e595aba2cc76e85bf667ba9bacbaf602b0a133d70c694c76b8e632dd4da7  fix-musl-errors.patch
+55844af6f9c1cf38d0e068513389e22aaaddc477eed538dbebe5fc757d3ad9c464e6c88ebf587d4b36bea91cf25411989de59ba863b362c0010535721016e38b  replace-bash-for-env.patch"

@@ -1,0 +1,30 @@
+pkgname=libertine
+pkgver=0_git20180702
+pkgrel=0
+_commit="5634b99f7ec0dfd2481accacb79a002da6554acf"
+pkgdesc="A sandbox for running legacy deb-based X11 applications"
+url="https://github.com/ubports/libertine"
+arch="all"
+license="GPL-3.0"
+depends=""
+depends_dev="qt5-qtbase-dev qt5-qtdeclarative-dev"
+makedepends="$depends_dev cmake intltool"
+source="$pkgname-$_commit.tar.gz::https://github.com/ubports/$pkgname/archive/$_commit.tar.gz"
+builddir="$srcdir/$pkgname-$_commit"
+
+build() {
+	cd $builddir
+	cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr -DCMAKE_INSTALL_LIBDIR="lib/" .
+	make
+}
+
+check() {
+	cd $builddir
+	make ARGS+="--output-on-failure" test
+}
+
+package() {
+	cd $builddir
+	make DESTDIR="$pkgdir" install
+} 
+sha512sums="1c7205dc8e62be0b01961eb8e74ba37d4151b9e0653f7ea0c8e23f9b9c27bac389cc52ef14908ed17298dc464d7ad6437b4c02f6299dfda557604a70376b157a  libertine-5634b99f7ec0dfd2481accacb79a002da6554acf.tar.gz"
