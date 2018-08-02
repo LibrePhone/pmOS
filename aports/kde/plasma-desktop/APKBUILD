@@ -1,0 +1,53 @@
+# Contributor: Bart Ribbers <bribbers@disroot.org>
+# Maintainer: Bart Ribbers <bribbers@disroot.org>
+pkgname=plasma-desktop
+pkgver=5.13.4
+pkgrel=0
+pkgdesc='KDE Plasma Desktop'
+arch="all"
+url='https://www.kde.org/workspaces/plasmadesktop/'
+license="GPL-2.0 LGPL-2.1"
+depends="xset xprop dbus qt5-qtquickcontrols udisks2"
+depends_dev="qt5-qtbase-dev qt5-qtdeclarative-dev qt5-qtx11extras-dev qt5-qtsvg-dev
+	kauth-dev kdoctools-dev ki18n-dev kcmutils-dev knewstuff-dev kdelibs4support-dev 
+	knotifications-dev knotifyconfig-dev attica-dev kwallet-dev krunner-dev kglobalaccel-dev
+	kdeclarative-dev kpeople-dev kdbusaddons-dev kactivities-dev kactivities-stats-dev
+	kconfig-dev kitemmodels-dev plasma-workspace-dev xcb-util-image-dev libxkbfile-dev
+	libxcursor-dev"
+makedepends="$depends_dev extra-cmake-modules"
+source="https://download.kde.org/stable/plasma/${pkgver}/$pkgname-$pkgver.tar.xz"
+subpackages="$pkgname-dev $pkgname-doc $pkgname-lang knetattach"
+options="!check" # Fails due to requiring running X11
+
+build() {
+	cmake \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DKDE_INSTALL_LIBDIR=lib \
+		-DKDE_INSTALL_LIBEXECDIR=lib
+	make
+}
+
+check() {
+	cd "$builddir"
+	CTEST_OUTPUT_ON_FAILURE=TRUE ctest
+}
+
+package() {
+	depends="knetattach"
+
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+
+	rm "$pkgdir"/usr/bin/knetattach
+	rm "$pkgdir"/usr/share/applications/org.kde.knetattach.desktop
+}
+
+knetattach() {
+	pkgdesc="Wizard which makes it easier to integrate network resources with the Plasma Desktop"
+	depends="kdelibs4support"
+
+	cd "$builddir"/knetattach
+	make DESTDIR="$subpkgdir" install
+}
+sha512sums="c990b5d5ffbec70a1f410688c1304c2cdeabd5be017ab9b2a382abd57719505902938e43e5bddd046618f9143d8ee0a61b80aeb53a892315d92897dd80d66b24  plasma-desktop-5.13.4.tar.xz"
