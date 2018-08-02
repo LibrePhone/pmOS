@@ -2,7 +2,7 @@
 pkgname="device-htc-flounder"
 pkgdesc="Google Nexus 9"
 pkgver=0.1
-pkgrel=0
+pkgrel=1
 url="https://postmarketos.org"
 license="gpl-v3"
 arch="aarch64"
@@ -24,4 +24,4 @@ nonfree_firmware() {
 	depends="linux-firmware-brcm firmware-htc-flounder"
 	mkdir "$subpkgdir"
 }
-sha512sums="48be91a584861fb2db3d10577b718a1b9daa9ad4fe531c5b79946fe52e89cfecf16559ea4558b4fd736f1e04d4df43c79256c29165d08457507ac2c315bd3cfb  deviceinfo"
+sha512sums="50471ca92af2e1333f504461c24c4af17b8e63ce4456713b1243613f0d344ebc79fc09362e790f25bc19a964f0e4b29132cb1f559032177af03426ec429a9aac  deviceinfo"

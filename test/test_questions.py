@@ -74,11 +74,20 @@ def test_questions_booleans(args, monkeypatch):
 
 
 def test_questions_strings(args, monkeypatch):
-    functions = [pmb.aportgen.device.ask_for_manufacturer,
-                 pmb.aportgen.device.ask_for_name]
+    functions = [pmb.aportgen.device.ask_for_manufacturer]
     for func in functions:
         fake_answers(monkeypatch, ["Simple string answer"])
         assert func(args) == "Simple string answer"
+
+
+def test_questions_name(args, monkeypatch):
+    func = pmb.aportgen.device.ask_for_name
+
+    # Manufacturer should get added automatically, but not twice
+    fake_answers(monkeypatch, ["Amazon Thor"])
+    assert func(args, "Amazon") == "Amazon Thor"
+    fake_answers(monkeypatch, ["Thor"])
+    assert func(args, "Amazon") == "Amazon Thor"
 
 
 def test_questions_arch(args, monkeypatch):
