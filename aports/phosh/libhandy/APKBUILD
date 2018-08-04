@@ -1,23 +1,24 @@
 # Contributor:
 # Maintainer:
 pkgname=libhandy
-pkgver=0_git20180524
+pkgver=0_git20180727
 pkgrel=0
-_commit="6c61bf1ff538b9133b65b5d90b41829fea9775a7"
+_commit="18952ab91e584b42cccfc076b1d866e7cc1e8fcc"
 pkgdesc="A library full of GTK+ widgets for mobile phones"
 url="https://code.puri.sm/Librem5/libhandy"
 arch="all"
 license="LGPL-2.1"
 depends=""
-makedepends="meson pkgconfig libgnome-dev gtk+3.0-dev gobject-introspection-dev vala"
+depends_dev="libgnome-dev gtk+3.0-dev gobject-introspection-dev"
+makedepends="$depends_dev meson pkgconfig vala gtk-doc"
 install=""
-subpackages="$pkgname-dev"
-source="$pkgname-$_commit.tar.gz::https://code.puri.sm/Librem5/$pkgname/archive/$_commit.tar.gz"
-builddir="$srcdir/$pkgname"
+subpackages="$pkgname-dev $pkgname-doc"
+source="$pkgname-$_commit.tar.gz::https://source.puri.sm/Librem5/$pkgname/-/archive/$_commit.tar.gz"
+builddir="$srcdir/$pkgname-$_commit"
 
 build() {
 	cd "$builddir"
-	meson . _build --prefix=/usr
+	meson . _build --prefix=/usr -Dgtk_doc=true
 	ninja -C _build
 }
 
@@ -29,4 +30,4 @@ package() {
 	cd "$builddir"
 	DESTDIR="$pkgdir/" ninja -C _build install
 }
-sha512sums="9924e014b63c840ad484c886f46c43976e3218a70d29a70bf8a49f72bee29bd97c2acc63b00681623efacb5fd8c2ff546ad343409ba9ee94b482500649703535  libhandy-6c61bf1ff538b9133b65b5d90b41829fea9775a7.tar.gz"
+sha512sums="46db2bb607c86f4b8c1abf056094cf70d35e1adf04f08e3e84071248bc05d0d3c05f8bb5ebb12cee0dd951194f96ad92232cdc094d058a7626bc6f961db01f2f  libhandy-18952ab91e584b42cccfc076b1d866e7cc1e8fcc.tar.gz"

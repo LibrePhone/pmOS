@@ -1,22 +1,21 @@
 pkgname=wlroots
-pkgver=0_git20180524
+pkgver=0_git20180803
 pkgrel=0
-_commit="9c439ce9cba8cf5a222ff6a1f1cf6d0d838acc81"
+_commit="23e2c3c75968f5b2905b761e6cfc7eedb3f8ce81"
 pkgdesc="Pluggable, composable modules for building a Wayland compositor, with Purism hacks to support Phosh"
 arch="all"
-url="https://code.puri.sm/Librem5/wlroots"
-license="GPL2"
+url="https://github.com/swaywm/wlroots"
+license="MIT"
 depends="wayland wayland-protocols"
 depends_dev="libinput-dev xcb-util-image-dev"
 makedepends="$depends_dev meson ninja mesa-dev eudev-dev pixman-dev wayland-dev libxkbcommon-dev"
 subpackages="$pkgname-dev"
-source="$pkgname-$pkgver.tar.gz::https://code.puri.sm/Librem5/wlroots/archive/$_commit.tar.gz"
-
-builddir="$srcdir/$pkgname"
+source="$pkgname-$pkgver.tar.gz::https://github.com/swaywm/wlroots/archive/$_commit.tar.gz"
+builddir="$srcdir/$pkgname-$_commit"
 
 build() {
 	cd "$builddir"
-	meson . _build --prefix=/usr
+	meson . _build --prefix=/usr -Denable-xwayland=true
 	ninja -C _build
 }
 
@@ -31,4 +30,4 @@ package() {
 	# >>> ERROR: wlroots*: Has /home/... in rpath
 	#install -D -m755 _build/rootston/rootston "$pkgdir"/usr/bin/rootston
 }
-sha512sums="28bc81997fba3bd685f9c57ff41f0a585cf91cd1217ae0f48133f4d6d0de580a720cfbbde1a7a9eea06e862cca6708118067710d250b6aa53e4558b1532576c2  wlroots-0_git20180524.tar.gz"
+sha512sums="fa9f7e41f4cdccfd964527fbc9f2270627c6e441ca5810b07e47624b206249d6ebd31272ffed34fbe53c15ea4a3a403eb545978de727607343c688fbfb36751d  wlroots-0_git20180803.tar.gz"
