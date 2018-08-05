@@ -10,7 +10,8 @@ depends="wayland wayland-protocols"
 depends_dev="libinput-dev xcb-util-image-dev"
 makedepends="$depends_dev meson ninja mesa-dev eudev-dev pixman-dev wayland-dev libxkbcommon-dev"
 subpackages="$pkgname-dev"
-source="$pkgname-$pkgver.tar.gz::https://github.com/swaywm/wlroots/archive/$_commit.tar.gz"
+source="$pkgname-$pkgver.tar.gz::https://github.com/swaywm/wlroots/archive/$_commit.tar.gz
+	remove-rpath.patch"
 builddir="$srcdir/$pkgname-$_commit"
 
 build() {
@@ -24,10 +25,7 @@ package() {
 	
 	DESTDIR="$pkgdir/" ninja -C _build install
 
-	# This breaks for some reason. However, we do need this binary to run Phosh
-	# Log reports:
-	# /home/pmos/build/src/wlroots/_build
-	# >>> ERROR: wlroots*: Has /home/... in rpath
-	#install -D -m755 _build/rootston/rootston "$pkgdir"/usr/bin/rootston
+	install -D -m755 _build/rootston/rootston "$pkgdir"/usr/bin/rootston
 }
-sha512sums="fa9f7e41f4cdccfd964527fbc9f2270627c6e441ca5810b07e47624b206249d6ebd31272ffed34fbe53c15ea4a3a403eb545978de727607343c688fbfb36751d  wlroots-0_git20180803.tar.gz"
+sha512sums="fa9f7e41f4cdccfd964527fbc9f2270627c6e441ca5810b07e47624b206249d6ebd31272ffed34fbe53c15ea4a3a403eb545978de727607343c688fbfb36751d  wlroots-0_git20180803.tar.gz
+d769a2baed7e8424a3eb13106af349c728091d760043b5ec76a94c6e6a78a85cb884c9e78c99fbdff731cd27630db6d8faf5f53caccec92d1b82d6f4cdf2f6c6  remove-rpath.patch"

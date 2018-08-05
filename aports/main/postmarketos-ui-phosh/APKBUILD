@@ -14,4 +14,4 @@ package() {
 	install -D -m644 "$srcdir"/start_phosh.sh \
 		"$pkgdir"/etc/profile.d/start_phosh.sh
 }
-sha512sums="0eac3855a8b2cf90b624ad0082038878a04968ffbb09a30e531b03e25b18a5a04db7019ca1334be2725b59fdab26b25047574809d7fcb227018133078a48b304  start_phosh.sh"
+sha512sums="a6ebf5acbaa60f002427df23d607e30675cd23c5531825bd9b41e35cf2e3c56e6f2cc479cd73f59226e66a07813339f9d63099ce6837ea945039733eada18ec8  start_phosh.sh"

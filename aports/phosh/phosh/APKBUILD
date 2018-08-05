@@ -10,6 +10,7 @@ depends="gtk+3.0 wayland-protocols wlroots"
 makedepends="gtk+3.0-dev meson ninja gnome-desktop-dev libhandy-dev gcr-dev upower-dev linux-pam-dev"
 subpackages="$pkgname-lang"
 source="$pkgname-$pkgver.tar.gz::https://source.puri.sm/Librem5/phosh/-/archive/$_commit.tar.gz"
+options="!check" # Needs a running Wayland compositor
 builddir="$srcdir/$pkgname-$_commit"
 
 build() {
@@ -18,8 +19,15 @@ build() {
 	ninja -C _build
 }
 
+check() {
+	cd "$builddir"
+	ninja -C _build test
+}
+
 package() {
 	cd "$builddir"
 	DESTDIR="$pkgdir/" ninja -C _build install
+	
+	install -D -m755 data/rootston.ini "$pkgdir/etc/rootston.ini"
 }
 sha512sums="af7f7000fa11242df1c4f95b8471f2958aa86b7e41f436212119b31fbfe1da80ba2ccf52c1bd420a3158988fadfe2764520319667f9333f34808be62898e7e09  phosh-0_git20180730.tar.gz"
