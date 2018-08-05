@@ -89,6 +89,10 @@ def test_questions_name(args, monkeypatch):
     fake_answers(monkeypatch, ["Thor"])
     assert func(args, "Amazon") == "Amazon Thor"
 
+    # Don't add the manufacturer when it starts with "Google"
+    fake_answers(monkeypatch, ["Google Nexus 12345"])
+    assert func(args, "Amazon") == "Google Nexus 12345"
+
 
 def test_questions_arch(args, monkeypatch):
     fake_answers(monkeypatch, ["invalid_arch", "aarch64"])

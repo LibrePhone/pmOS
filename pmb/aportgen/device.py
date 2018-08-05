@@ -46,7 +46,8 @@ def ask_for_name(args, manufacturer):
     ret = pmb.helpers.cli.ask(args, "Name", None, None, False)
 
     # Always add the manufacturer
-    if not ret.startswith(manufacturer):
+    if not ret.startswith(manufacturer) and \
+            not ret.startswith("Google"):
         ret = manufacturer + " " + ret
     return ret
 

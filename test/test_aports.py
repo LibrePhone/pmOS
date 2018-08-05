@@ -56,7 +56,8 @@ def test_deviceinfo(args):
             # deviceinfo_name must start with manufacturer
             name = info["name"]
             manufacturer = info["manufacturer"]
-            if not name.startswith(manufacturer):
+            if not name.startswith(manufacturer) and \
+                    not name.startswith("Google"):
                 raise RuntimeError("Please add the manufacturer in front of"
                                    " the deviceinfo_name, e.g.: '" +
                                    manufacturer + " " + name + "'")
