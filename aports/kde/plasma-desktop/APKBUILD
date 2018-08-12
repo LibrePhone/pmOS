@@ -7,7 +7,7 @@ pkgdesc='KDE Plasma Desktop'
 arch="all"
 url='https://www.kde.org/workspaces/plasmadesktop/'
 license="GPL-2.0 LGPL-2.1"
-depends="xset xprop dbus qt5-qtquickcontrols udisks2"
+depends="xset xprop dbus qt5-qtquickcontrols udisks2 xsetroot"
 depends_dev="qt5-qtbase-dev qt5-qtdeclarative-dev qt5-qtx11extras-dev qt5-qtsvg-dev
 	kauth-dev kdoctools-dev ki18n-dev kcmutils-dev knewstuff-dev kdelibs4support-dev 
 	knotifications-dev knotifyconfig-dev attica-dev kwallet-dev krunner-dev kglobalaccel-dev

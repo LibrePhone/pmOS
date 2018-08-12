@@ -8,7 +8,7 @@ license="GPL-3.0+"
 depends="consolekit2 xorg-server plasma-desktop plasma-settings breeze-icons
     postmarketos-demos kscreen elisa pulseaudio pulseaudio-utils powerdevil
 	polkit-kde-agent kwayland-integration postmarketos-artwork-wallpapers
-	konsole"
+	konsole plasma-nm plasma-pa qt5-qtvirtualkeyboard"
 makedepends=""
 install="$pkgname.post-install"
 subpackages=""
