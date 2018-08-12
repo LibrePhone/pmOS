@@ -1,9 +1,9 @@
 # Contributor: Bart Ribbers <bribbers@disroot.org>
 # Maintainer: Bart Ribbers <bribbers@disroot.org>
 pkgname=kdeconnect
-pkgver=1.3.1_git20180621
+pkgver=1.3.1_git20180806
 pkgrel=0
-_commit="0057c44a30cc5205b23db8bb48ac86a5a9a368e3"
+_commit="372f23b103e16e8ff2c6793487193720a2fe688c"
 pkgdesc="Adds communication between KDE and your smartphone"
 url="https://community.kde.org/KDEConnect"
 arch="all"
@@ -54,4 +54,4 @@ mobile() {
 	mv "$pkgdir"/usr/lib/qt5/plugins/kdeconnect/kdeconnect_mprisremote.so "$subpkgdir"/usr/lib/qt5/plugins/kdeconnect/
 }
 
-sha512sums="090914502aecb059a4ea2efe55d41c623d440698812fa62f848880677b8b931288b657fe317d556074f596f895806a299647004ab7e48935a74097065c2ed789  kdeconnect-0057c44a30cc5205b23db8bb48ac86a5a9a368e3.tar.gz"
+sha512sums="2213032bc4d8768bcf4d16cdc49f5698e6bec25e55d3b124dae40536c8a069432740c7a7aa7acda683c19856d64cab7b8c55f114d6b980f85319337a8afc2f13  kdeconnect-372f23b103e16e8ff2c6793487193720a2fe688c.tar.gz"
