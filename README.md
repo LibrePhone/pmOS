@@ -3,8 +3,8 @@
 
 Sophisticated chroot/build/flash tool to develop and install [postmarketOS](https://postmarketos.org).
 
-## Requirements
-* 2 GB of RAM recommended for compiling
+## Системные Требования
+* Рекомендуется 2 ГБ оперативной памяти для компиляции
 * Linux distribution (`x86`, `x86_64`, or `aarch64`)
   * [Windows subsystem for Linux (WSL)](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux) does **not** work! Please use [VirtualBox](https://www.virtualbox.org/) instead.
   * Kernels based on the grsec patchset [do **not** work](https://github.com/postmarketOS/pmbootstrap/issues/107) *(Alpine: use linux-vanilla instead of linux-hardened, Arch: linux-hardened [is not based on grsec](https://www.reddit.com/r/archlinux/comments/68b2jn/linuxhardened_in_community_repo_a_grsecurity/))*
